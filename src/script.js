@@ -20,13 +20,45 @@ const scene = new THREE.Scene()
 const textureLoader = new THREE.TextureLoader()
 
 /**
- * Test cube
+ * Particles test idea
  */
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial()
-)
-scene.add(cube)
+const parameters = {
+    count: 100000,
+    size: 0.01,
+}
+const generateParticles = () => {
+    const geometry = new THREE.BufferGeometry()
+    const positions = new Float32Array(parameters.count * 3)
+    // Test fibbonacci sequence instead of using Math.random()
+    const fibbonacci = (i, count = {}) => {
+        const i3 = i * 3
+        if (i in count) return count[i];
+        if (i <= 2) return 1;
+
+        count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
+        positions[i3] = (Math.random() - 0.5) * 3
+        positions[i3 + 1] = (Math.random() - 0.5) * 3
+        positions[i3 + 2] = (Math.random() - 0.5) * 3
+
+        return count[i3]
+    }
+    fibbonacci(5000)
+    // for (let i = 0; i < parameters.count; i++) {
+
+    // }
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+
+    const material = new THREE.PointsMaterial({
+        size: parameters.size,
+        sizeAttenuation: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+    })
+    const points = new THREE.Points(geometry, material)
+    scene.add(points)
+}
+generateParticles()
+
 
 /**
  * Sizes
@@ -36,8 +68,7 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -77,8 +108,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     // Update controls

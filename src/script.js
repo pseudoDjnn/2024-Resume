@@ -33,6 +33,9 @@ let geometry = null
 let positions = null
 let points = null
 
+// Array to iterate over for particles
+const iterableParticles = []
+
 const generateParticles = () => {
     geometry = new THREE.BufferGeometry()
     positions = new Float32Array(parameters.count * 3)
@@ -63,31 +66,33 @@ const generateParticles = () => {
     points = new THREE.Points(geometry, material)
 
     fibbonacci(5000)
+    iterableParticles.push({
+        mesh: material,
+        body: positions
+    })
 
     scene.add(points)
 }
 generateParticles()
 
-const material = new THREE.MeshToonMaterial({
-    gradientMap: gradientTexture
+// const material = new THREE.MeshToonMaterial({
+//     gradientMap: gradientTexture
 
-})
+// })
 
-const mesh1 = new THREE.Mesh(
-    new THREE.TorusGeometry(1, 0.4, 16, 40),
-    material
-)
-mesh1.scale.x = -0.1
-mesh1.position.z = -0.5
-mesh1.scale.z = -0.2
-scene.add(mesh1)
+// const mesh1 = new THREE.Mesh(
+//     new THREE.TorusGeometry(1, 0.4, 16, 40),
+//     material
+// )
+// mesh1.scale.x = -0.1
+// mesh1.position.z = -0.5
+// mesh1.scale.z = -0.2
+// scene.add(mesh1)
 
 const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
 directionalLight.position.set(1, 1, 0)
 scene.add(directionalLight)
 
-// Array to iterate over for particles
-const iterableParticles = [mesh1]
 
 
 /**
@@ -143,9 +148,9 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
     //Animate mesh (keep it simple for now)
-    for (const mesh of iterableParticles) {
-        mesh.rotation.x = elapsedTime * 0.1
-        mesh.rotation.y = elapsedTime * 0.12
+    for (const object of iterableParticles) {
+        // object.
+        // particles.rotation.y = elapsedTime * 0.12
     }
 
     // Update controls

@@ -18,6 +18,8 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
+const gradientTexture = textureLoader.load('textures/gradients/5.jpg')
+gradientTexture.magFilter = THREE.NearestFilter
 
 /**
  * Particles test idea
@@ -26,9 +28,14 @@ const parameters = {
     count: 100000,
     size: 0.01,
 }
+
+let geometry = null
+let positions = null
+let points = null
+
 const generateParticles = () => {
-    const geometry = new THREE.BufferGeometry()
-    const positions = new Float32Array(parameters.count * 3)
+    geometry = new THREE.BufferGeometry()
+    positions = new Float32Array(parameters.count * 3)
     // Test fibbonacci sequence instead of using Math.random()
     const fibbonacci = (i, count = {}) => {
         const i3 = i * 3
@@ -42,27 +49,50 @@ const generateParticles = () => {
 
         return count[i3]
     }
-    fibbonacci(5000)
-    // for (let i = 0; i < parameters.count; i++) {
 
-    // }
+
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
     const material = new THREE.PointsMaterial({
+        color: '#ffeded',
         size: parameters.size,
         sizeAttenuation: true,
         depthWrite: false,
         blending: THREE.AdditiveBlending
     })
-    const points = new THREE.Points(geometry, material)
+    points = new THREE.Points(geometry, material)
+
+    fibbonacci(5000)
+
     scene.add(points)
 }
 generateParticles()
 
+const material = new THREE.MeshToonMaterial({
+    gradientMap: gradientTexture
+
+})
+
+const mesh1 = new THREE.Mesh(
+    new THREE.TorusGeometry(1, 0.4, 16, 40),
+    material
+)
+mesh1.scale.x = -0.1
+mesh1.position.z = -0.5
+mesh1.scale.z = -0.2
+scene.add(mesh1)
+
+const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
+directionalLight.position.set(1, 1, 0)
+scene.add(directionalLight)
+
+// Array to iterate over for particles
+const iterableParticles = [mesh1]
+
 
 /**
  * Sizes
- */
+*/
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
@@ -86,7 +116,7 @@ window.addEventListener('resize', () => {
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+const camera = new THREE.PerspectiveCamera(35, sizes.width / sizes.height, 0.1, 100)
 camera.position.z = 3
 scene.add(camera)
 
@@ -98,7 +128,8 @@ controls.enableDamping = true
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    alpha: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -110,6 +141,12 @@ const clock = new THREE.Clock()
 
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    //Animate mesh (keep it simple for now)
+    for (const mesh of iterableParticles) {
+        mesh.rotation.x = elapsedTime * 0.1
+        mesh.rotation.y = elapsedTime * 0.12
+    }
 
     // Update controls
     controls.update()

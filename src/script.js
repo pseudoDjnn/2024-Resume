@@ -25,23 +25,23 @@ const textureLoader = new THREE.TextureLoader()
  * Particles test idea
  */
 const parameters = {
-    count: 10000,
-    size: 0.001,
+    count: 1000,
+    size: 0.01,
 }
 
 let geometry = null
 let positions = null
 let points = null
-// let fibbonacci = null
+let fibbonacci = null
 
 // Array to iterate over for particles
-const iterableParticles = []
+const iterableParticles = [points]
 
 const generateParticles = () => {
     geometry = new THREE.BufferGeometry()
     positions = new Float32Array(parameters.count * 3)
     // Test fibbonacci sequence instead of using Math.random()
-    const fibbonacci = (i, count = {}) => {
+    fibbonacci = (i, count = {}) => {
         const i3 = i * 3
         if (i in count) return count[i];
         if (i <= 2) return 1;
@@ -57,6 +57,7 @@ const generateParticles = () => {
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 
+
     const material = new THREE.PointsMaterial({
         color: '#ffeded',
         size: parameters.size,
@@ -65,8 +66,9 @@ const generateParticles = () => {
         blending: THREE.AdditiveBlending
     })
     points = new THREE.Points(geometry, material)
+    points.position.x = -1
 
-    fibbonacci(5000)
+    fibbonacci(500)
     // iterableParticles.push({
     //     mesh: material,
     //     body: positions
@@ -74,6 +76,7 @@ const generateParticles = () => {
 
     scene.add(points)
 }
+// geometry.position.y = -0.3
 generateParticles()
 
 const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
@@ -139,13 +142,16 @@ const tick = () => {
     previousTime = elapsedTime
 
     //Animate particles (keep it simple for now)
-    // generateParticles(deltaTime - 0.5 / points) * 5
-    // points.update(deltaTime)
-    for (const object of iterableParticles) {
+    // generateParticles(Math.sin((deltaTime - 0.5 / points) * 5))
+
+    for (const points of iterableParticles) {
         // object.
-        // particles.rotation.y = elapsedTime * 0.12
+        // const i3 = i * 3
+        // points.
+        // object += i3
     }
 
+    // points.attributes.position.needsUpdate = true
 
     // Update controls
     controls.update()

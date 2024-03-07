@@ -18,20 +18,21 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
-const gradientTexture = textureLoader.load('textures/gradients/5.jpg')
-gradientTexture.magFilter = THREE.NearestFilter
+// const gradientTexture = textureLoader.load('textures/gradients/5.jpg')
+// gradientTexture.magFilter = THREE.NearestFilter
 
 /**
  * Particles test idea
  */
 const parameters = {
-    count: 100000,
-    size: 0.01,
+    count: 10000,
+    size: 0.001,
 }
 
 let geometry = null
 let positions = null
 let points = null
+// let fibbonacci = null
 
 // Array to iterate over for particles
 const iterableParticles = []
@@ -66,28 +67,14 @@ const generateParticles = () => {
     points = new THREE.Points(geometry, material)
 
     fibbonacci(5000)
-    iterableParticles.push({
-        mesh: material,
-        body: positions
-    })
+    // iterableParticles.push({
+    //     mesh: material,
+    //     body: positions
+    // })
 
     scene.add(points)
 }
 generateParticles()
-
-// const material = new THREE.MeshToonMaterial({
-//     gradientMap: gradientTexture
-
-// })
-
-// const mesh1 = new THREE.Mesh(
-//     new THREE.TorusGeometry(1, 0.4, 16, 40),
-//     material
-// )
-// mesh1.scale.x = -0.1
-// mesh1.position.z = -0.5
-// mesh1.scale.z = -0.2
-// scene.add(mesh1)
 
 const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
 directionalLight.position.set(1, 1, 0)
@@ -144,14 +131,21 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
+let previousTime = 0
+
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+    const deltaTime = elapsedTime - previousTime
+    previousTime = elapsedTime
 
-    //Animate mesh (keep it simple for now)
+    //Animate particles (keep it simple for now)
+    // generateParticles(deltaTime - 0.5 / points) * 5
+    // points.update(deltaTime)
     for (const object of iterableParticles) {
         // object.
         // particles.rotation.y = elapsedTime * 0.12
     }
+
 
     // Update controls
     controls.update()

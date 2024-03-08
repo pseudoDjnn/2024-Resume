@@ -6,7 +6,7 @@ import GUI from 'lil-gui'
  * Base
  */
 // Debug
-const gui = new GUI()
+// const gui = new GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -18,15 +18,17 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
-const particleTexture = textureLoader.load('/textures/gradients/3.jpg')
+const particleTexture = textureLoader.load('/textures/gradients/5.jpg')
+particleTexture.magFilter = THREE.NearestFilter
 
 
 /**
- * Particles test idea
+ * Particle parameters
  */
 const parameters = {
     count: 10000,
     size: 0.001,
+    color: '#ffeded'
 }
 
 let geometry = null
@@ -43,7 +45,7 @@ const generateParticles = () => {
 
 
     const material = new THREE.PointsMaterial({
-        color: new THREE.Color('#ffeded'),
+        color: parameters.color,
         size: parameters.size,
         sizeAttenuation: true,
         transparent: true,
@@ -54,8 +56,8 @@ const generateParticles = () => {
     })
 
     points = new THREE.Points(geometry, material)
-    points.position.x = -1.8
-    // points.rotation.y = deltaTime
+    points.position.x = -1.9
+    // points.position.y = -4
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -64,12 +66,12 @@ const generateParticles = () => {
         if (i <= 2) return 1;
 
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
-        positions[i3] = (Math.random() - 0.5) * 4
-        positions[i3 + 1] = (Math.random() - 0.5) * 4
-        positions[i3 + 2] = (Math.random() - 0.5) * 4
+        positions[i3] = (Math.random() - 0.5) * -5
+        positions[i3 + 1] = (Math.random() - 0.5) * 3
+        positions[i3 + 2] = (Math.random() - 0.5) * 5
         colors[i] = Math.random()
 
-        return count[i3]
+        return count[i3 * 3]
     }
     fibbonacci(5000)
 
@@ -114,7 +116,7 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(135, sizes.width / sizes.height, 0.1, 100)
-camera.position.z = 3
+camera.position.z = 2.5
 scene.add(camera)
 
 // Controls
@@ -144,9 +146,9 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update particles (keeping this simple for now)
-    points.rotation.x = Math.cos(-elapsedTime * 0.0021) * 3
-    points.rotation.y = -(deltaTime - 0.5) * 3
-    points.rotation.z = Math.sin(elapsedTime * 0.0055) * 3
+    points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 16
+    points.rotation.y = -(deltaTime - 0.5) * 0.3
+    points.rotation.z = Math.sin(elapsedTime * 0.00055) * 3
 
     // Update controls
     controls.update()

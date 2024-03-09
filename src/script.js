@@ -6,7 +6,7 @@ import GUI from 'lil-gui'
  * Base
  */
 // Debug
-// const gui = new GUI()
+const gui = new GUI()
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -56,19 +56,19 @@ const generateParticles = () => {
     })
 
     points = new THREE.Points(geometry, material)
-    points.position.x = -1.9
-    // points.position.y = -4
+    points.position.x = -21.8
+    points.position.y = -8
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
-        const i3 = i * 3
+        const i3 = i * 5
         if (i in count) return count[i];
         if (i <= 2) return 1;
 
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
-        positions[i3] = (Math.random() - 0.5) * -5
-        positions[i3 + 1] = (Math.random() - 0.5) * 3
-        positions[i3 + 2] = (Math.random() - 0.5) * 5
+        positions[i3] = (Math.random() - 0.5) * -55
+        positions[i3 + 1] = (Math.random() - 0.5) * 13
+        positions[i3 + 2] = (Math.random() - 0.5) * 55
         colors[i] = Math.random()
 
         return count[i3 * 3]
@@ -78,14 +78,22 @@ const generateParticles = () => {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
 
+    scene.fog = new THREE.Fog(0xcccccc, 8, 13)
     scene.add(points)
 }
 
 generateParticles()
 
-const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
-directionalLight.position.set(1, 1, 0)
-scene.add(directionalLight)
+
+
+
+// Ambient light
+// const ambientLight = new THREE.AmbientLight(0x404040)
+// scene.add(ambientLight)
+
+// const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
+// directionalLight.position.set(1, 1, 0)
+// scene.add(directionalLight)
 
 
 
@@ -146,9 +154,11 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update particles (keeping this simple for now)
-    points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 16
-    points.rotation.y = -(deltaTime - 0.5) * 0.3
-    points.rotation.z = Math.sin(elapsedTime * 0.00055) * 3
+    if (points) {
+        points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 16
+        points.rotation.y = -Math.sin((deltaTime - 0.5)) * 0.3
+        points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
+    }
 
     // Update controls
     controls.update()

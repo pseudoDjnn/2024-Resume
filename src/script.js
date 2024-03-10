@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
+// import DebugGui from './DebugGui.js'
+// import Textures from '/Textures.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 
 
@@ -9,7 +11,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
  * Base
  */
 // Debug
-const gui = new GUI()
+// const gui = new GUI()
+const global = {}
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -28,6 +31,20 @@ particleTexture.colorSpace = THREE.SRGBColorSpace
 particleTexture.magFilter = THREE.NearestFilter
 
 
+/**
+ * Update all the materials
+ */
+const updateAllMaterials = () => {
+    scene.traverse((child) => {
+        if (child.isMesh && child.material.isMeshStandardMaterial) {
+            child.material.envMapIntensity = global.envMapIntensity
+        }
+    })
+}
+
+// Global intensity
+global.envMapIntensity = 1
+
 
 /**
  * Reel to reel model
@@ -36,14 +53,17 @@ let reel2Reel = null
 
 gltfLoader.load('/models/scene.gltf',
     (gltf) => {
-        gltf.scene.position.x = 4
-        gltf.scene.position.y = -2
-        gltf.scene.position.z = -1.7
+        gltf.scene.position.x = 1.8
+        gltf.scene.position.y = -1.3
+        gltf.scene.position.z = -0.5
 
-        gltf.scene.rotation.y = -1
+        gltf.scene.rotation.y = -0.3
 
-        gltf.scene.scale.set(8, 8, 4)
+
+        gltf.scene.scale.set(5, 5, 4)
         scene.add(gltf.scene)
+
+        updateAllMaterials()
     })
 
 
@@ -86,14 +106,14 @@ const generateParticles = () => {
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
-        const i3 = i * 5
+        const i3 = i * 3
         if (i in count) return count[i];
         if (i <= 2) return 1;
 
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
-        positions[i3] = (Math.random() - 0.5) * -55
+        positions[i3] = (Math.random() - 0.5) * -34
         positions[i3 + 1] = (Math.random() - 0.5) * 13
-        positions[i3 + 2] = (Math.random() - 0.5) * 55
+        positions[i3 + 2] = (Math.random() - 0.5) * 89
         colors[i] = Math.random()
 
         return count[i3 * 3]
@@ -137,8 +157,8 @@ window.addEventListener('resize', () => {
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(135, sizes.width / sizes.height, 0.1, 100)
-camera.position.z = 2.5
+const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 100)
+camera.position.set(1, 2, 3)
 scene.add(camera)
 
 // Controls
@@ -163,6 +183,8 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.toneMapping = THREE.ReinhardToneMapping
+renderer.toneMappingExposure = 1.75
 
 
 /**
@@ -185,7 +207,7 @@ const tick = () => {
     // Update particles (keeping this simple for now)
     if (points) {
         points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 17
-        points.rotation.y = -Math.sin((deltaTime - 0.5) * 3) * 0.55
+        points.rotation.y = -Math.sin((deltaTime - 0.5) * 0.3)
         points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
     }
 

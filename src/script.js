@@ -1,6 +1,9 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+
+
 
 /**
  * Base
@@ -14,12 +17,34 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+
 /**
- * Textures
+ * Textures and loaders
  */
+const gltfLoader = new GLTFLoader()
 const textureLoader = new THREE.TextureLoader()
 const particleTexture = textureLoader.load('/textures/gradients/5.jpg')
+particleTexture.colorSpace = THREE.SRGBColorSpace
 particleTexture.magFilter = THREE.NearestFilter
+
+
+
+/**
+ * Reel to reel model
+ */
+let reel2Reel = null
+
+gltfLoader.load('/models/scene.gltf',
+    (gltf) => {
+        gltf.scene.position.x = 4
+        gltf.scene.position.y = -2
+        gltf.scene.position.z = -1.7
+
+        gltf.scene.rotation.y = -1
+
+        gltf.scene.scale.set(8, 8, 4)
+        scene.add(gltf.scene)
+    })
 
 
 /**
@@ -85,18 +110,6 @@ const generateParticles = () => {
 generateParticles()
 
 
-
-
-// Ambient light
-// const ambientLight = new THREE.AmbientLight(0x404040)
-// scene.add(ambientLight)
-
-// const directionalLight = new THREE.DirectionalLight('#ffeded', 3)
-// directionalLight.position.set(1, 1, 0)
-// scene.add(directionalLight)
-
-
-
 /**
  * Sizes
 */
@@ -119,6 +132,7 @@ window.addEventListener('resize', () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
+
 /**
  * Camera
  */
@@ -131,15 +145,25 @@ scene.add(camera)
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 
+
+/**
+ * Lights
+ */
+const ambientLight = new THREE.AmbientLight(0xffeded, 1)
+scene.add(ambientLight)
+
+
 /**
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
+    antialias: true,
     alpha: true
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
 
 /**
  * Animate
@@ -153,10 +177,15 @@ const tick = () => {
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
 
+    // Temporary gltf movement
+    if (gltfLoader) {
+        // gltfLoader.rotation.x = 2
+    }
+
     // Update particles (keeping this simple for now)
     if (points) {
-        points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 16
-        points.rotation.y = -Math.sin((deltaTime - 0.5)) * 0.3
+        points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 17
+        points.rotation.y = -Math.sin((deltaTime - 0.5) * 3) * 0.55
         points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
     }
 

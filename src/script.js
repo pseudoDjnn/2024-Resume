@@ -1,9 +1,12 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-// import DebugGui from './DebugGui.js'
-// import Textures from '/Textures.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import vertexShader from './shaders/test/vertex.glsl'
+import fragmentShader from './shaders/test/fragment.glsl'
+
+// console.log(vertexShader)
+// console.log(fragmentShader)
 
 
 
@@ -31,6 +34,7 @@ particleTexture.colorSpace = THREE.SRGBColorSpace
 particleTexture.magFilter = THREE.NearestFilter
 
 
+
 /**
  * Update all the materials
  */
@@ -49,22 +53,22 @@ global.envMapIntensity = 1
 /**
  * Reel to reel model
  */
-let reel2Reel = null
+// let reel2Reel = null
 
-gltfLoader.load('/models/scene.gltf',
-    (gltf) => {
-        gltf.scene.position.x = 1.8
-        gltf.scene.position.y = -1.3
-        gltf.scene.position.z = -0.5
+// gltfLoader.load('/models/reel-to-reel_tape_recorder.glb',
+//     (gltf) => {
+//         gltf.scene.position.x = 1.8
+//         gltf.scene.position.y = -1.3
+//         gltf.scene.position.z = -0.5
 
-        gltf.scene.rotation.y = -0.3
+//         gltf.scene.rotation.y = -0.3
 
 
-        gltf.scene.scale.set(5, 5, 4)
-        scene.add(gltf.scene)
+//         gltf.scene.scale.set(5, 5, 4)
+//         scene.add(gltf.scene)
 
-        updateAllMaterials()
-    })
+//         updateAllMaterials()
+//     })
 
 
 /**
@@ -123,11 +127,47 @@ const generateParticles = () => {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
 
-    scene.fog = new THREE.Fog(0xcccccc, 8, 13)
+    scene.fog = new THREE.Fog(0xcccccc, 10, 15)
     scene.add(points)
 }
 
 generateParticles()
+
+
+geometry = new THREE.TorusGeometry(10, 3, 16, 100)
+const count = geometry.attributes.position.count
+const randoms = new Float32Array(count)
+
+for (let i = 0; i <= count; i++) {
+    randoms[i] = Math.random()
+}
+
+geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1))
+
+// Material
+const material = new THREE.RawShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    // wireframe: true,
+    transparent: true,
+    side: THREE.DoubleSide,
+    uniforms: {
+        uFrequency: { value: new THREE.Vector2(10, 5) },
+        uTime: { value: 0 },
+        uColor: { value: new THREE.Color('#ffeded') },
+        // uTexture: { value: flagTexture }
+    }
+})
+
+// Mesh
+const mesh = new THREE.Mesh(geometry, material)
+mesh.scale.set(0.2, 0.2, 0.2)
+// mesh.position.x = 5
+mesh.position.set(1, 2.5, 0)
+mesh.rotation.set(10, 0, 21)
+scene.add(mesh)
+
+
 
 
 /**
@@ -203,6 +243,9 @@ const tick = () => {
     if (gltfLoader) {
         // gltfLoader.rotation.x = 2
     }
+
+    // Update GLSL material
+    material.uniforms.uTime.value = elapsedTime * 0.005
 
     // Update particles (keeping this simple for now)
     if (points) {

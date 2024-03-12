@@ -1,5 +1,5 @@
 {
-  "name": "threejs-journey-exercise",
+  "name": "2024-Resume",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "lil-gui": "^0.19.0",
-    "three": "^0.158.0"
+    "three": "^0.158.0",
+    "vite-plugin-glsl": "^1.2.1"
   }
 }

@@ -1,12 +1,10 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-import GUI from 'lil-gui'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import vertexShader from './shaders/test/vertex.glsl'
-import fragmentShader from './shaders/test/fragment.glsl'
+// import GUI from 'lil-gui'
+// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import vertexShader from './shaders/particles/vertex.glsl'
+import fragmentShader from './shaders/particles/fragment.glsl'
 
-// console.log(vertexShader)
-// console.log(fragmentShader)
 
 
 
@@ -27,49 +25,11 @@ const scene = new THREE.Scene()
 /**
  * Textures and loaders
  */
-const gltfLoader = new GLTFLoader()
+// const gltfLoader = new GLTFLoader()
 const textureLoader = new THREE.TextureLoader()
 const particleTexture = textureLoader.load('/textures/gradients/5.jpg')
 particleTexture.colorSpace = THREE.SRGBColorSpace
 particleTexture.magFilter = THREE.NearestFilter
-
-
-
-/**
- * Update all the materials
- */
-const updateAllMaterials = () => {
-    scene.traverse((child) => {
-        if (child.isMesh && child.material.isMeshStandardMaterial) {
-            child.material.envMapIntensity = global.envMapIntensity
-        }
-    })
-}
-
-// Global intensity
-global.envMapIntensity = 1
-
-
-/**
- * Reel to reel model
- */
-// let reel2Reel = null
-
-// gltfLoader.load('/models/reel-to-reel_tape_recorder.glb',
-//     (gltf) => {
-//         gltf.scene.position.x = 1.8
-//         gltf.scene.position.y = -1.3
-//         gltf.scene.position.z = -0.5
-
-//         gltf.scene.rotation.y = -0.3
-
-
-//         gltf.scene.scale.set(5, 5, 4)
-//         scene.add(gltf.scene)
-
-//         updateAllMaterials()
-//     })
-
 
 /**
  * Particle parameters
@@ -105,7 +65,7 @@ const generateParticles = () => {
     })
 
     points = new THREE.Points(geometry, material)
-    points.position.x = -21.8
+    points.position.x = -13.8
     points.position.y = -8
 
     // Test fibbonacci sequence instead of using Math.random()
@@ -122,7 +82,7 @@ const generateParticles = () => {
 
         return count[i3 * 3]
     }
-    fibbonacci(5000)
+    fibbonacci(500)
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
@@ -150,12 +110,12 @@ const material = new THREE.RawShaderMaterial({
     fragmentShader: fragmentShader,
     // wireframe: true,
     transparent: true,
-    side: THREE.DoubleSide,
+    // side: THREE.DoubleSide,
     uniforms: {
         uFrequency: { value: new THREE.Vector2(10, 5) },
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color('#ffeded') },
-        // uTexture: { value: flagTexture }
+        uColor: { value: new THREE.Color('purple') },
+        // uWaveElevation: { value: 0.9 },
     }
 })
 
@@ -238,11 +198,6 @@ const tick = () => {
     const elapsedTime = clock.getElapsedTime()
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
-
-    // Temporary gltf movement
-    if (gltfLoader) {
-        // gltfLoader.rotation.x = 2
-    }
 
     // Update GLSL material
     material.uniforms.uTime.value = elapsedTime * 0.005

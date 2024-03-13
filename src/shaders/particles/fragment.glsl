@@ -30,7 +30,7 @@ void main() {
   vec3 mixedColor = mix(blackColor, uvColor, strength);
 
   mixedColor = color;
-  gl_FragColor = vec4(color, 0.008);
+  gl_FragColor = vec4(color, 0.003);
 
   // #include <colorspace_fragment>
 }

@@ -96,7 +96,7 @@ const generateParticles = () => {
 generateParticles()
 
 
-geometry = new THREE.TorusGeometry(10, 3, 16, 100)
+geometry = new THREE.TorusGeometry(10, 3, 16, 512)
 const count = geometry.attributes.position.count
 const randoms = new Float32Array(count)
 
@@ -131,7 +131,7 @@ const material = new THREE.RawShaderMaterial({
 const mesh = new THREE.Mesh(geometry, material)
 mesh.scale.set(0.2, 0.2, 0.2)
 // mesh.position.x = 5
-mesh.position.set(3, 2.5, 0)
+mesh.position.set(2.5, 2.8, 0)
 mesh.rotation.set(10, 0, 21)
 scene.add(mesh)
 

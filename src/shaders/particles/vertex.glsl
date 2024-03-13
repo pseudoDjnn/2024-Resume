@@ -106,7 +106,11 @@ void main() {
   modelPosition.z += sin(aRandom * uFrequency.x - uTime) * -3.0;
   modelPosition.z += sin(aRandom * uFrequency.y - uTime) * -3.0;
 
-  elevation += cnoise(vec3(modelPosition.xz, uTime * 0.2));
+  for (float i = 1.0; i <= 3.0; i++) {
+    elevation -= abs(cnoise(vec3(modelPosition.xz * 3.0 * i, uTime * 0.2)) * 0.15 / i);
+
+  }
+
   modelPosition.y += elevation;
 
   vec4 viewPosition = viewMatrix * modelPosition;

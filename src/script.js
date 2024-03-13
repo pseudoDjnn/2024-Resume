@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-// import GUI from 'lil-gui'
+import GUI from 'lil-gui'
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import vertexShader from './shaders/particles/vertex.glsl'
 import fragmentShader from './shaders/particles/fragment.glsl'
@@ -12,8 +12,10 @@ import fragmentShader from './shaders/particles/fragment.glsl'
  * Base
  */
 // Debug
-// const gui = new GUI()
-const global = {}
+const gui = new GUI({ width: 340 })
+const debugObject = {}
+debugObject.depthColor = '#186691'
+debugObject.surfaceColor = '#9bd8ff'
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -110,12 +112,18 @@ const material = new THREE.RawShaderMaterial({
     fragmentShader: fragmentShader,
     // wireframe: true,
     transparent: true,
-    // side: THREE.DoubleSide,
+    side: THREE.DoubleSide,
     uniforms: {
+        uColor: { value: new THREE.Color('purple') },
+        uColorOffset: { value: 0.08 },
+        uColorMultiplier: { value: 5 },
+        uDepthColor: { value: new THREE.Color(debugObject.depthColor) },
+        uSurfaceColor: { value: new THREE.Color(debugObject.surfaceColor) },
         uFrequency: { value: new THREE.Vector2(10, 5) },
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color('purple') },
-        // uWaveElevation: { value: 0.9 },
+        uWaveElevation: { value: 0.9 },
+        uWaveFrequency: { value: new THREE.Vector2(55, 1.5) },
+        uWaveSpeed: { value: 0.75 },
     }
 })
 
@@ -123,7 +131,7 @@ const material = new THREE.RawShaderMaterial({
 const mesh = new THREE.Mesh(geometry, material)
 mesh.scale.set(0.2, 0.2, 0.2)
 // mesh.position.x = 5
-mesh.position.set(1, 2.5, 0)
+mesh.position.set(3, 2.5, 0)
 mesh.rotation.set(10, 0, 21)
 scene.add(mesh)
 
@@ -200,7 +208,7 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update GLSL material
-    material.uniforms.uTime.value = elapsedTime * 0.005
+    material.uniforms.uTime.value = Math.sin(elapsedTime - 0.5) * 0.005
 
     // Update particles (keeping this simple for now)
     if (points) {

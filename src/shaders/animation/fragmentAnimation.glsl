@@ -32,5 +32,5 @@ void main() {
   mixedColor = color;
   gl_FragColor = vec4(color, 0.003);
 
-  // #include <colorspace_fragment>
+    // #include <colorspace_fragment>
 }

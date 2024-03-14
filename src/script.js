@@ -2,8 +2,10 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 // import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import vertexShader from './shaders/particles/vertex.glsl'
-import fragmentShader from './shaders/particles/fragment.glsl'
+import vertexShaderAnimation from './shaders/animation/vertexAnimation.glsl'
+import fragmentShaderAnimation from './shaders/animation/fragmentAnimation.glsl'
+import vertexShaderParticles from './shaders/particles/vertexParticles.glsl'
+import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 
 
 
@@ -12,7 +14,7 @@ import fragmentShader from './shaders/particles/fragment.glsl'
  * Base
  */
 // Debug
-const gui = new GUI({ width: 340 })
+// const gui = new GUI({ width: 340 })
 const debugObject = {}
 debugObject.depthColor = '#186691'
 debugObject.surfaceColor = '#9bd8ff'
@@ -47,23 +49,30 @@ let positions = null
 let points = null
 let fibbonacci = null
 let colors = null
+let scales = null
 
 const generateParticles = () => {
 
     geometry = new THREE.BufferGeometry()
     positions = new Float32Array(parameters.count * 3)
     colors = new Float32Array(parameters.count * 3)
+    scales = new Float32Array(parameters.count * 1)
 
 
-    const material = new THREE.PointsMaterial({
-        color: parameters.color,
-        size: parameters.size,
-        sizeAttenuation: true,
+    const material = new THREE.ShaderMaterial({
+        // color: parameters.color,
+        // size: parameters.size,
+        // sizeAttenuation: true,
         transparent: true,
-        alphaMap: particleTexture,
+        // alphaMap: particleTexture,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
-        vertexColors: true
+        vertexColors: true,
+        vertexShader: vertexShaderParticles,
+        fragmentShader: fragmentShaderParticles,
+        uniforms: {
+            uSize: { value: 8 * renderer.getPixelRatio() }
+        }
     })
 
     points = new THREE.Points(geometry, material)
@@ -82,21 +91,24 @@ const generateParticles = () => {
         positions[i3 + 2] = (Math.random() - 0.5) * 89
         colors[i] = Math.random()
 
+        // Scales
+        scales[i] = Math.random()
+
         return count[i3 * 3]
     }
     fibbonacci(500)
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 3))
 
     scene.fog = new THREE.Fog(0xcccccc, 10, 15)
     scene.add(points)
 }
 
-generateParticles()
 
 
-geometry = new THREE.TorusGeometry(10, 3, 16, 512)
+geometry = new THREE.TorusKnotGeometry(10, 3, 16, 512)
 const count = geometry.attributes.position.count
 const randoms = new Float32Array(count)
 
@@ -108,19 +120,22 @@ geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1))
 
 // Material
 const material = new THREE.RawShaderMaterial({
-    vertexShader: vertexShader,
-    fragmentShader: fragmentShader,
+    vertexShader: vertexShaderAnimation,
+    fragmentShader: fragmentShaderAnimation,
     // wireframe: true,
     transparent: true,
     side: THREE.DoubleSide,
     uniforms: {
+        // 
         uColor: { value: new THREE.Color('purple') },
         uColorOffset: { value: 0.08 },
         uColorMultiplier: { value: 5 },
         uDepthColor: { value: new THREE.Color(debugObject.depthColor) },
         uSurfaceColor: { value: new THREE.Color(debugObject.surfaceColor) },
+        // 
         uFrequency: { value: new THREE.Vector2(10, 5) },
         uTime: { value: 0 },
+        // 
         uWaveElevation: { value: 0.9 },
         uWaveFrequency: { value: new THREE.Vector2(55, 1.5) },
         uWaveSpeed: { value: 0.75 },
@@ -193,6 +208,8 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.toneMapping = THREE.ReinhardToneMapping
 renderer.toneMappingExposure = 1.75
+
+generateParticles()
 
 
 /**

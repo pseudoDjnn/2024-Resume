@@ -5,7 +5,7 @@ uniform mat4 modelMatrix;
 uniform vec2 uFrequency;
 uniform vec2 uWaveFrequency;
 
-uniform float uTime;
+uniform float uTimeAnimation;
 uniform float uWaveElevation;
 uniform float uWaveSpeed;
 
@@ -101,13 +101,13 @@ float cnoise(vec3 P) {
 void main() {
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
 
-  float elevation = sin(modelPosition.x * uWaveFrequency.x + uTime * uWaveSpeed) * sin(modelPosition.y * uWaveFrequency.y + uTime * uWaveSpeed) * uWaveElevation;
+  float elevation = sin(modelPosition.x * uWaveFrequency.x + uTimeAnimation * uWaveSpeed) * sin(modelPosition.y * uWaveFrequency.y + uTimeAnimation * uWaveSpeed) * uWaveElevation;
   modelPosition.y += elevation * aRandom;
-  modelPosition.z += sin(aRandom * uFrequency.x - uTime) * -3.0;
-  modelPosition.z += sin(aRandom * uFrequency.y - uTime) * -3.0;
+  modelPosition.z += sin(aRandom * uFrequency.x - uTimeAnimation) * -3.0;
+  modelPosition.z += sin(aRandom * uFrequency.y - uTimeAnimation) * -3.0;
 
   for (float i = 1.0; i <= 3.0; i++) {
-    elevation -= abs(cnoise(vec3(modelPosition.xz * 3.0 * i, uTime * 0.2)) * 0.15 / i);
+    elevation -= abs(cnoise(vec3(modelPosition.xz * 3.0 * i, uTimeAnimation * 0.2)) * 0.15 / i);
 
   }
 

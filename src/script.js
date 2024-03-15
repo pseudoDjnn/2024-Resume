@@ -46,10 +46,12 @@ const parameters = {
 
 let geometry = null
 let positions = null
+let materialParticles = null
 let points = null
 let fibbonacci = null
 let colors = null
 let scales = null
+let randomness = null
 
 const generateParticles = () => {
 
@@ -57,9 +59,10 @@ const generateParticles = () => {
     positions = new Float32Array(parameters.count * 3)
     colors = new Float32Array(parameters.count * 3)
     scales = new Float32Array(parameters.count * 1)
+    randomness = new Float32Array(parameters.count * 3)
 
 
-    const material = new THREE.ShaderMaterial({
+    materialParticles = new THREE.ShaderMaterial({
         // color: parameters.color,
         // size: parameters.size,
         // sizeAttenuation: true,
@@ -71,11 +74,12 @@ const generateParticles = () => {
         vertexShader: vertexShaderParticles,
         fragmentShader: fragmentShaderParticles,
         uniforms: {
-            uSize: { value: 8 * renderer.getPixelRatio() }
+            uSize: { value: 8 * renderer.getPixelRatio() },
+            uTime: { value: 0 }
         }
     })
 
-    points = new THREE.Points(geometry, material)
+    points = new THREE.Points(geometry, materialParticles)
     points.position.x = -13.8
     points.position.y = -8
 
@@ -86,21 +90,32 @@ const generateParticles = () => {
         if (i <= 2) return 1;
 
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
+
+        // XYZ positioning
         positions[i3] = (Math.random() - 0.5) * -34
         positions[i3 + 1] = (Math.random() - 0.5) * 13
         positions[i3 + 2] = (Math.random() - 0.5) * 89
+
+        // Just randomize colors for now
         colors[i] = Math.random()
 
         // Scales
         scales[i] = Math.random()
 
+        // Randomness
+        randomness[i3] = Math.cos(positions[i3])
+        randomness[i3 + 1] = positions[i3 + 1]
+        randomness[i3 + 2] = Math.sin(positions[i3 + 2])
+
         return count[i3 * 3]
     }
-    fibbonacci(500)
+    fibbonacci(144)
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 3))
+    geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
+
 
     scene.fog = new THREE.Fog(0xcccccc, 10, 15)
     scene.add(points)
@@ -134,7 +149,7 @@ const material = new THREE.RawShaderMaterial({
         uSurfaceColor: { value: new THREE.Color(debugObject.surfaceColor) },
         // 
         uFrequency: { value: new THREE.Vector2(10, 5) },
-        uTime: { value: 0 },
+        uTimeAnimation: { value: 0 },
         // 
         uWaveElevation: { value: 0.9 },
         uWaveFrequency: { value: new THREE.Vector2(55, 1.5) },
@@ -225,14 +240,15 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update GLSL material
-    material.uniforms.uTime.value = Math.sin(elapsedTime - 0.5) * 0.005
+    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.005
+    materialParticles.uniforms.uTime.value = -elapsedTime * 0.0144
 
     // Update particles (keeping this simple for now)
-    if (points) {
-        points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 17
-        points.rotation.y = -Math.sin((deltaTime - 0.5) * 0.3)
-        points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
-    }
+    // if (points) {
+    //     points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 17
+    //     points.rotation.y = -Math.sin((deltaTime - 0.5) * 0.3)
+    //     points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
+    // }
 
     // Update controls
     controls.update()

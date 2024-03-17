@@ -5,6 +5,7 @@ attribute float aScale;
 attribute vec3 aRandomness;
 
 varying vec3 vColor;
+varying vec2 vUv;
 
 void main() {
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
@@ -18,7 +19,7 @@ void main() {
   modelPosition.z = sin(angle) * distanceToCenter;
 
   // Randomness
-  modelPosition.xyz += aRandomness;
+  modelPosition.xyz *= aRandomness;
 
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;
@@ -30,4 +31,5 @@ void main() {
 
   // Varying
   vColor = color;
+  vUv = uv;
 }

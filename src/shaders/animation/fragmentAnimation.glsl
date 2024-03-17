@@ -20,17 +20,24 @@ void main() {
 
   vec3 color = mix(uDepthColor, uSurfaceColor, mixedColors);
 
-  float strength = random(vUv);
-  // float perlin = step(0.9, sin(cnoise(vec3(vUv, strength * 5.0))));
-
-  // perlin = clamp(perlin, 0.0, 1.0);
+  float strength = random(vUv * vRandom);
 
   vec3 blackColor = vec3(0.0);
   vec3 uvColor = vec3(vUv, uColor);
   vec3 mixedColor = mix(blackColor, uvColor, strength);
 
-  mixedColor = color;
-  gl_FragColor = vec4(color, 0.003);
+  // Color Remap
+  mixedColors = smoothstep(0.7, 1.0, mixedColors);
 
+  // Smoother edges
+  mixedColors *= smoothstep(0.0, 0.1, vUv.x);
+  mixedColors *= smoothstep(0.4, 1.0, vUv.x);
+  mixedColors *= smoothstep(0.0, 0.1, vUv.y);
+  mixedColors *= smoothstep(0.4, 1.0, vUv.y);
+
+  mixedColor = color;
+  gl_FragColor = vec4(color, 0.03);
+
+    #include <tonemapping_fragment>
     // #include <colorspace_fragment>
 }

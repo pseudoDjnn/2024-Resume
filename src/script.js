@@ -8,6 +8,65 @@ import vertexShaderParticles from './shaders/particles/vertexParticles.glsl'
 import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 
 
+/**
+ * Counter
+ */
+// const counter = () => {
+//     let counter = document.querySelector('.counter')
+//     let currentTick = 0
+
+//     const updateCounter = () => {
+//         if (currentTick === 100) { return; }
+
+//         currentTick += Math.floor(Math.random() * 10) + 1
+
+//         if (currentTick > 100) { currentTick = 100 }
+
+//         // counter.textContent = currentTick
+
+//         // Delay for loading
+//         let delay = Math.floor(Math.random() * 200) + 50
+//         setTimeout(updateCounter, delay)
+//     }
+//     updateCounter()
+// }
+// counter()
+
+// /**
+//  * Gsap
+//  */
+// // Counter fade
+// gsap.to('.counter', 0.25, {
+//     delay: 3.5,
+//     opacity: 0,
+// })
+
+// // Update block height
+// gsap.to('.bar', 1.5, {
+//     delay: 3.5,
+//     height: 0,
+//     stagger: {
+//         amount: 0.5
+//     },
+//     ease: 'power4.inOut'
+// })
+
+// // Gsap letter stagger
+// gsap.from('.h1', 1.5, {
+//     delay: 4,
+//     y: 700,
+//     stagger: {
+//         amount: 0.5
+//     },
+//     ease: 'power4.inOut'
+// })
+
+// gsap.from('.hero', 2, {
+//     delay: 4.5,
+//     y: 400,
+//     ease: 'power4.inOut'
+// })
+
 
 
 /**
@@ -25,23 +84,25 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+// Axes Helper
+// const axesHelper = new THREE.AxesHelper(5);
+// scene.add(axesHelper);
+
 
 /**
  * Textures and loaders
  */
 // const gltfLoader = new GLTFLoader()
-const textureLoader = new THREE.TextureLoader()
-const particleTexture = textureLoader.load('/textures/gradients/5.jpg')
-particleTexture.colorSpace = THREE.SRGBColorSpace
-particleTexture.magFilter = THREE.NearestFilter
+// const textureLoader = new THREE.TextureLoader()
+// const particleTexture = textureLoader.load('/textures/gradients/5.jpg')
+// particleTexture.colorSpace = THREE.SRGBColorSpace
+// particleTexture.magFilter = THREE.NearestFilter
 
 /**
  * Particle parameters
  */
 const parameters = {
-    count: 10000,
-    size: 0.001,
-    color: '#ffeded'
+    count: 100000,
 }
 
 let geometry = null
@@ -53,6 +114,8 @@ let colors = null
 let scales = null
 let randomness = null
 
+const objectDistance = 4
+
 const generateParticles = () => {
 
     geometry = new THREE.BufferGeometry()
@@ -63,25 +126,23 @@ const generateParticles = () => {
 
 
     materialParticles = new THREE.ShaderMaterial({
-        // color: parameters.color,
-        // size: parameters.size,
-        // sizeAttenuation: true,
         transparent: true,
-        // alphaMap: particleTexture,
         depthWrite: false,
         blending: THREE.AdditiveBlending,
         vertexColors: true,
         vertexShader: vertexShaderParticles,
         fragmentShader: fragmentShaderParticles,
         uniforms: {
-            uSize: { value: 8 * renderer.getPixelRatio() },
-            uTime: { value: 0 }
+            uSize: new THREE.Uniform(8) * renderer.getPixelRatio(),
+            uTime: new THREE.Uniform(0)
         }
     })
 
     points = new THREE.Points(geometry, materialParticles)
-    points.position.x = -13.8
-    points.position.y = -8
+    // points.position.x = -13.8
+    // points.position.y = 2
+    // points.scale.set(0.5, 0.5, 0.5)
+    points.position.y = -objectDistance * 1
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -112,12 +173,11 @@ const generateParticles = () => {
     fibbonacci(144)
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
     geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 3))
     geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
 
 
-    scene.fog = new THREE.Fog(0xcccccc, 10, 15)
+    // scene.fog = new THREE.Fog(0xcccccc, 10, 15)
     scene.add(points)
 }
 
@@ -139,7 +199,7 @@ const material = new THREE.RawShaderMaterial({
     fragmentShader: fragmentShaderAnimation,
     // wireframe: true,
     transparent: true,
-    side: THREE.DoubleSide,
+    // side: THREE.DoubleSide,
     uniforms: {
         // 
         uColor: { value: new THREE.Color('purple') },
@@ -159,9 +219,9 @@ const material = new THREE.RawShaderMaterial({
 
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)
-mesh.scale.set(0.2, 0.2, 0.2)
-// mesh.position.x = 5
-mesh.position.set(2.5, 2.8, 0)
+// mesh.position.y = -2
+mesh.position.set(13, 3.8, 3)
+// mesh.position.y = -objectDistance * 2
 mesh.rotation.set(10, 0, 21)
 scene.add(mesh)
 
@@ -199,9 +259,7 @@ const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 
 camera.position.set(1, 2, 3)
 scene.add(camera)
 
-// Controls
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
+
 
 
 /**
@@ -219,12 +277,17 @@ const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true
 })
+
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-renderer.toneMapping = THREE.ReinhardToneMapping
-renderer.toneMappingExposure = 1.75
+
 
 generateParticles()
+
+// Controls
+const controls = new OrbitControls(camera, canvas)
+controls.enableDamping = true
+
 
 
 /**
@@ -240,15 +303,8 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update GLSL material
-    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.005
-    materialParticles.uniforms.uTime.value = -elapsedTime * 0.0144
-
-    // Update particles (keeping this simple for now)
-    // if (points) {
-    //     points.rotation.x = Math.cos(-elapsedTime * 0.00021) * 17
-    //     points.rotation.y = -Math.sin((deltaTime - 0.5) * 0.3)
-    //     points.rotation.z = Math.sin(elapsedTime * 0.00089) * 3
-    // }
+    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.008
+    materialParticles.uniforms.uTime.value = Math.cos(-elapsedTime - 0.5) * 0.008
 
     // Update controls
     controls.update()

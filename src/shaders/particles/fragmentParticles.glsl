@@ -1,4 +1,5 @@
 varying vec3 vColor;
+varying vec2 vUv;
 
 void main() {
   // Disc
@@ -17,6 +18,16 @@ void main() {
   // Mixed color
   vec3 color = mix(vec3(0.0), vColor, particleRounding);
 
-  gl_FragColor = vec4(color, 1.0);
+    // Color Remap
+  color = smoothstep(0.4, 1.0, color);
+
+  // Smoother edges
+  // color = 1.0;
+  // color *= smoothstep(0.0, 0.1, vUv.x);
+  // color *= smoothstep(1.0, 0.1, vUv.x);
+  // color *= smoothstep(0.0, 0.1, vUv.y);
+  // color *= smoothstep(1.0, 0.1, vUv.y);
+
+  gl_FragColor = vec4(color, 0.5);
     #include <colorspace_fragment>
 }

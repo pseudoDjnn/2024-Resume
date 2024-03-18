@@ -75,8 +75,8 @@ import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 // Debug
 // const gui = new GUI({ width: 340 })
 const debugObject = {}
-debugObject.depthColor = '#186691'
-debugObject.surfaceColor = '#9bd8ff'
+debugObject.depthColor = '#2d2424'
+debugObject.surfaceColor = '#110f17'
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -133,8 +133,8 @@ const generateParticles = () => {
         vertexShader: vertexShaderParticles,
         fragmentShader: fragmentShaderParticles,
         uniforms: {
-            uSize: new THREE.Uniform(8) * renderer.getPixelRatio(),
-            uTime: new THREE.Uniform(0)
+            uSize: new THREE.Uniform(21) * renderer.getPixelRatio(),
+            uTime: new THREE.Uniform(0),
         }
     })
 
@@ -142,7 +142,7 @@ const generateParticles = () => {
     // points.position.x = -13.8
     // points.position.y = 2
     // points.scale.set(0.5, 0.5, 0.5)
-    points.position.y = -objectDistance * 1
+    // points.position.y = -objectDistance * 1
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -183,7 +183,7 @@ const generateParticles = () => {
 
 
 
-geometry = new THREE.TorusKnotGeometry(10, 3, 16, 512)
+geometry = new THREE.TorusKnotGeometry(13, 5, 144, 34)
 const count = geometry.attributes.position.count
 const randoms = new Float32Array(count)
 
@@ -193,36 +193,43 @@ for (let i = 0; i <= count; i++) {
 
 geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1))
 
+// Object created for the color change
+const materialParamters = {}
+materialParamters.color = '#70d1ff'
+
+
 // Material
 const material = new THREE.ShaderMaterial({
     vertexShader: vertexShaderAnimation,
     fragmentShader: fragmentShaderAnimation,
     // wireframe: true,
     transparent: true,
-    // side: THREE.DoubleSide,
+    side: THREE.DoubleSide,
     uniforms: {
         // 
-        uColor: { value: new THREE.Color('purple') },
-        uColorOffset: { value: 0.08 },
-        uColorMultiplier: { value: 5 },
-        uDepthColor: { value: new THREE.Color(debugObject.depthColor) },
-        uSurfaceColor: { value: new THREE.Color(debugObject.surfaceColor) },
+        uColor: new THREE.Uniform(new THREE.Color(materialParamters.color)),
+        uColorOffset: new THREE.Uniform(0.008),
+        uColorMultiplier: new THREE.Uniform(3),
+        uDepthColor: new THREE.Uniform(new THREE.Color(debugObject.depthColor)),
+        uSurfaceColor: new THREE.Uniform(new THREE.Color(debugObject.surfaceColor)),
         // 
-        uFrequency: { value: new THREE.Vector2(10, 5) },
-        uTimeAnimation: { value: 0 },
+        uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
+        uTimeAnimation: new THREE.Uniform(0),
+        uTime: new THREE.Uniform(0),
         // 
-        uWaveElevation: { value: 0.9 },
-        uWaveFrequency: { value: new THREE.Vector2(55, 1.5) },
-        uWaveSpeed: { value: 0.75 },
-    }
+        uWaveElevation: new THREE.Uniform(0.8),
+        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 2.5)),
+        uWaveSpeed: new THREE.Uniform(0.34),
+    },
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
 })
 
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)
-// mesh.position.y = -2
-mesh.position.set(13, 3.8, 3)
-// mesh.position.y = -objectDistance * 2
-mesh.rotation.set(10, 0, 21)
+// mesh.scale.set(0.2, 0.2, 0.2)
+mesh.position.set(21, 3.8, -8)
+mesh.rotation.set(13, -2, 21)
 scene.add(mesh)
 
 
@@ -256,18 +263,8 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(1, 2, 3)
+camera.position.set(7, 7, 7)
 scene.add(camera)
-
-
-
-
-/**
- * Lights
- */
-const ambientLight = new THREE.AmbientLight(0xffeded, 1)
-scene.add(ambientLight)
-
 
 /**
  * Renderer
@@ -302,8 +299,11 @@ const tick = () => {
     const deltaTime = elapsedTime - previousTime
     previousTime = elapsedTime
 
-    // Update GLSL material
-    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.008
+    // Update material (Animation)
+    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0008
+    material.uniforms.uTime.value = elapsedTime
+
+    // Update material (Particles)
     materialParticles.uniforms.uTime.value = Math.cos(-elapsedTime - 0.5) * 0.008
 
     // Update controls

@@ -19,7 +19,7 @@ void main() {
 
   vec3 color = mix(uDepthColor, uSurfaceColor, mixedColors);
 
-  float strength = random2D(vUv * vRandom * 20.0);
+  float strength = random2D(vUv * vRandom * 21.0);
 
   // Normal
   vec3 normal = normalize(vNormal);
@@ -52,12 +52,12 @@ void main() {
 
   // Smoother edges
   color *= smoothstep(0.5, 0.8, vUv.x);
-  color /= smoothstep(0.5, 0.8, vUv.x);
+  color /= smoothstep(0.3, 0.8, vUv.x);
   color *= smoothstep(0.5, 0.8, vUv.y);
-  color /= smoothstep(0.5, 0.8, vUv.y);
+  color /= smoothstep(0.3, 0.8, vUv.y);
 
   mixedColor = uColor;
-  gl_FragColor = vec4(uColor, holographic / 8.0);
+  gl_FragColor = vec4(uColor, holographic / 5.0);
 
     #include <tonemapping_fragment>
     #include <colorspace_fragment>

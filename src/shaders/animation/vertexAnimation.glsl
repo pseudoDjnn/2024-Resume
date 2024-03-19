@@ -23,9 +23,9 @@ void main() {
   // Glitching effect
   float glitchTime = uTime - modelPosition.y;
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  stuttering /= 8.0;
-  stuttering = smoothstep(0.3, 0.5, stuttering);
-  stuttering *= 0.21;
+  stuttering /= 3.0;
+  stuttering = smoothstep(0.3, 1.0, stuttering);
+  stuttering *= 0.34;
 
   float elevation = sin(modelPosition.x * uWaveFrequency.x + uTimeAnimation * uWaveSpeed) * sin(modelPosition.y * uWaveFrequency.y + uTimeAnimation * uWaveSpeed) * uWaveElevation;
   modelPosition.y += elevation * aRandom;

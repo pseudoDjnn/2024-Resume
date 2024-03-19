@@ -18,6 +18,6 @@ void main() {
   // Mixed color
   vec3 color = mix(vec3(0.0), vColor, particleRounding);
 
-  gl_FragColor = vec4(color, 0.5);
+  gl_FragColor = vec4(color, 0.3);
     #include <colorspace_fragment>
 }

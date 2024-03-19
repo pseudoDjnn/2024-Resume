@@ -8,66 +8,6 @@ import vertexShaderParticles from './shaders/particles/vertexParticles.glsl'
 import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 
 
-/**
- * Counter
- */
-// const counter = () => {
-//     let counter = document.querySelector('.counter')
-//     let currentTick = 0
-
-//     const updateCounter = () => {
-//         if (currentTick === 100) { return; }
-
-//         currentTick += Math.floor(Math.random() * 10) + 1
-
-//         if (currentTick > 100) { currentTick = 100 }
-
-//         // counter.textContent = currentTick
-
-//         // Delay for loading
-//         let delay = Math.floor(Math.random() * 200) + 50
-//         setTimeout(updateCounter, delay)
-//     }
-//     updateCounter()
-// }
-// counter()
-
-// /**
-//  * Gsap
-//  */
-// // Counter fade
-// gsap.to('.counter', 0.25, {
-//     delay: 3.5,
-//     opacity: 0,
-// })
-
-// // Update block height
-// gsap.to('.bar', 1.5, {
-//     delay: 3.5,
-//     height: 0,
-//     stagger: {
-//         amount: 0.5
-//     },
-//     ease: 'power4.inOut'
-// })
-
-// // Gsap letter stagger
-// gsap.from('.h1', 1.5, {
-//     delay: 4,
-//     y: 700,
-//     stagger: {
-//         amount: 0.5
-//     },
-//     ease: 'power4.inOut'
-// })
-
-// gsap.from('.hero', 2, {
-//     delay: 4.5,
-//     y: 400,
-//     ease: 'power4.inOut'
-// })
-
-
 
 /**
  * Base
@@ -102,7 +42,7 @@ const scene = new THREE.Scene()
  * Particle parameters
  */
 const parameters = {
-    count: 100000,
+    count: 1000,
 }
 
 let geometry = null
@@ -114,14 +54,15 @@ let colors = null
 let scales = null
 let randomness = null
 
-const objectDistance = 4
+// const objectDistance = 4
 
-const generateParticles = () => {
+const generateParticles = (position, radius, color) => {
 
     geometry = new THREE.BufferGeometry()
+
     positions = new Float32Array(parameters.count * 3)
     colors = new Float32Array(parameters.count * 3)
-    scales = new Float32Array(parameters.count * 1)
+    scales = new Float32Array(parameters.count)
     randomness = new Float32Array(parameters.count * 3)
 
 
@@ -135,12 +76,15 @@ const generateParticles = () => {
         uniforms: {
             uSize: new THREE.Uniform(21) * renderer.getPixelRatio(),
             uTime: new THREE.Uniform(0),
+            uResolution: new THREE.Uniform(sizes.resolution),
+            uColor: new THREE.Uniform(color)
         }
     })
 
     points = new THREE.Points(geometry, materialParticles)
+    points.position.copy(position)
     // points.position.x = -13.8
-    // points.position.y = 2
+    points.position.y = -21
     // points.scale.set(0.5, 0.5, 0.5)
     // points.position.y = -objectDistance * 1
 
@@ -150,12 +94,21 @@ const generateParticles = () => {
         if (i in count) return count[i];
         if (i <= 2) return 1;
 
+        // Spherical body
+        const spherical = new THREE.Spherical(
+            radius * (0.89 + Math.random() * 0.21),
+            Math.random() * Math.PI,
+            Math.random() * Math.PI * 2,
+        )
+        const sphericalPointPosition = new THREE.Vector3()
+        sphericalPointPosition.setFromSpherical(spherical)
+
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
 
         // XYZ positioning
-        positions[i3] = (Math.random() - 0.5) * -34
-        positions[i3 + 1] = (Math.random() - 0.5) * 13
-        positions[i3 + 2] = (Math.random() - 0.5) * 89
+        positions[i3] = (sphericalPointPosition.x) * 13
+        positions[i3 + 1] = (sphericalPointPosition.y) * 21
+        positions[i3 + 2] = (sphericalPointPosition.z) * 55
 
         // Just randomize colors for now
         colors[i] = Math.random()
@@ -164,16 +117,16 @@ const generateParticles = () => {
         scales[i] = Math.random()
 
         // Randomness
-        randomness[i3] = Math.cos(positions[i3])
-        randomness[i3 + 1] = positions[i3 + 1]
-        randomness[i3 + 2] = Math.sin(positions[i3 + 2])
+        randomness[i3] = 1 + Math.cos(positions[i3])
+        randomness[i3 + 1] = 1 + positions[i3 + 1]
+        randomness[i3 + 2] = 1 + Math.sin(positions[i3 + 2])
 
         return count[i3 * 3]
     }
-    fibbonacci(144)
+    fibbonacci(610)
 
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 3))
+    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1))
     geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
 
 
@@ -191,11 +144,11 @@ for (let i = 0; i <= count; i++) {
     randoms[i] = Math.random()
 }
 
-geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 1))
+geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 2))
 
 // Object created for the color change
 const materialParamters = {}
-materialParamters.color = '#70d1ff'
+materialParamters.color = '#1d1f2a'
 
 
 // Material
@@ -228,25 +181,26 @@ const material = new THREE.ShaderMaterial({
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)
 // mesh.scale.set(0.2, 0.2, 0.2)
-mesh.position.set(21, 3.8, -8)
+mesh.position.set(15, 3.8, -8)
 mesh.rotation.set(13, -2, 21)
 scene.add(mesh)
-
-
-
 
 /**
  * Sizes
 */
 const sizes = {
     width: window.innerWidth,
-    height: window.innerHeight
+    height: window.innerHeight,
+    pixelRatio: Math.min(window.devicePixelRatio, 2)
 }
+sizes.resolution = new THREE.Vector2(sizes.width, sizes.height)
 
 window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
+    sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
+    sizes.resolution.set(sizes.width, sizes.height)
 
     // Update camera
     camera.aspect = sizes.width / sizes.height
@@ -254,7 +208,7 @@ window.addEventListener('resize', () => {
 
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(sizes.pixelRatio)
 })
 
 
@@ -263,7 +217,7 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(7, 7, 7)
+camera.position.set(1.5, 0, 8)
 scene.add(camera)
 
 /**
@@ -276,10 +230,14 @@ const renderer = new THREE.WebGLRenderer({
 })
 
 renderer.setSize(sizes.width, sizes.height)
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.setPixelRatio(sizes.pixelRatio)
 
 
-generateParticles()
+generateParticles(
+    new THREE.Vector3(),        // Position (Spherical)
+    1,                          // Radius
+    new THREE.Color('#a0a0a0'), // Color
+)
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
@@ -300,11 +258,11 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Animation)
-    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0008
+    material.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0002
     material.uniforms.uTime.value = elapsedTime
 
     // Update material (Particles)
-    materialParticles.uniforms.uTime.value = Math.cos(-elapsedTime - 0.5) * 0.008
+    materialParticles.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.02
 
     // Update controls
     controls.update()

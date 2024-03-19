@@ -15,7 +15,7 @@ import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 // Debug
 // const gui = new GUI({ width: 340 })
 const debugObject = {}
-debugObject.depthColor = '#2d2424'
+debugObject.depthColor = '#ff4000'
 debugObject.surfaceColor = '#110f17'
 
 // Canvas
@@ -27,6 +27,36 @@ const scene = new THREE.Scene()
 // Axes Helper
 // const axesHelper = new THREE.AxesHelper(5);
 // scene.add(axesHelper);
+
+
+/**
+ * Sizes
+*/
+const sizes = {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    pixelRatio: Math.min(window.devicePixelRatio, 2)
+}
+sizes.resolution = new THREE.Vector2(sizes.width, sizes.height)
+
+window.addEventListener('resize', () => {
+    // Update sizes
+    sizes.width = window.innerWidth
+    sizes.height = window.innerHeight
+    sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
+    sizes.resolution.set(sizes.width, sizes.height)
+
+    // Update materials
+    material.uniforms.uResolution.value.set(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)
+
+    // Update camera
+    camera.aspect = sizes.width / sizes.height
+    camera.updateProjectionMatrix()
+
+    // Update renderer
+    renderer.setSize(sizes.width, sizes.height)
+    renderer.setPixelRatio(sizes.pixelRatio)
+})
 
 
 /**
@@ -54,8 +84,6 @@ let colors = null
 let scales = null
 let randomness = null
 
-// const objectDistance = 4
-
 const generateParticles = (position, radius, color) => {
 
     geometry = new THREE.BufferGeometry()
@@ -76,7 +104,6 @@ const generateParticles = (position, radius, color) => {
         uniforms: {
             uSize: new THREE.Uniform(21) * renderer.getPixelRatio(),
             uTime: new THREE.Uniform(0),
-            uResolution: new THREE.Uniform(sizes.resolution),
             uColor: new THREE.Uniform(color)
         }
     })
@@ -86,7 +113,6 @@ const generateParticles = (position, radius, color) => {
     // points.position.x = -13.8
     points.position.y = -21
     // points.scale.set(0.5, 0.5, 0.5)
-    // points.position.y = -objectDistance * 1
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -148,7 +174,7 @@ geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 2))
 
 // Object created for the color change
 const materialParamters = {}
-materialParamters.color = '#1d1f2a'
+materialParamters.color = '#110f17'
 
 
 // Material
@@ -161,18 +187,19 @@ const material = new THREE.ShaderMaterial({
     uniforms: {
         // 
         uColor: new THREE.Uniform(new THREE.Color(materialParamters.color)),
-        uColorOffset: new THREE.Uniform(0.008),
-        uColorMultiplier: new THREE.Uniform(3),
+        uColorOffset: new THREE.Uniform(0.925),
+        uColorMultiplier: new THREE.Uniform(1),
         uDepthColor: new THREE.Uniform(new THREE.Color(debugObject.depthColor)),
         uSurfaceColor: new THREE.Uniform(new THREE.Color(debugObject.surfaceColor)),
         // 
         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
+        uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
         uTimeAnimation: new THREE.Uniform(0),
         uTime: new THREE.Uniform(0),
         // 
         uWaveElevation: new THREE.Uniform(0.8),
         uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 2.5)),
-        uWaveSpeed: new THREE.Uniform(0.34),
+        uWaveSpeed: new THREE.Uniform(0.89),
     },
     depthWrite: false,
     blending: THREE.AdditiveBlending,
@@ -181,35 +208,11 @@ const material = new THREE.ShaderMaterial({
 // Mesh
 const mesh = new THREE.Mesh(geometry, material)
 // mesh.scale.set(0.2, 0.2, 0.2)
-mesh.position.set(15, 3.8, -8)
-mesh.rotation.set(13, -2, 21)
+mesh.position.set(21, 13, 13)
+mesh.rotation.set(13, 0, -55)
 scene.add(mesh)
 
-/**
- * Sizes
-*/
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    pixelRatio: Math.min(window.devicePixelRatio, 2)
-}
-sizes.resolution = new THREE.Vector2(sizes.width, sizes.height)
 
-window.addEventListener('resize', () => {
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
-    sizes.pixelRatio = Math.min(window.devicePixelRatio, 2)
-    sizes.resolution.set(sizes.width, sizes.height)
-
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
-
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(sizes.pixelRatio)
-})
 
 
 /**
@@ -217,18 +220,21 @@ window.addEventListener('resize', () => {
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(1.5, 0, 8)
+camera.position.set(8.5, 5, 13)
 scene.add(camera)
 
 /**
  * Renderer
  */
+// const rendererParameters = {}
+// rendererParameters.clearColor = '#26132f'
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas,
     antialias: true,
     alpha: true
 })
-
+// renderer.setClearColor(rendererParameters.clearColor)
+renderer.toneMapping = THREE.ACESFilmicToneMapping
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
@@ -262,7 +268,7 @@ const tick = () => {
     material.uniforms.uTime.value = elapsedTime
 
     // Update material (Particles)
-    materialParticles.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.02
+    materialParticles.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.002
 
     // Update controls
     controls.update()

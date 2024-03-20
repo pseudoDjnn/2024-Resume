@@ -1,5 +1,8 @@
 uniform vec2 uFrequency;
+uniform vec2 uResolution;
 uniform vec2 uWaveFrequency;
+
+uniform sampler2D uPictureTexture;
 
 uniform float uTimeAnimation;
 uniform float uTime;
@@ -8,6 +11,7 @@ uniform float uWaveSpeed;
 
 attribute float aRandom;
 
+// varying vec3 vColor;
 varying float vRandom;
 varying float vElevation;
 varying vec3 vNormal;
@@ -41,23 +45,28 @@ void main() {
 
   // Glitching effect
   float glitchTime = uTime - modelPosition.y;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 13.89);
-  stuttering /= 5.0;
+  float stuttering = sin(glitchTime) + sin(glitchTime * 1.89) + sin(glitchTime * 5.34);
+  stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
   stuttering *= 0.34;
   modelPosition.x += (random2D(modelPosition.xz + uTime) - 0.5) * stuttering;
   modelPosition.z += (random2D(modelPosition.zx + uTime) - 0.5) * stuttering;
 
-// Final Position
+  // Final Position
   // gl_Position = projectionMatrix * viewMatrix * modelPosition;
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;
   gl_Position = projectedPosition;
 
-  // Model normal
-  // vec4 modelNormal = modelMatrix * vec4(normal, 0.0);
+  // Picture
+  // float pictureIntensity = texture(uPictureTexture, uv).r;
 
-// Varyings
+  // Point size
+  gl_PointSize = 0.13 * uResolution.y;
+  gl_PointSize *= (1.0 / -viewPosition.z);
+
+  // Varyings
+  // vColor = vec3(pow(pictureIntensity, 2.0));
   vRandom = aRandom;
   vElevation = elevation;
   vNormal = computeNormal;

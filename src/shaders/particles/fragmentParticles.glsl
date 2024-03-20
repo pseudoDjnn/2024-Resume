@@ -13,7 +13,7 @@ void main() {
 
   float particleRounding = distance(gl_PointCoord, vec2(0.5));
   particleRounding = 1.0 - particleRounding;
-  particleRounding = pow(particleRounding, 3.0);
+  particleRounding = pow(particleRounding, 0.8);
 
   // Mixed color
   vec3 color = mix(vec3(0.0), vColor, particleRounding);

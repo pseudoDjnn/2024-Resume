@@ -75,46 +75,40 @@ const parameters = {
     count: 100,
 }
 
-let geometry = null
+let particlesGeometry = null
 let positions = null
-let materialParticles = null
+let particlesMaterial = null
 let points = null
 let fibbonacci = null
-// let colors = null
-let scales = null
 let randomness = null
 
 const generateParticles = (position, radius, color) => {
 
-    geometry = new THREE.BufferGeometry()
+    particlesGeometry = new THREE.BufferGeometry()
+    particlesGeometry.setIndex(null)
+    particlesGeometry.deleteAttribute('normal')
 
     positions = new Float32Array(parameters.count * 3)
-    // colors = new Float32Array(parameters.count * 3)
-    scales = new Float32Array(parameters.count)
     randomness = new Float32Array(parameters.count * 3)
 
 
-    materialParticles = new THREE.ShaderMaterial({
-        transparent: true,
-        depthWrite: false,
+    particlesMaterial = new THREE.ShaderMaterial({
+        // transparent: true,
         blending: THREE.AdditiveBlending,
+        depthWrite: false,
         vertexColors: true,
         vertexShader: vertexShaderParticles,
         fragmentShader: fragmentShaderParticles,
         uniforms: {
-            uSize: new THREE.Uniform(21) * renderer.getPixelRatio(),
+            uSize: new THREE.Uniform(0.2) * renderer.getPixelRatio(),
             uTime: new THREE.Uniform(0),
-            uColor: new THREE.Uniform(color),
             uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
 
         }
     })
 
-    points = new THREE.Points(geometry, materialParticles)
+    points = new THREE.Points(particlesGeometry, particlesMaterial)
     points.position.copy(position).multiplyScalar(5)
-    // points.position.x = -13.8
-    points.position.y = -13
-    // points.scale.set(89.5, 89.5, 89.5)
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -134,28 +128,21 @@ const generateParticles = (position, radius, color) => {
         count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
 
         // XYZ positioning
-        positions[i3] = (sphericalPointPosition.x) * 13
-        positions[i3 + 1] = (sphericalPointPosition.y) * 21
-        positions[i3 + 2] = (sphericalPointPosition.z) * 55
-
-        // Just randomize colors for now
-        // colors[i] = Math.random()
-
-        // Scales
-        scales[i] = Math.random()
+        positions[i3] = (sphericalPointPosition.x)
+        positions[i3 + 1] = (sphericalPointPosition.y)
+        positions[i3 + 2] = (sphericalPointPosition.z)
 
         // Randomness
-        randomness[i3] = 1 + Math.cos(positions[i3])
-        randomness[i3 + 1] = 1 + positions[i3 + 1]
-        randomness[i3 + 2] = 1 + Math.sin(positions[i3 + 2])
+        randomness[i3] = Math.cos(positions[i3] * Math.random())
+        randomness[i3 + 1] = positions[i3 + 1] * Math.random()
+        randomness[i3 + 2] = Math.sin(positions[i3 + 2] * Math.random())
 
         return count[i3 * 3]
     }
     fibbonacci(610)
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1))
-    geometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+    particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
 
     scene.add(points)
 }
@@ -255,8 +242,8 @@ renderer.setPixelRatio(sizes.pixelRatio)
 
 generateParticles(
     new THREE.Vector3(),        // Position (Spherical)
-    1,                          // Radius
-    new THREE.Color('#a0a0a0'), // Color
+    21,                          // Radius
+    // new THREE.Color('#a0a0a0'), // Color
 )
 
 // Controls
@@ -278,7 +265,7 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Particles)
-    materialParticles.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.0034
+    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.0034
 
     // Update material (Animation)
     materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0089

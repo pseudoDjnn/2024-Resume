@@ -2,7 +2,6 @@ uniform float uSize;
 uniform float uTime;
 uniform vec2 uResolution;
 
-attribute float aScale;
 attribute vec3 aRandomness;
 
 varying vec3 vColor;
@@ -14,7 +13,7 @@ void main() {
    // Rotation
   float angle = atan(modelPosition.x, modelPosition.z);
   float distanceToCenter = length(modelPosition.xz);
-  float angleOffset = (1.0 / distanceToCenter) * uTime * 89.0;
+  float angleOffset = (1.0 / distanceToCenter) * uTime * 1.55;
   angle += angleOffset;
   modelPosition.x = cos(angle) * distanceToCenter;
   modelPosition.z = sin(angle) * distanceToCenter;
@@ -27,8 +26,8 @@ void main() {
   gl_Position = projectedPosition;
 
 // Final Position
-  gl_PointSize = uSize * uResolution.y * aScale;
-  gl_PointSize *= 1.0 / -viewPosition.z;
+  gl_PointSize = uSize * uResolution.y;
+  gl_PointSize *= (1.0 / -viewPosition.z);
 
   // Varying
   vColor = color;

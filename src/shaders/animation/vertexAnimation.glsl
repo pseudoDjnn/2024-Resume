@@ -18,9 +18,9 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 
-#include ../includes/perlin.glsl
-#include ../includes/random2D.glsl
-#include ../includes/waveElevation.glsl
+#include ../includes/effects/perlin.glsl
+#include ../includes/effects/random2D.glsl
+#include ../includes/effects/waveElevation.glsl
 
 void main() {
   // Base Postion

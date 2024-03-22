@@ -1,14 +1,21 @@
 uniform float uSize;
 uniform float uTime;
 uniform vec2 uResolution;
+uniform vec3 uColorAlpha;
+uniform vec3 uColorBeta;
 
 attribute vec3 aRandomness;
 
 varying vec3 vColor;
 varying vec2 vUv;
 
+#include ../includes/effects/simplexNoise3D.glsl
+
 void main() {
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
+
+  float noise = simplexNoise3d(position);
+  noise = smoothstep(-1.0, 1.0, noise);
 
    // Rotation
   float angle = atan(modelPosition.x, modelPosition.z);
@@ -30,6 +37,6 @@ void main() {
   gl_PointSize *= (1.0 / -viewPosition.z);
 
   // Varying
-  vColor = color;
+  vColor = mix(uColorAlpha, uColorBeta, noise);
   vUv = uv;
 }

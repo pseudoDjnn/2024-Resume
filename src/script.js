@@ -75,6 +75,7 @@ const parameters = {
     count: 100,
 }
 
+let color = {}
 let particlesGeometry = null
 let positions = null
 let particlesMaterial = null
@@ -82,12 +83,15 @@ let points = null
 let fibbonacci = null
 let randomness = null
 
-const generateParticles = (position, radius, color) => {
+const generateParticles = (position, radius) => {
+
 
     particlesGeometry = new THREE.BufferGeometry()
     particlesGeometry.setIndex(null)
     particlesGeometry.deleteAttribute('normal')
 
+    color.colorAlpha = "#ff7300"
+    color.colorBeta = '#0091ff'
     positions = new Float32Array(parameters.count * 3)
     randomness = new Float32Array(parameters.count * 3)
 
@@ -103,12 +107,14 @@ const generateParticles = (position, radius, color) => {
             uSize: new THREE.Uniform(0.2) * renderer.getPixelRatio(),
             uTime: new THREE.Uniform(0),
             uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
-
+            uColorAlpha: new THREE.Uniform(new THREE.Color(color.colorAlpha)),
+            uColorBeta: new THREE.Uniform(new THREE.Color(color.colorBeta)),
         }
     })
 
     points = new THREE.Points(particlesGeometry, particlesMaterial)
     points.position.copy(position).multiplyScalar(5)
+    // points.position.z = 89
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -143,6 +149,7 @@ const generateParticles = (position, radius, color) => {
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
+
 
     scene.add(points)
 }
@@ -243,7 +250,6 @@ renderer.setPixelRatio(sizes.pixelRatio)
 generateParticles(
     new THREE.Vector3(),        // Position (Spherical)
     21,                          // Radius
-    // new THREE.Color('#a0a0a0'), // Color
 )
 
 // Controls

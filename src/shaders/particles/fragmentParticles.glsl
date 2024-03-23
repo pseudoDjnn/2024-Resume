@@ -20,9 +20,9 @@ void main() {
 
   vec2 vUv = gl_PointCoord;
   float distanceToCenter = length(vUv - 0.5);
-  float alpha = 0.05 / distanceToCenter - 0.1;
+  float alpha = 1.0 / distanceToCenter - 0.1;
 
-  gl_FragColor = vec4(vColor, alpha);
-    // #include <tonemapping_fragment>
+  gl_FragColor = vec4(vColor, alpha / 5.0);
+    #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

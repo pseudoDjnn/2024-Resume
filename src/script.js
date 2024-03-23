@@ -72,7 +72,7 @@ const textureLoader = new THREE.TextureLoader()
  * Particle parameters
  */
 const parameters = {
-    count: 100,
+    count: 1000,
 }
 
 let color = {}
@@ -90,14 +90,14 @@ const generateParticles = (position, radius) => {
     particlesGeometry.setIndex(null)
     particlesGeometry.deleteAttribute('normal')
 
-    color.colorAlpha = "#ff7300"
-    color.colorBeta = '#0091ff'
+    color.colorAlpha = "#CEB180"
+    color.colorBeta = '#4D516D'
     positions = new Float32Array(parameters.count * 3)
     randomness = new Float32Array(parameters.count * 3)
 
 
     particlesMaterial = new THREE.ShaderMaterial({
-        // transparent: true,
+        transparent: true,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         vertexColors: true,
@@ -113,8 +113,11 @@ const generateParticles = (position, radius) => {
     })
 
     points = new THREE.Points(particlesGeometry, particlesMaterial)
+    points.frustumCulled = false
     points.position.copy(position).multiplyScalar(5)
-    // points.position.z = 89
+    // points.position.x = 5
+    // points.position.y = -55
+    points.position.set(5, -55, -13)
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
@@ -139,16 +142,16 @@ const generateParticles = (position, radius) => {
         positions[i3 + 2] = (sphericalPointPosition.z)
 
         // Randomness
-        randomness[i3] = Math.cos(positions[i3] * Math.random())
+        randomness[i3] = positions[i3]
         randomness[i3 + 1] = positions[i3 + 1] * Math.random()
-        randomness[i3 + 2] = Math.sin(positions[i3 + 2] * Math.random())
+        randomness[i3 + 2] = positions[i3 + 2]
 
         return count[i3 * 3]
     }
     fibbonacci(610)
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
+    particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 2))
 
 
     scene.add(points)
@@ -209,18 +212,7 @@ const meshAnimation = new THREE.Mesh(animationGeometry, materialAnimation)
 // mesh.scale.set(0.2, 0.2, 0.2)
 meshAnimation.position.set(13, 13, -3)
 meshAnimation.rotation.set(13, 0, -55)
-scene.add(meshAnimation)
-
-// Test Mesh
-const glowMaterial = new THREE.ShaderMaterial({
-    side: THREE.BackSide
-})
-
-const glow = new THREE.Mesh(animationGeometry, materialAnimation)
-glow.scale.set(1.0015, 1.0015, 1.0015)
-// scene.add(glow)
-
-
+// scene.add(meshAnimation)
 
 
 /**
@@ -249,7 +241,7 @@ renderer.setPixelRatio(sizes.pixelRatio)
 
 generateParticles(
     new THREE.Vector3(),        // Position (Spherical)
-    21,                          // Radius
+    1                          // Radius
 )
 
 // Controls
@@ -271,7 +263,7 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Particles)
-    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.0034
+    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.034
 
     // Update material (Animation)
     materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0089

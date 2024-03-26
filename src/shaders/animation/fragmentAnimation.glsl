@@ -1,7 +1,7 @@
 uniform vec2 uResolution;
 uniform vec3 uColor;
-uniform vec3 uDepthColor;
-uniform vec3 uSurfaceColor;
+// uniform vec3 uDepthColor;
+// uniform vec3 uSurfaceColor;
 uniform float uColorOffset;
 uniform float uColorMultiplier;
 uniform float uTime;
@@ -61,9 +61,9 @@ void main() {
   color = smoothstep(-0.13, 0.8, color);
 
   // Smoother edges
-  color *= smoothstep(0.1, 0.3, vUv.x);
+  color *= smoothstep(0.5, 0.8, vUv.x);
   color *= smoothstep(0.5, 1.0, vUv.x);
-  color *= smoothstep(0.1, 0.3, vUv.y);
+  color *= smoothstep(0.5, 0.8, vUv.y);
   color *= smoothstep(0.5, 1.0, vUv.y);
 
   // Lights
@@ -90,7 +90,7 @@ void main() {
   //   discard;
 
   // Final color
-  gl_FragColor = vec4(color, holographic / 5.0);
+  gl_FragColor = vec4(color, holographic / 8.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

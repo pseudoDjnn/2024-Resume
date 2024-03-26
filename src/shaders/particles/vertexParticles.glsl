@@ -5,6 +5,7 @@ uniform vec3 uColorAlpha;
 uniform vec3 uColorBeta;
 
 attribute vec3 aRandomness;
+attribute float aRandom;
 
 varying vec3 vColor;
 varying vec2 vUv;
@@ -15,28 +16,28 @@ void main() {
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
 
   float noise = simplexNoise3d(position);
-  noise = smoothstep(-1.0, 1.0, noise);
+  noise = smoothstep(-0.5, 1.0, noise);
 
    // Rotation
   float angle = atan(modelPosition.x, modelPosition.z);
   float distanceToCenter = length(modelPosition.xz);
-  float angleOffset = (1.0 / distanceToCenter) * uTime * 1.55;
+  float angleOffset = (1.0 / distanceToCenter) * uTime * 13.55;
   angle += angleOffset;
   modelPosition.x = cos(angle) * distanceToCenter;
   modelPosition.z = sin(angle) * distanceToCenter;
 
   // Randomness
-  modelPosition.xyz *= aRandomness * 13.0;
+  modelPosition.xyz *= aRandomness * noise;
 
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;
   gl_Position = projectedPosition;
 
 // Final Position
-  gl_PointSize = uSize * uResolution.y;
-  gl_PointSize *= (0.3 / -viewPosition.z);
+  gl_PointSize = aRandom * uSize * uResolution.y;
+  gl_PointSize *= (1.0 / -viewPosition.z);
 
   // Varying
-  vColor = mix(uColorAlpha, uColorBeta, noise);
+  vColor = mix(uColorAlpha, uColorBeta, noise) * 3.0;
   vUv = uv;
 }

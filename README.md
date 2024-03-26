@@ -35,7 +35,7 @@
     To run this program, use the following command(s):
 
     ```
-    Read the resume, get me hired (npm run dev)
+    npm run dev
     ```
 
 # Test

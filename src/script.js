@@ -14,9 +14,9 @@ import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
  */
 // Debug
 // const gui = new GUI({ width: 340 })
-const debugObject = {}
-debugObject.depthColor = '#ff4000'
-debugObject.surfaceColor = '#110f17'
+// const debugObject = {}
+// debugObject.depthColor = '#ff4000'
+// debugObject.surfaceColor = '#110f17'
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -114,16 +114,16 @@ const generateParticles = (position, radius) => {
 
     points = new THREE.Points(particlesGeometry, particlesMaterial)
     points.frustumCulled = false
-    points.position.copy(position).multiplyScalar(8)
+    points.position.copy(position).multiplyScalar(13)
     // points.position.x = 5
     // points.position.y = -55
-    // points.position.set(5, 0, 13)
+    points.position.set(13, 0, 5)
 
     // Test fibbonacci sequence instead of using Math.random()
     fibbonacci = (i, count = {}) => {
         const i3 = i * 3
         if (i in count) return count[i];
-        if (i <= 2) return 1;
+        if (i < 2) return 1;
 
         // Spherical body
         const spherical = new THREE.Spherical(
@@ -150,13 +150,14 @@ const generateParticles = (position, radius) => {
 
         return count[i3 * 3]
     }
-    fibbonacci(610)
+    fibbonacci(377)
 
     particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
 
 
     scene.add(points)
+
 }
 
 
@@ -172,7 +173,7 @@ for (let i = 0; i <= count; i++) {
     randoms[i] = Math.random()
 }
 
-animationGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 2))
+animationGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3))
 
 // Object created for the color change
 const materialAnimationParamters = {}
@@ -191,8 +192,8 @@ const materialAnimation = new THREE.ShaderMaterial({
         uColor: new THREE.Uniform(new THREE.Color(materialAnimationParamters.color)),
         uColorOffset: new THREE.Uniform(0.925),
         uColorMultiplier: new THREE.Uniform(1),
-        uDepthColor: new THREE.Uniform(new THREE.Color(debugObject.depthColor)),
-        uSurfaceColor: new THREE.Uniform(new THREE.Color(debugObject.surfaceColor)),
+        // uDepthColor: new THREE.Uniform(new THREE.Color(debugObject.depthColor)),
+        // uSurfaceColor: new THREE.Uniform(new THREE.Color(debugObject.surfaceColor)),
         // uPictureTexture: new THREE.Uniform(textureLoader.load('./pictures/echo.png')),
 
         // 
@@ -212,7 +213,7 @@ const materialAnimation = new THREE.ShaderMaterial({
 // Mesh
 const meshAnimation = new THREE.Mesh(animationGeometry, materialAnimation)
 // mesh.scale.set(0.2, 0.2, 0.2)
-meshAnimation.position.set(13, 13, -3)
+meshAnimation.position.set(13, 5, -3)
 meshAnimation.rotation.set(13, 0, -55)
 scene.add(meshAnimation)
 
@@ -221,7 +222,7 @@ scene.add(meshAnimation)
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(95, sizes.width / sizes.height, 0.1, 100)
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
 camera.position.set(8.5, 5, 13)
 scene.add(camera)
 
@@ -243,8 +244,9 @@ renderer.setPixelRatio(sizes.pixelRatio)
 
 generateParticles(
     new THREE.Vector3(),        // Position (Spherical)
-    5                          // Radius
+    34                          // Radius
 )
+
 
 // Controls
 const controls = new OrbitControls(camera, canvas)
@@ -265,11 +267,11 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Particles)
-    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.00034
+    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.021
 
     // Update material (Animation)
-    materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.0089
-    materialAnimation.uniforms.uTime.value = elapsedTime
+    materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.00089
+    materialAnimation.uniforms.uTime.value = (elapsedTime - 0.5) * 3.89
 
     // Update controls
     controls.update()

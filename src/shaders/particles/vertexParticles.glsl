@@ -8,7 +8,6 @@ attribute vec3 aRandomness;
 attribute float aRandom;
 
 varying vec3 vColor;
-varying vec2 vUv;
 
 #include ../includes/effects/simplexNoise3D.glsl
 
@@ -39,5 +38,4 @@ void main() {
 
   // Varying
   vColor = mix(uColorAlpha, uColorBeta, noise) * 3.0;
-  vUv = uv;
 }

@@ -8,15 +8,11 @@ import vertexShaderParticles from './shaders/particles/vertexParticles.glsl'
 import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
 
 
-
 /**
  * Base
  */
 // Debug
 // const gui = new GUI({ width: 340 })
-// const debugObject = {}
-// debugObject.depthColor = '#ff4000'
-// debugObject.surfaceColor = '#110f17'
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -72,55 +68,31 @@ const textureLoader = new THREE.TextureLoader()
  * Particle parameters
  */
 const parameters = {
-    count: 34,
+    count: 144,
 }
 
 let color = {}
-let particlesGeometry = null
-let positions = null
-let particlesMaterial = null
-let points = null
-let fibbonacci = null
-let randomness = null
+let particles = null
 
 const generateParticles = (position, radius) => {
 
+    particles = {}
 
-    particlesGeometry = new THREE.BufferGeometry()
-    particlesGeometry.setIndex(null)
-    particlesGeometry.deleteAttribute('normal')
+    particles.maxCount = 0
+
+
+
+    particles.particlesGeometry = new THREE.SphereGeometry()
+    particles.particlesGeometry.setIndex(null)
+    particles.particlesGeometry.deleteAttribute('normal')
 
     color.colorAlpha = "#CEB180"
     color.colorBeta = '#4D516D'
-    positions = new Float32Array(parameters.count * 3)
-    randomness = new Float32Array(parameters.count * 3)
+    particles.positions = new Float32Array(parameters.count * 3)
+    particles.randomness = new Float32Array(parameters.count)
 
-
-    particlesMaterial = new THREE.ShaderMaterial({
-        transparent: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        vertexColors: true,
-        vertexShader: vertexShaderParticles,
-        fragmentShader: fragmentShaderParticles,
-        uniforms: {
-            uSize: new THREE.Uniform(0.2) * renderer.getPixelRatio(),
-            uTime: new THREE.Uniform(0),
-            uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
-            uColorAlpha: new THREE.Uniform(new THREE.Color(color.colorAlpha)),
-            uColorBeta: new THREE.Uniform(new THREE.Color(color.colorBeta)),
-        }
-    })
-
-    points = new THREE.Points(particlesGeometry, particlesMaterial)
-    points.frustumCulled = false
-    points.position.copy(position).multiplyScalar(13)
-    // points.position.x = 5
-    // points.position.y = -55
-    points.position.set(13, 0, 5)
-
-    // Test fibbonacci sequence instead of using Math.random()
-    fibbonacci = (i, count = {}) => {
+    // memoized fibbonacci sequence instead of using Math.random()
+    particles.fibbonacci = (i, count = {}) => {
         const i3 = i * 3
         if (i in count) return count[i];
         if (i < 2) return 1;
@@ -134,30 +106,50 @@ const generateParticles = (position, radius) => {
         const sphericalPointPosition = new THREE.Vector3()
         sphericalPointPosition.setFromSpherical(spherical)
 
-        count[i] = fibbonacci(i - 1, count) + fibbonacci(i - 2, count)
+        count[i] = particles.fibbonacci(i - 1, count) + particles.fibbonacci(i - 2, count)
 
         // XYZ positioning
-        positions[i3] = (sphericalPointPosition.x)
-        positions[i3 + 1] = (sphericalPointPosition.y)
-        positions[i3 + 2] = (sphericalPointPosition.z)
+        particles.positions[i3] = (sphericalPointPosition.x)
+        particles.positions[i3 + 1] = (sphericalPointPosition.y)
+        particles.positions[i3 + 2] = (sphericalPointPosition.z)
 
         // Randomness
-        // const randomIndex = Math.floor(positions[i3] * Math.random()) * 3
+        const randomIndex = Math.floor(particles.positions[i3] * Math.random()) * 3
         // console.log(randomIndex)
-        randomness[i3] = positions[i3]
-        randomness[i3 + 1] = positions[i3 + 1]
-        randomness[i3 + 2] = positions[i3 + 2]
+        particles.randomness[i3] = particles.positions[i3] + randomIndex
+        particles.randomness[i3 + 1] = particles.positions[i3 + 1] + randomIndex
+        particles.randomness[i3 + 2] = particles.positions[i3 + 2] + randomIndex
 
         return count[i3 * 3]
     }
-    fibbonacci(377)
-
-    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-    particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(randomness, 3))
+    particles.fibbonacci(377)
 
 
-    scene.add(points)
+    particles.particlesMaterial = new THREE.ShaderMaterial({
+        transparent: true,
+        vertexColors: true,
+        vertexShader: vertexShaderParticles,
+        fragmentShader: fragmentShaderParticles,
+        uniforms: {
+            uSize: new THREE.Uniform(0.4) * renderer.getPixelRatio(8),
+            uTime: new THREE.Uniform(0),
+            uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
+            uColorAlpha: new THREE.Uniform(new THREE.Color(color.colorAlpha)),
+            uColorBeta: new THREE.Uniform(new THREE.Color(color.colorBeta)),
+        },
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+    })
 
+    particles.particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particles.positions, 3))
+    particles.particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(particles.randomness, 3))
+
+    particles.points = new THREE.Points(particles.particlesGeometry, particles.particlesMaterial)
+    particles.points.frustumCulled = false
+    particles.points.position.copy(position).multiplyScalar(8)
+    // points.position.set(13, -34, 13)
+
+    scene.add(particles.points)
 }
 
 
@@ -170,12 +162,12 @@ const count = animationGeometry.attributes.position.count
 const randoms = new Float32Array(count)
 
 for (let i = 0; i <= count; i++) {
-    randoms[i] = Math.random()
+    randoms[i] = Math.floor(count * Math.random())
 }
 
 animationGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3))
 
-// Object created for the color change
+// Object created for the color change to soften the animation opactiy in glsl
 const materialAnimationParamters = {}
 materialAnimationParamters.color = '#181818'
 
@@ -192,10 +184,6 @@ const materialAnimation = new THREE.ShaderMaterial({
         uColor: new THREE.Uniform(new THREE.Color(materialAnimationParamters.color)),
         uColorOffset: new THREE.Uniform(0.925),
         uColorMultiplier: new THREE.Uniform(1),
-        // uDepthColor: new THREE.Uniform(new THREE.Color(debugObject.depthColor)),
-        // uSurfaceColor: new THREE.Uniform(new THREE.Color(debugObject.surfaceColor)),
-        // uPictureTexture: new THREE.Uniform(textureLoader.load('./pictures/echo.png')),
-
         // 
         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
@@ -203,7 +191,7 @@ const materialAnimation = new THREE.ShaderMaterial({
         uTime: new THREE.Uniform(0),
         // 
         uWaveElevation: new THREE.Uniform(0.8),
-        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 2.5)),
+        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 3.5)),
         uWaveSpeed: new THREE.Uniform(0.89),
     },
     depthWrite: false,
@@ -212,7 +200,6 @@ const materialAnimation = new THREE.ShaderMaterial({
 
 // Mesh
 const meshAnimation = new THREE.Mesh(animationGeometry, materialAnimation)
-// mesh.scale.set(0.2, 0.2, 0.2)
 meshAnimation.position.set(13, 5, -3)
 meshAnimation.rotation.set(13, 0, -55)
 scene.add(meshAnimation)
@@ -237,7 +224,7 @@ const renderer = new THREE.WebGLRenderer({
     alpha: true
 })
 // renderer.setClearColor(rendererParameters.clearColor)
-renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMapping = THREE.ReinhardToneMapping
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(sizes.pixelRatio)
 
@@ -267,7 +254,7 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Particles)
-    particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.021
+    particles.particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.055
 
     // Update material (Animation)
     materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.00089

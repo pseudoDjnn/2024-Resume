@@ -1,11 +1,12 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
-// import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+// impot { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import vertexShaderAnimation from './shaders/animation/vertexAnimation.glsl'
 import fragmentShaderAnimation from './shaders/animation/fragmentAnimation.glsl'
 import vertexShaderParticles from './shaders/particles/vertexParticles.glsl'
 import fragmentShaderParticles from './shaders/particles/fragmentParticles.glsl'
+
 
 
 /**
@@ -80,18 +81,18 @@ const generateParticles = (position, radius) => {
 
     particles.maxCount = 0
 
-
-
-    particles.particlesGeometry = new THREE.SphereGeometry()
-    particles.particlesGeometry.setIndex(null)
-    particles.particlesGeometry.deleteAttribute('normal')
+    particles.geometry = new THREE.IcosahedronGeometry(5, 34)
+    particles.geometry.setIndex(null)
+    particles.geometry.deleteAttribute('normal')
 
     color.colorAlpha = "#CEB180"
     color.colorBeta = '#4D516D'
     particles.positions = new Float32Array(parameters.count * 3)
     particles.randomness = new Float32Array(parameters.count)
 
-    // memoized fibbonacci sequence instead of using Math.random()
+    /**
+     * Memoized fibbonacci sequence instead of using Math.random() 
+     */
     particles.fibbonacci = (i, count = {}) => {
         const i3 = i * 3
         if (i in count) return count[i];
@@ -99,7 +100,7 @@ const generateParticles = (position, radius) => {
 
         // Spherical body
         const spherical = new THREE.Spherical(
-            radius * (0.34 + Math.random() * 0.13),
+            radius * (0.34 + Math.random() * 0.21),
             Math.random() * Math.PI,
             Math.random() * Math.PI * 2,
         )
@@ -116,16 +117,16 @@ const generateParticles = (position, radius) => {
         // Randomness
         const randomIndex = Math.floor(particles.positions[i3] * Math.random()) * 3
         // console.log(randomIndex)
-        particles.randomness[i3] = particles.positions[i3] + randomIndex
-        particles.randomness[i3 + 1] = particles.positions[i3 + 1] + randomIndex
-        particles.randomness[i3 + 2] = particles.positions[i3 + 2] + randomIndex
+        particles.randomness[i3] = particles.positions[i3] + randomIndex * 2 - 1
+        particles.randomness[i3 + 1] = particles.positions[i3 + 1] / 0xff + (randomIndex * 2 - 1) / 0xff + particles.randomness[i3 + 2] / 0xff
+        particles.randomness[i3 + 2] = particles.positions[i3 + 2] + randomIndex * 2 - 1
 
         return count[i3 * 3]
     }
     particles.fibbonacci(377)
 
 
-    particles.particlesMaterial = new THREE.ShaderMaterial({
+    particles.material = new THREE.ShaderMaterial({
         transparent: true,
         vertexColors: true,
         vertexShader: vertexShaderParticles,
@@ -141,13 +142,15 @@ const generateParticles = (position, radius) => {
         depthWrite: false,
     })
 
-    particles.particlesGeometry.setAttribute('position', new THREE.BufferAttribute(particles.positions, 3))
-    particles.particlesGeometry.setAttribute('aRandomness', new THREE.BufferAttribute(particles.randomness, 3))
+    particles.geometry.setAttribute('position', new THREE.BufferAttribute(particles.positions, 3))
+    particles.geometry.setAttribute('aRandomness', new THREE.BufferAttribute(particles.randomness, 3))
 
-    particles.points = new THREE.Points(particles.particlesGeometry, particles.particlesMaterial)
+    particles.points = new THREE.Points(particles.geometry, particles.material)
     particles.points.frustumCulled = false
-    particles.points.position.copy(position).multiplyScalar(8)
-    // points.position.set(13, -34, 13)
+    particles.points.position.copy(position).multiplyScalar(5)
+    particles.points.position.x = 5
+    particles.points.position.y = 3
+    particles.points.position.z = 8
 
     scene.add(particles.points)
 }
@@ -162,7 +165,7 @@ const count = animationGeometry.attributes.position.count
 const randoms = new Float32Array(count)
 
 for (let i = 0; i <= count; i++) {
-    randoms[i] = Math.floor(count * Math.random())
+    randoms[i] = Math.floor(count * Math.random() * -2 - 1)
 }
 
 animationGeometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3))
@@ -231,7 +234,7 @@ renderer.setPixelRatio(sizes.pixelRatio)
 
 generateParticles(
     new THREE.Vector3(),        // Position (Spherical)
-    34                          // Radius
+    144                          // Radius
 )
 
 
@@ -254,7 +257,7 @@ const tick = () => {
     previousTime = elapsedTime
 
     // Update material (Particles)
-    particles.particlesMaterial.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.055
+    particles.material.uniforms.uTime.value = (-elapsedTime - 0.5) * 0.034
 
     // Update material (Animation)
     materialAnimation.uniforms.uTimeAnimation.value = Math.sin(elapsedTime - 0.5) * 0.00089

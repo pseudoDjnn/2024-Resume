@@ -1,8 +1,18 @@
+import * as THREE from 'three'
 import Sizes from "./Utils/Sizes"
 import Time from "./Utils/Time"
+import Camera from './Camera'
+
+let instance = null
 
 export default class WebGLCanvas {
   constructor(canvas) {
+
+    if (instance) {
+      return instance
+    }
+
+    instance = this
 
     // Global access
     window.webglCanvas = this
@@ -14,6 +24,8 @@ export default class WebGLCanvas {
     // Setup
     this.sizes = new Sizes()
     this.time = new Time()
+    this.scene = new THREE.Scene()
+    this.camera = new Camera()
 
 
     // Sizes resize event
@@ -32,10 +44,16 @@ export default class WebGLCanvas {
   }
 
   resize() {
+
+    this.camera.resize()
+
     // console.log('this work for the resize')
   }
 
   update() {
+
+    this.camera.update()
+
     // console.log('update the experience')
   }
 

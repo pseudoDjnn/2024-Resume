@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import Sizes from "./Utils/Sizes"
 import Time from "./Utils/Time"
 import Camera from './Camera'
+import Renderer from './Renderer'
 
 let instance = null
 
@@ -26,6 +27,7 @@ export default class WebGLCanvas {
     this.time = new Time()
     this.scene = new THREE.Scene()
     this.camera = new Camera()
+    this.renderer = new Renderer
 
 
     // Sizes resize event
@@ -46,6 +48,7 @@ export default class WebGLCanvas {
   resize() {
 
     this.camera.resize()
+    this.renderer.resize()
 
     // console.log('this work for the resize')
   }
@@ -53,6 +56,7 @@ export default class WebGLCanvas {
   update() {
 
     this.camera.update()
+    this.renderer.update()
 
     // console.log('update the experience')
   }

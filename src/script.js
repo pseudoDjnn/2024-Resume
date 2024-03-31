@@ -97,7 +97,7 @@ const webglCanvas = new WebGLCanvas(document.querySelector('canvas.webgl'))
 //     particles.randomness = new Float32Array(parameters.count)
 
 //     /**
-//      * Memoized fibbonacci sequence instead of using Math.random() 
+//      * Memoized fibbonacci sequence instead of using Math.random()
 //      */
 //     particles.fibbonacci = (i, count = {}) => {
 //         const i3 = i * 3
@@ -189,16 +189,16 @@ const webglCanvas = new WebGLCanvas(document.querySelector('canvas.webgl'))
 //     transparent: true,
 //     side: THREE.DoubleSide,
 //     uniforms: {
-//         // 
+//         //
 //         uColor: new THREE.Uniform(new THREE.Color(materialAnimationParamters.color)),
 //         uColorOffset: new THREE.Uniform(0.925),
 //         uColorMultiplier: new THREE.Uniform(1),
-//         // 
+//         //
 //         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
 //         uResolution: new THREE.Uniform(new THREE.Vector2(sizes.width * sizes.pixelRatio, sizes.height * sizes.pixelRatio)),
 //         uTimeAnimation: new THREE.Uniform(0),
 //         uTime: new THREE.Uniform(0),
-//         // 
+//         //
 //         uWaveElevation: new THREE.Uniform(0.8),
 //         uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 3.5)),
 //         uWaveSpeed: new THREE.Uniform(0.89),

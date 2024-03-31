@@ -17,7 +17,7 @@ export default class WebGLCanvas {
     instance = this
 
     // Global access
-    window.webglCanvas = this
+    // window.webglCanvas = this
 
     // Options
     this.canvas = canvas
@@ -28,8 +28,8 @@ export default class WebGLCanvas {
     this.time = new Time()
     this.scene = new THREE.Scene()
     this.camera = new Camera()
-    this.renderer = new Renderer
-    this.world = new World
+    this.renderer = new Renderer()
+    this.world = new World()
 
 
     // Sizes resize event
@@ -58,6 +58,7 @@ export default class WebGLCanvas {
   update() {
 
     this.camera.update()
+    this.world.update()
     this.renderer.update()
 
     // console.log('update the experience')

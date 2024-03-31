@@ -15,12 +15,12 @@ void main() {
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
 
   float noise = simplexNoise3d(position);
-  noise = smoothstep(-0.5, 0.8, noise);
+  noise = smoothstep(-0.5, 1.0, noise);
 
    // Rotation
   float angle = atan(modelPosition.x, modelPosition.z);
   float distanceToCenter = length(modelPosition.xz);
-  float angleOffset = (1.0 / distanceToCenter) * uTime * 13.55;
+  float angleOffset = (1.0 / distanceToCenter) * uTime * 0.34;
   angle += angleOffset;
   modelPosition.x = cos(angle) * distanceToCenter;
   modelPosition.z = sin(angle) * distanceToCenter;

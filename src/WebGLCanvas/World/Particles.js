@@ -17,7 +17,7 @@ export default class Particles {
      */
 
     this.parameters = {
-      count: 13
+      count: 2584
     }
 
     this.color = {}
@@ -28,7 +28,49 @@ export default class Particles {
       this.particles = {}
 
       // Geometry
-      this.particles.geometry = new THREE.IcosahedronGeometry(5, 21)
+      this.particles.geometry = new THREE.IcosahedronGeometry(5, 3)
+      this.particles.geometry.setIndex(null)
+      this.particles.geometry.deleteAttribute('normal')
+
+      this.color.colorAlpha = '#CEB180'
+      this.color.colorBeta = '#4D516D'
+      this.particles.positions = new Float32Array(this.parameters.count * 3)
+      this.particles.randomness = new Float32Array(this.parameters.count)
+
+      /**
+       * Memoized fibbonacci sequence instead of using Math.random()
+       */
+      this.particles.fibbonacci = (i, count = {}) => {
+        this.i3 = i * 3
+        if (i in count) return count[i];
+        if (i < 2) return 1;
+
+        // Spherical body
+        this.spherical = new THREE.Spherical(
+          radius * (0.21 + Math.random() * 0.13),
+          Math.random() * Math.PI,
+          Math.random() * Math.PI * 2,
+        )
+        this.sphericalPointPosition = new THREE.Vector3()
+        this.sphericalPointPosition.setFromSpherical(this.spherical)
+
+        count[i] = this.particles.fibbonacci(i - 1, count) + this.particles.fibbonacci(i - 2, count)
+
+        // XYZ positioning
+        this.particles.positions[this.i3] = (this.sphericalPointPosition.x)
+        this.particles.positions[this.i3 + 1] = (this.sphericalPointPosition.y)
+        this.particles.positions[this.i3 + 2] = (this.sphericalPointPosition.z)
+
+        // Randomness
+        const randomIndex = Math.floor(this.particles.positions[this.i3] * Math.random()) * 3
+        // console.log(randomIndex)
+
+        this.particles.randomness[this.i3] = this.particles.positions[this.i3] + randomIndex * 2 - 1
+        this.particles.randomness[this.i3 + 1] = this.particles.positions[this.i3 + 1] / 0xff + (randomIndex * 2 - 1) / 0xff + this.particles.randomness[this.i3 + 2] / 0xff
+        this.particles.randomness[this.i3 + 2] = this.particles.positions[this.i3 + 2] + randomIndex * 2 - 1
+
+        return count[this.i3 * 3]
+      }
 
 
       // Material
@@ -48,14 +90,18 @@ export default class Particles {
         depthWrite: false,
       })
 
+      // this.particles.geometry.setAttribute('position', new THREE.BufferAttribute(this.particles.positions, 3))
+      // this.particles.geometry.setAttribute('aRandomness', new THREE.BufferAttribute(this.particles.randomness, 3))
+
       // Points
       this.particles.points = new THREE.Points(this.particles.geometry, this.particles.material)
       this.particles.points.frustumCulled = false
-      this.particles.points.position.copy(position).multiplyScalar(3)
-      // this.particles.points.position.x = 5
-      // this.particles.points.position.y = 3
+      this.particles.points.position.copy(position).multiplyScalar(5)
+      this.particles.points.position.x = 3
+      // this.particles.points.position.y = -3
       // this.particles.points.position.z = 8
 
+      this.particles.fibbonacci(377)
       this.scene.add(this.particles.points)
       // console.log(particles.points)
 
@@ -64,12 +110,12 @@ export default class Particles {
 
     generateParticles(
       new THREE.Vector3(),        // Position (Spherical)
-      55                          // Radius
+      144                          // Radius
     )
   }
 
   update() {
-    this.particles.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00000034
+    this.particles.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.0000034
     // console.log(this.particles)
   }
 }

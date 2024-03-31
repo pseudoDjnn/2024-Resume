@@ -1,4 +1,4 @@
-import WebGLCanvas from "./shaders/WebGLCanvas/WebGLCanvas";
+import WebGLCanvas from "./WebGLCanvas/WebGLCanvas";
 
 const webglCanvas = new WebGLCanvas(document.querySelector('canvas.webgl'))
 

@@ -1,19 +1,16 @@
 import * as THREE from 'three'
-import WebGLCanvas from "../WebGLCanvas";
-import Environment from './Environment';
+import WebGLCanvas from '../WebGLCanvas'
 
-import vertexParticleShader from '../../particles/vertexParticles.glsl'
-import fragmentParticleShader from '../../particles/fragmentParticles.glsl'
+import vertexParticleShader from '../../shaders/particles/vertexParticles.glsl'
+import fragmentParticleShader from '../../shaders/particles/fragmentParticles.glsl'
 
-export default class World {
+export default class Particles {
   constructor() {
     this.webglCanvas = new WebGLCanvas()
     this.scene = this.webglCanvas.scene
     this.time = this.webglCanvas.time
 
-
-    // console.log(this.scene)
-
+    // console.log('this is working')
 
     /**
      * Particle animation
@@ -31,7 +28,7 @@ export default class World {
       this.particles = {}
 
       // Geometry
-      this.particles.geometry = new THREE.IcosahedronGeometry(5, 34)
+      this.particles.geometry = new THREE.IcosahedronGeometry(5, 21)
 
 
       // Material
@@ -54,10 +51,10 @@ export default class World {
       // Points
       this.particles.points = new THREE.Points(this.particles.geometry, this.particles.material)
       this.particles.points.frustumCulled = false
-      this.particles.points.position.copy(position).multiplyScalar(5)
-      // particles.points.position.x = 5
-      // particles.points.position.y = 3
-      // particles.points.position.z = 8
+      this.particles.points.position.copy(position).multiplyScalar(3)
+      // this.particles.points.position.x = 5
+      // this.particles.points.position.y = 3
+      // this.particles.points.position.z = 8
 
       this.scene.add(this.particles.points)
       // console.log(particles.points)
@@ -67,16 +64,11 @@ export default class World {
 
     generateParticles(
       new THREE.Vector3(),        // Position (Spherical)
-      89                          // Radius
+      55                          // Radius
     )
-
-    // Setup 
-    this.environment = new Environment()
   }
 
-
   update() {
-    // console.log('this works')
     this.particles.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00000034
     // console.log(this.particles)
   }

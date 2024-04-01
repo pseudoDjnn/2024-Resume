@@ -25,5 +25,9 @@ export default class World {
     if (this.particles) {
       this.particles.update()
     }
+
+    if (this.animation) {
+      this.animation.update()
+    }
   }
 }

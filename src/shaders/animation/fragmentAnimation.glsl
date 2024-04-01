@@ -37,7 +37,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.08) * 233.0, 1.0);
+  float stripes = mod((vPosition.y - uTime * 0.08) * 144.0, 1.0);
   stripes = pow(stripes, 2.0);
 
   // Fresnel

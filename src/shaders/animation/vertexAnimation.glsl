@@ -42,10 +42,10 @@ void main() {
 
   // Glitching effect
   float glitchTime = uTime - (modelPosition.y * 0.2);
-  float stuttering = sin(glitchTime) + sin(glitchTime * 1.89) + sin(glitchTime * 2.34);
+  float stuttering = sin(glitchTime) + sin(glitchTime * 1.89) + sin(glitchTime * 8.34);
   stuttering /= 3.0;
   stuttering = smoothstep(0.8, 1.0, stuttering);
-  stuttering *= 0.34;
+  stuttering *= 0.13;
   modelPosition.x += (random2D(modelPosition.xz + uTime) - 0.5) * stuttering;
   modelPosition.z += (random2D(modelPosition.zx + uTime) - 0.5) * stuttering;
 

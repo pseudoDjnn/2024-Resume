@@ -20,13 +20,13 @@ void main() {
    // Rotation
   float angle = atan(modelPosition.x, modelPosition.z);
   float distanceToCenter = length(modelPosition.xz);
-  float angleOffset = (1.0 / distanceToCenter) * uTime * 0.34;
+  float angleOffset = (1.0 / distanceToCenter) * uTime * -144.34;
   angle += angleOffset;
   modelPosition.x = cos(angle) * distanceToCenter;
   modelPosition.z = sin(angle) * distanceToCenter;
 
   // Randomness
-  modelPosition.xyz /= noise + 0.5;
+  modelPosition.xyz /= noise;
 
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;

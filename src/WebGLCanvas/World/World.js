@@ -1,6 +1,7 @@
 import WebGLCanvas from "../WebGLCanvas";
 import Environment from './Environment';
 import Particles from './Particles';
+import Animation from "./Animation";
 
 
 export default class World {
@@ -14,6 +15,7 @@ export default class World {
     // Setup 
     this.environment = new Environment()
     this.particles = new Particles()
+    this.animation = new Animation()
   }
 
 

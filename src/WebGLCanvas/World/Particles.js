@@ -97,7 +97,7 @@ export default class Particles {
       this.particles.points = new THREE.Points(this.particles.geometry, this.particles.material)
       this.particles.points.frustumCulled = false
       this.particles.points.position.copy(position).multiplyScalar(5)
-      this.particles.points.position.x = 3
+      // this.particles.points.position.x = 3
       // this.particles.points.position.y = -3
       // this.particles.points.position.z = 8
 
@@ -115,7 +115,7 @@ export default class Particles {
   }
 
   update() {
-    this.particles.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.0000034
+    this.particles.material.uniforms.uTime.value = (-this.time.elapsed - 0.5) * 0.0000034
     // console.log(this.particles)
   }
 }

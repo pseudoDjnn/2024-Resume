@@ -115,7 +115,7 @@ export default class Particles {
   }
 
   update() {
-    this.particles.material.uniforms.uTime.value = (-this.time.elapsed - 0.5) * 0.00000003
+    this.particles.material.uniforms.uTime.value = (-this.time.elapsed - 0.5) * 0.0000000034
     // console.log(this.particles)
   }
 }

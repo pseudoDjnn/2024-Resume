@@ -1,10 +1,10 @@
 :root {
-    --gradient: linear-gradient(45deg,
-            #303030,
-            #110f17,
+    --gradient: linear-gradient(144deg,
+            #354f52,
             #361515c1,
+            #110f17,
+            #303030
             /* #787f85c2, */
-            #354f52
             /* #978963 */
             /* #859e86 */
         )
@@ -23,8 +23,8 @@ html,
 body {
     /* background: -webkit-linear-gradient(to right, #303030, #361515c1); */
     background-image: var(--gradient);
-    background-size: 400%;
-    animation: bg-animation 144s infinite alternate;
+    background-size: 987%;
+    animation: bg-animation 610s infinite alternate-reverse;
     /* background: url('/pictures/echo.png') no-repeat 50% 50%; */
     /* background-size: cover; */
     width: 100%;
@@ -91,9 +91,9 @@ body {
     border-radius: 100%;
     z-index: 10000;
     background-image: var(--gradient);
-    background-size: 300%;
+    background-size: 987%;
     background-position: left;
-    transition: background-position 1s;
+    transition: background-position 3s;
 }
 
 .logo:hover,

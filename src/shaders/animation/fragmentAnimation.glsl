@@ -1,9 +1,13 @@
 uniform vec2 uResolution;
 uniform vec3 uColor;
+uniform vec3 uLightColor;
+uniform vec3 uShadowColor;
 // uniform vec3 uDepthColor;
 // uniform vec3 uSurfaceColor;
 uniform float uColorOffset;
 uniform float uColorMultiplier;
+uniform float uLightRepetitions;
+uniform float uShadowRepetitions;
 uniform float uTime;
 
 // varying vec3 vColor;
@@ -37,7 +41,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.08) * 144.0, 1.0);
+  float stripes = mod((-vPosition.y - uTime * 0.08) * 2.0, 0.5);
   stripes = pow(stripes, 2.0);
 
   // Fresnel
@@ -49,7 +53,7 @@ void main() {
 
   // Holographic
   float holographic = stripes * fresnel;
-  holographic += fresnel * 1.21;
+  holographic += fresnel * 0.34;
   holographic *= falloff;
 
   // Color mixing
@@ -58,19 +62,19 @@ void main() {
   // vec3 mixedColor = mix(blackColor, uvColor, color);
 
   // Color Remap
-  color = smoothstep(-0.13, 0.8, color);
+  color = smoothstep(-0.3, 0.8, color);
 
   // Smoother edges
-  color *= smoothstep(0.5, 0.8, vUv.x);
-  color *= smoothstep(0.5, 1.0, vUv.x);
-  color *= smoothstep(0.5, 0.8, vUv.y);
-  color *= smoothstep(0.5, 1.0, vUv.y);
+  color *= smoothstep(0.3, 0.8, vUv.x);
+  color *= smoothstep(0.2, 0.5, vUv.x);
+  color *= smoothstep(0.3, 0.8, vUv.y);
+  color *= smoothstep(0.2, 0.5, vUv.y);
 
   // Lights
   vec3 light = vec3(0.0);
 
   light += ambientLight(vec3(1.0), 1.0);
-  light += directionalLight(vec3(0.0, 0.0, 1.0), 1.0, normal, vec3(1.0, 0.0, 1.0), viewDirection, 1.0);
+  light += directionalLight(vec3(0.0, 0.0, 0.5), 1.0, normal, vec3(1.0, 0.0, 1.0), viewDirection, 1.0);
 
   color *= light;
 
@@ -78,10 +82,10 @@ void main() {
   // mixedColor = color;
 
   // Halftone
-  color = halftone(color, 144.0, vec3(0.0, -1.0, 0.0), -0.8, 1.5, vec3(0.0, 0.3, 0.3), normal);
-  color = halftone(color, 55.0, vec3(1.0, 0.0, 1.0), 0.8, 1.8, vec3(0.5, 0.3, 0.2), normal);
+  color = halftone(color, uShadowRepetitions, vec3(0.0, -1.0, 0.0), -0.8, 1.5, uShadowColor, normal);
+  color = halftone(color, uLightRepetitions, vec3(1.0, 1.0, 0.0), 0.5, 1.5, uLightColor, normal);
 
-  color = mix(color, light, color);
+  // color = mix(color, pointColor, color);
 
   // vec2 uv = gl_PointCoord;
   // float distanceToCenter = length(uv - vec2(0.5));
@@ -90,7 +94,7 @@ void main() {
   //   discard;
 
   // Final color
-  gl_FragColor = vec4(color, holographic / 8.0);
+  gl_FragColor = vec4(color, holographic / 3.89);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

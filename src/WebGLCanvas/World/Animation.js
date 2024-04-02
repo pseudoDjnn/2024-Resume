@@ -19,16 +19,18 @@ export default class Animation {
     this.geometry.deleteAttribute('normal')
 
     this.count = this.geometry.attributes.position.count
-    this.randomizer = new Float32Array(this.count)
+    this.randoms = new Float32Array(this.count)
 
     for (let i = 0; i < this.count; i++) {
-      this.randomizer[i] = Math.floor(this.count * Math.random() * -2 - 1)
+      this.randoms[i] = Math.floor(this.count * Math.random() * -2 - 1)
     }
 
-    this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randomizer, 3))
+    this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 3))
 
     this.materialAnimationParamters = {}
-    this.materialAnimationParamters.color = '#181818'
+    this.materialAnimationParamters.color = '#70c1ff'
+    this.materialAnimationParamters.shadowColor = '#ff794d'
+    this.materialAnimationParamters.lightColor = '#e5ffe0'
 
     this.material = new THREE.ShaderMaterial({
       // wireframe: true,
@@ -41,9 +43,14 @@ export default class Animation {
         uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
         uColorOffset: new THREE.Uniform(0.925),
         uColorMultiplier: new THREE.Uniform(1),
+        uShadeColor: new THREE.Uniform(),
+        uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
+        uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
         //
         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
         uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
+        uShadowRepetitions: new THREE.Uniform(21),
+        uLightRepetitions: new THREE.Uniform(144),
         uTimeAnimation: new THREE.Uniform(0),
         uTime: new THREE.Uniform(0),
         //
@@ -63,7 +70,7 @@ export default class Animation {
 
   update() {
     this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00013
-    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.0000034
+    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00034
   }
 
 }

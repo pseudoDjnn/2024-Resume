@@ -41,11 +41,11 @@ void main() {
   modelPosition.z += sin(aRandom * uFrequency.y - uTimeAnimation) * 13.0;
 
   // Glitching effect
-  float glitchTime = uTime - (modelPosition.y * 0.2);
-  float stuttering = sin(glitchTime) + sin(glitchTime * 1.89) + sin(glitchTime * 8.34);
+  float glitchTime = uTime - modelPosition.y * 0.3;
+  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
-  stuttering = smoothstep(0.8, 1.0, stuttering);
-  stuttering *= 0.13;
+  stuttering = smoothstep(0.3, 1.0, stuttering);
+  stuttering *= 0.21;
   modelPosition.x += (random2D(modelPosition.xz + uTime) - 0.5) * stuttering;
   modelPosition.z += (random2D(modelPosition.zx + uTime) - 0.5) * stuttering;
 
@@ -60,7 +60,7 @@ void main() {
 
   // Varyings
   vRandom = aRandom;
-  vElevation = elevation;
+  // vElevation = elevation;
   vNormal = computeNormal;
   vPosition = modelPosition.xyz;
   vUv = uv;

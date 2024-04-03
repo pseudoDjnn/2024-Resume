@@ -2,15 +2,18 @@ import WebGLCanvas from "../WebGLCanvas";
 import Environment from './Environment';
 import Particles from './Particles';
 import Animation from "./Animation";
+import Audio from "./Audio";
 
 
 export default class World {
   constructor() {
+    // console.log(this.scene)
+
     this.webglCanvas = new WebGLCanvas()
     this.scene = this.webglCanvas.scene
     this.time = this.webglCanvas.time
+    this.audio = new Audio()
 
-    // console.log(this.scene)
 
     // Setup 
     this.environment = new Environment()

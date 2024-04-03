@@ -1,13 +1,12 @@
 :root {
     --gradient: linear-gradient(144deg,
             #354f52,
+            #859e86,
+            #978963,
             #361515c1,
             #110f17,
-            #303030
-            /* #787f85c2, */
-            /* #978963 */
-            /* #859e86 */
-        )
+            #303030,
+            #787f85c2)
 }
 
 *,
@@ -24,7 +23,7 @@ body {
     /* background: -webkit-linear-gradient(to right, #303030, #361515c1); */
     background-image: var(--gradient);
     background-size: 987%;
-    animation: bg-animation 610s infinite alternate-reverse;
+    animation: bg-animation 144s infinite alternate;
     /* background: url('/pictures/echo.png') no-repeat 50% 50%; */
     /* background-size: cover; */
     width: 100%;

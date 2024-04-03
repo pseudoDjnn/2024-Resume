@@ -37,12 +37,12 @@ void main() {
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
   // modelPosition.y += elevation * aRandom;
-  modelPosition.x += sin(aRandom * uFrequency.x - uTimeAnimation) * -21.8;
+  modelPosition.x += sin(aRandom * uFrequency.x - uTimeAnimation) * -13.8;
   modelPosition.z += sin(aRandom * uFrequency.y - uTimeAnimation) * 13.0;
 
   // Glitching effect
   float glitchTime = uTime - modelPosition.y * 0.3;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  float stuttering = sin(glitchTime) + sin(glitchTime * -89.55) + sin(glitchTime * 5.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
   stuttering *= 0.21;

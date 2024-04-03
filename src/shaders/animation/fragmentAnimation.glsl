@@ -22,6 +22,16 @@ varying vec2 vUv;
 #include ../includes/lights/directionalLight.glsl
 #include ../includes/effects/halftone.glsl
 
+vec3 palette(float t) {
+
+  vec3 a = vec3(0.5, 0.5, 0.5);
+  vec3 b = vec3(0.5, 0.5, 0.5);
+  vec3 c = vec3(1.0, 1.0, 1.0);
+  vec3 d = vec3(0.263, 0.416, 0.557);
+
+  return a + b * cos(6.28318 * (c * t + d));
+}
+
 void main() {
 
   // Base color
@@ -62,19 +72,19 @@ void main() {
   // vec3 mixedColor = mix(blackColor, uvColor, color);
 
   // Color Remap
-  color = smoothstep(-0.3, 0.8, color);
+  color = smoothstep(0.3, 0.8, color);
 
   // Smoother edges
-  color *= smoothstep(0.3, 0.8, vUv.x);
+  color *= smoothstep(0.3, 0.5, vUv.x);
   color *= smoothstep(0.2, 0.5, vUv.x);
-  color *= smoothstep(0.3, 0.8, vUv.y);
+  color *= smoothstep(0.3, 0.5, vUv.y);
   color *= smoothstep(0.2, 0.5, vUv.y);
 
   // Lights
   vec3 light = vec3(0.0);
 
   light += ambientLight(vec3(1.0), 1.0);
-  light += directionalLight(vec3(0.0, 0.0, 0.5), 1.0, normal, vec3(1.0, 0.0, 1.0), viewDirection, 1.0);
+  light += directionalLight(vec3(1.0, 0.0, 0.5), 1.0, normal, vec3(1.0, 0.0, 1.0), viewDirection, 1.0);
 
   color *= light;
 
@@ -93,8 +103,29 @@ void main() {
   // if (distanceToCenter > 0.5)
   //   discard;
 
+  vec2 uv = vUv;
+  vec2 uv0 = uv;
+  vec3 finalColor = vec3(0.0);
+
+  for (float i = 0.0; i < 3.0; i++) {
+    uv = fract(uv * 1.5) - 0.5 + holographic;
+    float distanceToCenter = length(uv) * exp(-length(uv0));
+
+    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.02);
+
+    distanceToCenter = sin(distanceToCenter * 2.89 + uTime) / 5.34;
+    distanceToCenter = abs(distanceToCenter);
+
+    distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
+
+    finalColor += col * distanceToCenter;
+  }
+
+  color *= finalColor;
+  // fragColor = vec4(finalColor, 1.0);
+
   // Final color
-  gl_FragColor = vec4(color, holographic / 3.89);
+  gl_FragColor = vec4(finalColor / 2.55, holographic / 5.89);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

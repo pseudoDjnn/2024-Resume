@@ -63,14 +63,14 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.position.set(13, 5, -3)
-    this.mesh.rotation.set(13, 0, -55)
+    this.mesh.position.set(3, -8, 5)
+    this.mesh.rotation.set(89, 89, 13)
     this.scene.add(this.mesh)
   }
 
   update() {
     this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00013
-    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00034
+    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00013
   }
 
 }

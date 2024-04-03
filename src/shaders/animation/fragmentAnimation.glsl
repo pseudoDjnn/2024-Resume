@@ -111,9 +111,9 @@ void main() {
     uv = fract(uv * 1.5) - 0.5 + holographic;
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.02);
+    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.002);
 
-    distanceToCenter = sin(distanceToCenter * 2.89 + uTime) / 5.34;
+    distanceToCenter = sin(distanceToCenter * 8.89 + uTime) / 8.34;
     distanceToCenter = abs(distanceToCenter);
 
     distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
@@ -125,7 +125,7 @@ void main() {
   // fragColor = vec4(finalColor, 1.0);
 
   // Final color
-  gl_FragColor = vec4(finalColor / 2.55, holographic / 5.89);
+  gl_FragColor = vec4(finalColor / 2.55, holographic / 8.89);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

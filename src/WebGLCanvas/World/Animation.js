@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import WebGLCanvas from '../WebGLCanvas'
+import Audio from './Audio'
 
 import animationVertexShader from '../../shaders/animation/vertexAnimation.glsl'
 import animationFragmentShader from '../../shaders/animation/fragmentAnimation.glsl'
@@ -10,7 +11,7 @@ export default class Animation {
     this.webglCanvas = new WebGLCanvas()
     this.scene = this.webglCanvas.scene
     this.time = this.webglCanvas.time
-
+    this.audio = new Audio()
 
     // console.log('this is for the animation')
 
@@ -47,6 +48,7 @@ export default class Animation {
         uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
         uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
         //
+        uAudioFrequency: new THREE.Uniform(0),
         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
         uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
         uShadowRepetitions: new THREE.Uniform(21),
@@ -63,14 +65,15 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.position.set(3, -8, 5)
-    this.mesh.rotation.set(89, 89, 13)
+    this.mesh.position.set(5, -13, 5)
+    // this.mesh.rotation.set(233, -233, 233)
     this.scene.add(this.mesh)
   }
 
   update() {
     this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00013
     this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00013
+    this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
   }
 
 }

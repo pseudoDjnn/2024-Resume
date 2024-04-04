@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import WebGLCanvas from '../WebGLCanvas';
+// import Animation from './Animation';
 // import EventEmitter from "../Utils/EventEmitter";
 
 export default class Audio {
@@ -8,6 +9,7 @@ export default class Audio {
 
     this.webglCanvas = new WebGLCanvas()
     this.scene = this.webglCanvas.scene
+    // this.animation = new Animation()
 
     // console.log("this is for the Audio class")
 
@@ -26,5 +28,8 @@ export default class Audio {
         this.sound.play()
       })
     })
+
+    this.analyser = new THREE.AudioAnalyser(this.sound, 32)
+
   }
 }

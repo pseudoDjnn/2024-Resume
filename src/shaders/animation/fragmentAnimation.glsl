@@ -4,6 +4,7 @@ uniform vec3 uLightColor;
 uniform vec3 uShadowColor;
 // uniform vec3 uDepthColor;
 // uniform vec3 uSurfaceColor;
+uniform float uAudioFrequency;
 uniform float uColorOffset;
 uniform float uColorMultiplier;
 uniform float uLightRepetitions;
@@ -109,7 +110,7 @@ void main() {
 
   for (float i = 0.0; i < 3.0; i++) {
     uv = fract(uv * 1.5) - 0.5 + holographic;
-    float distanceToCenter = length(uv) * exp(-length(uv0));
+    float distanceToCenter = fract(uAudioFrequency / 55.0) * length(uv) * exp(-length(uv0));
 
     vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.002);
 
@@ -125,7 +126,7 @@ void main() {
   // fragColor = vec4(finalColor, 1.0);
 
   // Final color
-  gl_FragColor = vec4(finalColor / 2.55, holographic / 8.89);
+  gl_FragColor = vec4(finalColor / 2.55, holographic / 5.13);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

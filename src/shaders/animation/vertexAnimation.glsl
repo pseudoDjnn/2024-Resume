@@ -2,6 +2,7 @@ uniform vec2 uFrequency;
 uniform vec2 uResolution;
 uniform vec2 uWaveFrequency;
 
+uniform float uAudioFrequency;
 uniform float uTimeAnimation;
 uniform float uTime;
 uniform float uWaveElevation;
@@ -26,7 +27,7 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 1.0, shift);
 
-  float elevation = waveElevation(modelPosition.xyz);
+  float elevation = (uAudioFrequency / 144.0) * waveElevation(modelPosition.xyz);
   modelPosition.y += elevation;
   modelPositionAlpha.y += waveElevation(modelPositionAlpha);
   modelPositionBeta.y += waveElevation(modelPositionBeta);
@@ -37,7 +38,8 @@ void main() {
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
   // modelPosition.y += elevation * aRandom;
-  modelPosition.x += sin(aRandom * uFrequency.x - uTimeAnimation) * -13.8;
+  modelPosition.x += sin(aRandom * uFrequency.x - uTime) * -13.8;
+  // modelPosition.x += sin(aRandom * uFrequency.y - uAudioFrequency) * 0.3;
   modelPosition.z += sin(aRandom * uFrequency.y - uTimeAnimation) * 13.0;
 
   // Glitching effect

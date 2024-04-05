@@ -52,7 +52,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((-vPosition.y - uTime * 0.08) * 2.0, 0.5);
+  float stripes = mod((vPosition.y - uTime * 0.03) * 3.0, 0.3);
   stripes = pow(stripes, 2.0);
 
   // Fresnel
@@ -60,7 +60,7 @@ void main() {
   fresnel = pow(fresnel, 2.0);
 
   // Falloff
-  float falloff = smoothstep(0.5, 0.2, fresnel);
+  float falloff = smoothstep(0.5, 0.3, fresnel);
 
   // Holographic
   float holographic = stripes * fresnel;
@@ -73,13 +73,13 @@ void main() {
   // vec3 mixedColor = mix(blackColor, uvColor, color);
 
   // Color Remap
-  color = smoothstep(0.3, 0.8, color);
+  color = smoothstep(0.03, 1.0, color);
 
   // Smoother edges
-  color *= smoothstep(0.3, 0.5, vUv.x);
-  color *= smoothstep(0.2, 0.5, vUv.x);
-  color *= smoothstep(0.3, 0.5, vUv.y);
-  color *= smoothstep(0.2, 0.5, vUv.y);
+  color *= smoothstep(0.1, 0.8, vUv.x);
+  color *= smoothstep(0.5, 1.0, vUv.x);
+  color *= smoothstep(0.1, 0.8, vUv.y);
+  color *= smoothstep(0.5, 1.0, vUv.y);
 
   // Lights
   vec3 light = vec3(0.0);
@@ -110,23 +110,26 @@ void main() {
 
   for (float i = 0.0; i < 3.0; i++) {
     uv = fract(uv * 1.5) - 0.5 + holographic;
-    float distanceToCenter = fract(uAudioFrequency / 55.0) * length(uv) * exp(-length(uv0));
+    float distanceToCenter = mod(uAudioFrequency * 0.01, 0.5) * length(uv) * exp(-length(uv0));
 
-    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.002);
+    vec3 col = palette(length(uv0) + i * 0.8 + uAudioFrequency * 0.01);
 
     distanceToCenter = sin(distanceToCenter * 8.89 + uTime) / 8.34;
     distanceToCenter = abs(distanceToCenter);
 
     distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
 
+    // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
+
     finalColor += col * distanceToCenter;
   }
 
   color *= finalColor;
+  // finalColor = smoothstep(0.3, 0.8, finalColor);
   // fragColor = vec4(finalColor, 1.0);
 
   // Final color
-  gl_FragColor = vec4(finalColor / 2.55, holographic / 5.13);
+  gl_FragColor = vec4(finalColor, holographic / 13.0);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

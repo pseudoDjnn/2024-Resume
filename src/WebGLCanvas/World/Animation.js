@@ -65,15 +65,21 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.position.set(5, -13, 5)
+    this.mesh.scale.set(2, 2, 0.2)
+    this.mesh.position.set(0, -21, 21)
     // this.mesh.rotation.set(233, -233, 233)
     this.scene.add(this.mesh)
   }
 
   update() {
+
+    // this.animationTime += THREE.MathUtils.clamp(0.3, 0.2, 0.5)
+
     this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00013
     this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00013
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
+
+    // this.material.uniforms.uTime.value = this.animationTime
   }
 
 }

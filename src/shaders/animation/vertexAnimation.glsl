@@ -19,16 +19,29 @@ varying vec2 vUv;
 #include ../includes/effects/perlin.glsl
 #include ../includes/effects/random2D.glsl
 #include ../includes/effects/waveElevation.glsl
+#include ../includes/effects/simplexNoise3D.glsl
 
 void main() {
   // Base Postion
   float shift = 0.01;
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
-  vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 1.0, shift);
+  vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, shift);
 
-  float elevation = (uAudioFrequency / 144.0) * waveElevation(modelPosition.xyz);
-  modelPosition.y += elevation;
+// Audio levels used with perlin noise
+  float noise = 5.0 * cnoise(vec3(position.zx * 3.0, uAudioFrequency));
+  float displacementInteger = floor((uAudioFrequency / 21.0) * (noise / 21.0));
+  float displacementFraction = fract(displacementInteger * 0.2);
+
+  // float generateNoise = fract(sin(noise) * 1.0);
+  // generateNoise = random2D(displacementInteger);
+  // generateNoise = mix(random2D(displacementInteger), random2D(displacementInteger + 1.0), displacementFraction);
+  // generateNoise = mix(random2D(displacementInteger), random2D(displacementInteger + 1.0), smoothstep(0.0, 1.0, displacementFraction));
+
+  displacementInteger = smoothstep(0.5, 0.8, displacementFraction);
+
+  float elevation = waveElevation(modelPosition.xyz);
+  modelPosition.y += elevation * 13.0;
   modelPositionAlpha.y += waveElevation(modelPositionAlpha);
   modelPositionBeta.y += waveElevation(modelPositionBeta);
 
@@ -38,13 +51,12 @@ void main() {
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
   // modelPosition.y += elevation * aRandom;
-  modelPosition.x += sin(aRandom * uFrequency.x - uTime) * -13.8;
-  // modelPosition.x += sin(aRandom * uFrequency.y - uAudioFrequency) * 0.3;
-  modelPosition.z += sin(aRandom * uFrequency.y - uTimeAnimation) * 13.0;
+  modelPosition.x *= floor(sin(aRandom * uFrequency.y - uTime * 0.08) * -21.8);
+  modelPosition.z *= floor(cos(aRandom * uFrequency.y - uTimeAnimation * 0.05) * 13.21);
 
   // Glitching effect
-  float glitchTime = uTime - modelPosition.y * 0.3;
-  float stuttering = sin(glitchTime) + sin(glitchTime * -89.55) + sin(glitchTime * 5.89);
+  float glitchTime = uTime - modelPosition.y * 0.03;
+  float stuttering = fract(sin(glitchTime * displacementInteger) * 0.02) + sin(glitchTime * 89.55) + sin(glitchTime * 5.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
   stuttering *= 0.21;

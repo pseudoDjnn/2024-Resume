@@ -1,10 +1,10 @@
 //	Simplex 3D Noise 
 //	by Ian McEwan, Ashima Arts
 //
-vec4 permute(vec4 x) {
+vec4 permutation(vec4 x) {
   return mod(((x * 34.0) + 1.0) * x, 289.0);
 }
-vec4 taylorInvSqrt(vec4 r) {
+vec4 taylorInvSqrt3d(vec4 r) {
   return 1.79284291400159 - 0.85373472095314 * r;
 }
 
@@ -29,7 +29,7 @@ float simplexNoise3d(vec3 v) {
 
     // Permutations
   i = mod(i, 289.0);
-  vec4 p = permute(permute(permute(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  vec4 p = permutation(permutation(permutation(i.z + vec4(0.0, i1.z, i2.z, 1.0)) + i.y + vec4(0.0, i1.y, i2.y, 1.0)) + i.x + vec4(0.0, i1.x, i2.x, 1.0));
 
     // Gradients
     // ( N*N points uniformly over a square, mapped onto an octahedron.)
@@ -61,7 +61,7 @@ float simplexNoise3d(vec3 v) {
   vec3 p3 = vec3(a1.zw, h.w);
 
     // Normalise gradients
-  vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+  vec4 norm = taylorInvSqrt3d(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
   p0 *= norm.x;
   p1 *= norm.y;
   p2 *= norm.z;

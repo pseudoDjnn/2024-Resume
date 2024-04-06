@@ -25,9 +25,9 @@ varying vec2 vUv;
 
 vec3 palette(float t) {
 
-  vec3 a = vec3(0.5, 0.5, 0.5);
-  vec3 b = vec3(0.5, 0.5, 0.5);
-  vec3 c = vec3(1.0, 1.0, 1.0);
+  vec3 a = vec3(0.149, 0.141, 0.912);
+  vec3 b = vec3(1.000, 0.833, 0.224);
+  vec3 c = vec3(0.3, 0.3, 0.8) * smoothstep(-0.144, 2.987, uAudioFrequency - 0.5) * 2.0;
   vec3 d = vec3(0.263, 0.416, 0.557);
 
   return a + b * cos(6.28318 * (c * t + d));
@@ -52,19 +52,19 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.03) * 3.0, 0.3);
-  stripes = pow(stripes, 2.0);
+  float stripes = mod((vPosition.y - uTime) * 0.00005, 1.0);
+  stripes = pow(stripes, 3.0);
 
   // Fresnel
   float fresnel = dot(viewDirection, normal) + 1.0;
   fresnel = pow(fresnel, 2.0);
 
   // Falloff
-  float falloff = smoothstep(0.5, 0.3, fresnel);
+  float falloff = smoothstep(0.8, 0.0, fresnel);
 
   // Holographic
   float holographic = stripes * fresnel;
-  holographic += fresnel * 0.34;
+  holographic += fresnel * 1.21;
   holographic *= falloff;
 
   // Color mixing
@@ -73,7 +73,7 @@ void main() {
   // vec3 mixedColor = mix(blackColor, uvColor, color);
 
   // Color Remap
-  color = smoothstep(0.03, 1.0, color);
+  color = smoothstep(0.03, 0.8, color);
 
   // Smoother edges
   color *= smoothstep(0.1, 0.8, vUv.x);
@@ -108,16 +108,20 @@ void main() {
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
-  for (float i = 0.0; i < 3.0; i++) {
-    uv = fract(uv * 1.5) - 0.5 + holographic;
-    float distanceToCenter = mod(uAudioFrequency * 0.01, 0.5) * length(uv) * exp(-length(uv0));
+  float minimumDistance = 1.0;
 
-    vec3 col = palette(length(uv0) + i * 0.8 + uAudioFrequency * 0.01);
+  for (float i = 0.0; i < 8.0; i++) {
+    uv = fract(uv * 1.5) - 0.5 + stripes * 0.1;
+    float distanceToCenter = distance(uTime * 0.02, 0.3) * length(uv) * exp(-length(uv0));
 
-    distanceToCenter = sin(distanceToCenter * 8.89 + uTime) / 8.34;
+    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.01);
+
+    minimumDistance = min(minimumDistance, distanceToCenter);
+
+    distanceToCenter = sin(distanceToCenter * 0.3 + uAudioFrequency) / 0.5;
     distanceToCenter = abs(distanceToCenter);
 
-    distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
+    distanceToCenter = pow(0.01 / distanceToCenter, 0.5);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 
@@ -129,7 +133,7 @@ void main() {
   // fragColor = vec4(finalColor, 1.0);
 
   // Final color
-  gl_FragColor = vec4(finalColor, holographic / 13.0);
+  gl_FragColor = vec4(finalColor, holographic);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

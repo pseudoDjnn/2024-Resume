@@ -9,10 +9,7 @@
             #978963,
             #282729,
             #361515c1,
-            #978963,
-            #859e86,
-            #110f17,
-            #ffeded)
+            #110f17)
 }
 
 *,
@@ -29,7 +26,7 @@ body {
     /* background: -webkit-linear-gradient(to right, #303030, #361515c1); */
     background-image: var(--gradient);
     background-size: 987%;
-    animation: bg-animation 144s infinite alternate;
+    animation: bg-animation 377s infinite alternate;
     /* background: url('/pictures/echo.png') no-repeat 50% 50%; */
     /* background-size: cover; */
     width: 100%;

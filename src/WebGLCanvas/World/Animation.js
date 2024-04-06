@@ -65,9 +65,9 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.scale.set(2, 2, 0.2)
-    this.mesh.position.set(0, -21, 21)
-    // this.mesh.rotation.set(233, -233, 233)
+    this.mesh.scale.set(13, 21, 55)
+    this.mesh.position.set(-8, -21, -13)
+    this.mesh.rotation.set(55, -89, -55)
     this.scene.add(this.mesh)
   }
 

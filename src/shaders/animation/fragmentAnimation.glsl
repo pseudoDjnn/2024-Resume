@@ -23,14 +23,14 @@ varying vec2 vUv;
 #include ../includes/lights/directionalLight.glsl
 #include ../includes/effects/halftone.glsl
 
-vec3 palette(float t) {
+vec3 palette(float tone) {
 
   vec3 a = vec3(0.149, 0.141, 0.912);
   vec3 b = vec3(1.000, 0.833, 0.224);
-  vec3 c = vec3(0.3, 0.3, 0.8) * smoothstep(-0.144, 2.987, uAudioFrequency - 0.5) * 2.0;
+  vec3 c = vec3(0.3, 0.3, 0.8) * smoothstep(-0.144, 0.987, uAudioFrequency - 0.5) * 2.0;
   vec3 d = vec3(0.263, 0.416, 0.557);
 
-  return a + b * cos(6.28318 * (c * t + d));
+  return a + b * cos(6.28318 * (sin(-c) * tone + d));
 }
 
 void main() {
@@ -52,7 +52,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime) * 0.00005, 1.0);
+  float stripes = mod((vPosition.y - uAudioFrequency) * 21.0, 1.0);
   stripes = pow(stripes, 3.0);
 
   // Fresnel
@@ -64,7 +64,7 @@ void main() {
 
   // Holographic
   float holographic = stripes * fresnel;
-  holographic += fresnel * 1.21;
+  holographic += fresnel * 0.55;
   holographic *= falloff;
 
   // Color mixing
@@ -82,12 +82,12 @@ void main() {
   color *= smoothstep(0.5, 1.0, vUv.y);
 
   // Lights
-  vec3 light = vec3(0.0);
+  // vec3 light = vec3(0.0);
 
-  light += ambientLight(vec3(1.0), 1.0);
-  light += directionalLight(vec3(1.0, 0.0, 0.5), 1.0, normal, vec3(1.0, 0.0, 1.0), viewDirection, 1.0);
+  // light += ambientLight(vec3(1.0), 1.0);
+  // light += directionalLight(vec3(1.0, 0.0, 0.5), 1.0, normal, vec3(0.0, 0.25, 0.0), viewDirection, 1.0);
 
-  color *= light;
+  // color *= light;
 
   // color = mixedColor;
   // mixedColor = color;
@@ -105,30 +105,31 @@ void main() {
   //   discard;
 
   vec2 uv = vUv;
-  vec2 uv0 = uv;
+  vec2 uv0 = uv * uAudioFrequency;
   vec3 finalColor = vec3(0.0);
 
   float minimumDistance = 1.0;
 
-  for (float i = 0.0; i < 8.0; i++) {
-    uv = fract(uv * 1.5) - 0.5 + stripes * 0.1;
-    float distanceToCenter = distance(uTime * 0.02, 0.3) * length(uv) * exp(-length(uv0));
+  for (float i = 0.0; i < 3.0; i++) {
+    uv = fract(uv * 1.5) - 0.5 + stripes;
+    float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 col = palette(length(uv0) + i * 0.8 + uTime * 0.01);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 0.5);
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 
-    distanceToCenter = sin(distanceToCenter * 0.3 + uAudioFrequency) / 0.5;
+    distanceToCenter = sin(distanceToCenter * 8.3 * uTime) / 8.5;
     distanceToCenter = abs(distanceToCenter);
 
-    distanceToCenter = pow(0.01 / distanceToCenter, 0.5);
+    distanceToCenter = pow(0.2 / distanceToCenter, 1.2);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 
-    finalColor += col * distanceToCenter;
+    finalColor += colorLoop * distanceToCenter;
   }
 
   color *= finalColor;
+  // color -= step(0.8, abs(sin(55.0 * minimumDistance))) * 0.3;
   // finalColor = smoothstep(0.3, 0.8, finalColor);
   // fragColor = vec4(finalColor, 1.0);
 

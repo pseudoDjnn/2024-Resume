@@ -21,10 +21,6 @@ varying vec2 vUv;
 #include ../includes/effects/waveElevation.glsl
 #include ../includes/effects/simplexNoise3D.glsl
 
-mat2 rotate2d(float angle) {
-  return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-}
-
 void main() {
   // Base Postion
   float shift = 0.01;
@@ -32,20 +28,8 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-// Audio levels used with perlin noise
-  float noise = 5.0 * cnoise(vec3(position.zx * 3.0, uTime));
-  float displacementInteger = fract(sin(uAudioFrequency * 100000.0)) * (noise / 13.0);
-  float displacementFraction = fract(displacementInteger);
-
-  float generateNoise = fract(sin(noise) * 1.0);
-  generateNoise = cnoise(vec3(displacementInteger));
-  generateNoise = mix(cnoise(vec3(displacementInteger)), cnoise(vec3(displacementInteger + 1.0)), displacementFraction);
-  generateNoise = mix(cnoise(vec3(displacementInteger)), cnoise(vec3(displacementInteger + 1.0)), smoothstep(0.0, 1.0, displacementFraction));
-
-  displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
-
-  float elevation = waveElevation(modelPosition.xyz);
-  modelPosition.y += elevation * (generateNoise * 0.2);
+  float elevation = waveElevation(modelPosition.xyz * fract(sin(uAudioFrequency) * 0.0001));
+  modelPosition.y += elevation;
   modelPositionAlpha.y += waveElevation(modelPositionAlpha);
   modelPositionBeta.y += waveElevation(modelPositionBeta);
 
@@ -54,18 +38,31 @@ void main() {
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
-  // modelPosition.y += elevation * aRandom;
-  // modelPosition.x /= sin(-aRandom * aRandom * 0.01 * (uFrequency.x - uTime * smoothstep(-0.144, 0.987, -uAudioFrequency * 0.002) * 0.001)) * -21.8;
-  // modelPosition.z += sin(-aRandom * aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
+  // modelPosition.x = uAudioFrequency;
+  // modelPosition.y += fract(sin(elevation * aRandom) * uAudioFrequency);
+  // modelPosition.x -= sin(aRandom * 0.01 * (uFrequency.x - uTimeAnimation * smoothstep(-0.144, 0.987, -uAudioFrequency * 0.002) * 0.001));
+  // modelPosition.z += sin(-aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
+
+// Audio levels used with perlin noise
+  // float noise = 5.0 * perlinClassic3D(vec3(position.zx * 3.0, uAudioFrequency));
+  // float displacementInteger = fract(sin(uTimeAnimation * 100000.0)) * (noise / 13.0);
+  // float displacementFraction = fract(displacementInteger);
+
+  // float generateNoise = fract(sin(noise) * 1.0);
+  // generateNoise = perlinClassic3D(vec3(displacementInteger));
+  // generateNoise = mix(perlinClassic3D(vec3(displacementInteger)), perlinClassic3D(vec3(displacementInteger + 1.0)), displacementFraction);
+  // generateNoise = mix(perlinClassic3D(vec3(displacementInteger)), perlinClassic3D(vec3(displacementInteger + 1.0)), smoothstep(0.0, 1.0, displacementFraction));
+
+  // displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
 
   // Glitching effect
   float glitchTime = uTime - modelPosition.y * 0.03;
-  float stuttering = sin(glitchTime * generateNoise) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
   stuttering *= 0.21;
-  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency * uTime) - 0.5) * stuttering;
-  modelPosition.z += (random2D(modelPosition.zx * generateNoise * uTimeAnimation) - 0.5) * stuttering;
+  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency * uTime) - 0.5) * stuttering;
+  // modelPosition.z += (random2D(modelPosition.zx * generateNoise * 0.8 * uTimeAnimation) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

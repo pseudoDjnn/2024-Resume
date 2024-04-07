@@ -27,10 +27,10 @@ vec3 palette(float tone) {
 
   vec3 a = vec3(0.149, 0.141, 0.912);
   vec3 b = vec3(1.000, 0.833, 0.224);
-  vec3 c = vec3(0.3, 0.3, 0.8) * smoothstep(-0.144, 0.987, uAudioFrequency - 0.5) * 2.0;
+  vec3 c = vec3(0.3, 0.3, 0.8);
   vec3 d = vec3(0.263, 0.416, 0.557);
 
-  return a + b * cos(6.28318 * (sin(-c) * tone + d));
+  return a + b * cos(6.28318 * (sin(-c) * tone + d) * smoothstep(-0.144, 0.987, uAudioFrequency - 0.5) * 2.0);
 }
 
 void main() {
@@ -52,7 +52,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uAudioFrequency) * 21.0, 1.0);
+  float stripes = mod((vPosition.y - uTime * 0.02) * 21.0, 1.0);
   stripes = pow(stripes, 3.0);
 
   // Fresnel
@@ -64,7 +64,7 @@ void main() {
 
   // Holographic
   float holographic = stripes * fresnel;
-  holographic += fresnel * 0.55;
+  holographic += fresnel * 0.89;
   holographic *= falloff;
 
   // Color mixing
@@ -105,7 +105,7 @@ void main() {
   //   discard;
 
   vec2 uv = vUv;
-  vec2 uv0 = uv * uAudioFrequency;
+  vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
   float minimumDistance = 1.0;
@@ -114,7 +114,7 @@ void main() {
     uv = fract(uv * 1.5) - 0.5 + stripes;
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 0.5);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 0.2);
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 

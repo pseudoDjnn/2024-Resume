@@ -15,7 +15,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.IcosahedronGeometry(5, 3)
+    this.geometry = new THREE.IcosahedronGeometry(4, 30)
     this.geometry.setIndex(null)
     this.geometry.deleteAttribute('normal')
 
@@ -23,7 +23,7 @@ export default class Animation {
     this.randoms = new Float32Array(this.count)
 
     for (let i = 0; i < this.count; i++) {
-      this.randoms[i] = Math.floor(this.count * Math.abs(Math.sin(Math.random() * 10000.0)) * -1 - 1)
+      this.randoms[i] = Math.hypot(this.count * Math.abs(Math.sin(Math.random() * 10000.0)) * -1 - 1)
     }
 
     this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))
@@ -65,9 +65,9 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.scale.set(13, 21, 34)
-    this.mesh.position.set(-8, -21, -13)
-    this.mesh.rotation.set(55, -89, -55)
+    this.mesh.scale.set(13, 13, 13)
+    this.mesh.position.set(0, 0, 13)
+    this.mesh.rotation.set(21, -89, -55)
     this.scene.add(this.mesh)
   }
 
@@ -75,8 +75,8 @@ export default class Animation {
 
     // this.animationTime += THREE.MathUtils.clamp(0.3, 0.2, 0.5)
 
-    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.000055
-    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00013
+    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00055
+    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00002
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
     // this.material.uniforms.uTime.value = this.animationTime

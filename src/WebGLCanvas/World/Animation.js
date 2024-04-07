@@ -15,15 +15,15 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.IcosahedronGeometry(4, 30)
+    this.geometry = new THREE.IcosahedronGeometry(3, 2)
     this.geometry.setIndex(null)
     this.geometry.deleteAttribute('normal')
 
     this.count = this.geometry.attributes.position.count
-    this.randoms = new Float32Array(this.count)
+    this.randoms = new Float32Array(this.count, 2)
 
-    for (let i = 0; i < this.count; i++) {
-      this.randoms[i] = Math.hypot(this.count * Math.abs(Math.sin(Math.random() * 10000.0)) * -1 - 1)
+    for (let x = 0; x < this.count; x++) {
+      this.randoms[x] = Math.hypot(this.count * Math.abs(Math.sin(Math.random() * 10000.0)) * -1 - 1)
     }
 
     this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))
@@ -51,14 +51,14 @@ export default class Animation {
         uAudioFrequency: new THREE.Uniform(0),
         uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
         uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
-        uShadowRepetitions: new THREE.Uniform(21),
-        uLightRepetitions: new THREE.Uniform(144),
+        uShadowRepetitions: new THREE.Uniform(13),
+        uLightRepetitions: new THREE.Uniform(55),
         uTimeAnimation: new THREE.Uniform(0),
         uTime: new THREE.Uniform(0),
         //
-        uWaveElevation: new THREE.Uniform(0.8),
-        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(13, 3.5)),
-        uWaveSpeed: new THREE.Uniform(0.89),
+        uWaveElevation: new THREE.Uniform(0.5),
+        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
+        uWaveSpeed: new THREE.Uniform(0.21),
       },
       depthWrite: false,
       blending: THREE.AdditiveBlending,
@@ -66,20 +66,21 @@ export default class Animation {
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
     this.mesh.scale.set(13, 13, 13)
-    this.mesh.position.set(0, 0, 13)
-    this.mesh.rotation.set(21, -89, -55)
+    this.mesh.position.set(0, 0, 0)
+    this.mesh.rotation.set(21, 0, -55)
     this.scene.add(this.mesh)
   }
 
   update() {
 
-    // this.animationTime += THREE.MathUtils.clamp(0.3, 0.2, 0.5)
+    // this.mesh.rotation.x = Math.sin(this.time.elapsed * 0.0003)
+    // this.mesh.rotation.y = -Math.PI * 2
+    // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.00003)
 
-    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.00055
+    this.material.uniforms.uTimeAnimation.value = Math.cos(this.time.elapsed - 0.5) * 0.00055
     this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00002
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
-    // this.material.uniforms.uTime.value = this.animationTime
   }
 
 }

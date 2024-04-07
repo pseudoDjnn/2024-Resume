@@ -28,10 +28,13 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-  float elevation = waveElevation(modelPosition.xyz * fract(sin(uAudioFrequency) * 0.0001));
+  float elevation = waveElevation(modelPosition.xyz) * uAudioFrequency;
+  // elevation = pow(elevation, 2.0);
+  // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
+  // modelPosition.x -= -sin(uAudioFrequency * 0.2);
   modelPosition.y += elevation;
-  modelPositionAlpha.y += waveElevation(modelPositionAlpha);
-  modelPositionBeta.y += waveElevation(modelPositionBeta);
+  modelPositionAlpha.x += abs(1.0 + sin(uAudioFrequency + waveElevation(modelPositionAlpha)) * 2.0);
+  modelPositionBeta.z += waveElevation(modelPositionBeta);
 
   // Compute Normal
   vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
@@ -44,8 +47,8 @@ void main() {
   // modelPosition.z += sin(-aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
 
 // Audio levels used with perlin noise
-  // float noise = 5.0 * perlinClassic3D(vec3(position.zx * 3.0, uAudioFrequency));
-  // float displacementInteger = fract(sin(uTimeAnimation * 100000.0)) * (noise / 13.0);
+  // float noise = 5.0 * perlinClassic3D(vec3(position.yx + uTime, vec3(10.0)));
+  // float displacementInteger = (uAudioFrequency * 30.0) * (noise / 13.0);
   // float displacementFraction = fract(displacementInteger);
 
   // float generateNoise = fract(sin(noise) * 1.0);
@@ -56,11 +59,11 @@ void main() {
   // displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
 
   // Glitching effect
-  float glitchTime = uTime - modelPosition.y * 0.03;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  stuttering /= 3.0;
-  stuttering = smoothstep(0.3, 1.0, stuttering);
-  stuttering *= 0.21;
+  // float glitchTime = uTimeAnimation - modelPosition.y * 0.02;
+  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  // stuttering /= 3.0 * displacementInteger;
+  // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // stuttering *= 0.21;
   // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency * uTime) - 0.5) * stuttering;
   // modelPosition.z += (random2D(modelPosition.zx * generateNoise * 0.8 * uTimeAnimation) - 0.5) * stuttering;
 

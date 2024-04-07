@@ -1,9 +1,9 @@
 float waveElevation(vec3 position) {
   // Elevation
-  float elevation = fract(sin(position.x * uWaveFrequency.x + uTime * uWaveSpeed) * 0.01) * fract(sin(position.y * uWaveFrequency.y + uTime * uWaveSpeed) * 0.01) * uWaveElevation;
+  float elevation = sin(position.x * uWaveFrequency.x + uAudioFrequency * uWaveSpeed) * cos(position.z * uWaveFrequency.y + uAudioFrequency * uWaveSpeed) * uWaveElevation;
 
   for (float i = 1.0; i <= 4.0; i++) {
-    elevation *= abs(perlinClassic3D(vec3(position.xz * 3.0 * i, uTimeAnimation * 0.2)) * 0.13 / i);
+    elevation -= abs(perlinClassic3D(vec3(position.xz * 3.0 * i, uTimeAnimation)) * 0.13 * i);
 
     return elevation;
   }

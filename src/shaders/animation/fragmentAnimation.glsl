@@ -30,7 +30,7 @@ vec3 palette(float tone) {
   vec3 c = vec3(0.3, 0.3, 0.8);
   vec3 d = vec3(0.263, 0.416, 0.557);
 
-  return a + b * cos(6.28318 * (sin(-c) * tone + d) * smoothstep(-0.144, 0.987, uAudioFrequency - 0.5) * 2.0);
+  return a + b * cos(sin(uTime + c) * tone + d) * uAudioFrequency;
 }
 
 void main() {
@@ -52,7 +52,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.02) * 21.0, 1.0);
+  float stripes = mod((vPosition.y - uTime * 0.03) * 21.0, 1.0);
   stripes = pow(stripes, 3.0);
 
   // Fresnel
@@ -108,17 +108,17 @@ void main() {
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
-  float minimumDistance = 1.0;
+  float minimumDistance = 100.0;
 
   for (float i = 0.0; i < 3.0; i++) {
-    uv = fract(uv * 1.5) - 0.5 + stripes;
+    uv = mod(uv * 1.5, uAudioFrequency) - 0.5 + stripes;
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 0.2);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 34.5);
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 
-    distanceToCenter = sin(distanceToCenter * 8.3 * uTime) / 8.5;
+    distanceToCenter = 1.0 + sin(distanceToCenter * 8.3 * uTime) / 8.5;
     distanceToCenter = abs(distanceToCenter);
 
     distanceToCenter = pow(0.2 / distanceToCenter, 1.2);

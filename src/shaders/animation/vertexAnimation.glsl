@@ -1,3 +1,5 @@
+#define PI 3.1415926538
+
 uniform vec2 uFrequency;
 uniform vec2 uResolution;
 uniform vec2 uWaveFrequency;
@@ -28,18 +30,19 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-  float elevation = waveElevation(modelPosition.xyz) * uAudioFrequency;
+  float elevation = waveElevation(modelPosition.xyz);
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x -= -sin(uAudioFrequency * 0.2);
-  modelPosition.y += elevation;
-  modelPositionAlpha.x += abs(1.0 + sin(uAudioFrequency + waveElevation(modelPositionAlpha)) * 2.0);
+  modelPosition.y += 1.0 + sin(uAudioFrequency * 0.2 * PI * elevation) * 2.0;
+  // modelPosition.y = abs(sin(elevation));
+  modelPositionAlpha.x += waveElevation(modelPositionAlpha);
   modelPositionBeta.z += waveElevation(modelPositionBeta);
 
   // Compute Normal
   vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
-  vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
+  vec3 computeNormal = cross(alphaNeighbor * uAudioFrequency, betaNeighbor * uAudioFrequency);
 
   // modelPosition.x = uAudioFrequency;
   // modelPosition.y += fract(sin(elevation * aRandom) * uAudioFrequency);

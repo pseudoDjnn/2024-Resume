@@ -1,3 +1,5 @@
+#define PI 3.1415926538
+
 uniform vec2 uResolution;
 uniform vec3 uColor;
 uniform vec3 uLightColor;
@@ -64,7 +66,7 @@ void main() {
 
   // Holographic
   float holographic = stripes * fresnel;
-  holographic += fresnel * 0.89;
+  holographic += fresnel * 1.21;
   holographic *= falloff;
 
   // Color mixing
@@ -111,17 +113,17 @@ void main() {
   float minimumDistance = 100.0;
 
   for (float i = 0.0; i < 3.0; i++) {
-    uv = mod(uv * 1.5, uAudioFrequency) - 0.5 + stripes;
+    uv = fract(uv * 1.5) - 0.5;
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uTime * 34.5);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uAudioFrequency * PI);
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 
-    distanceToCenter = 1.0 + sin(distanceToCenter * 8.3 * uTime) / 8.5;
-    distanceToCenter = abs(distanceToCenter);
+    distanceToCenter = 1.0 + sin(uAudioFrequency * 2.3 * distanceToCenter) * 1.5;
+    distanceToCenter = abs(sin(distanceToCenter));
 
-    distanceToCenter = pow(0.2 / distanceToCenter, 1.2);
+    distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 

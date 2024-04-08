@@ -15,7 +15,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.IcosahedronGeometry(3, 2)
+    this.geometry = new THREE.IcosahedronGeometry(3, 34)
     this.geometry.setIndex(null)
     this.geometry.deleteAttribute('normal')
 
@@ -73,11 +73,11 @@ export default class Animation {
 
   update() {
 
-    // this.mesh.rotation.x = Math.sin(this.time.elapsed * 0.0003)
-    // this.mesh.rotation.y = -Math.PI * 2
+    // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.02
+    // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
     // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.00003)
 
-    this.material.uniforms.uTimeAnimation.value = Math.cos(this.time.elapsed - 0.5) * 0.00055
+    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.0055
     this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00002
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 

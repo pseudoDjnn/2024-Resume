@@ -54,7 +54,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.03) * 21.0, 1.0);
+  float stripes = mod((vPosition.y - uTime * 0.03) * uAudioFrequency, 1.0);
   stripes = pow(stripes, 3.0);
 
   // Fresnel
@@ -95,8 +95,8 @@ void main() {
   // mixedColor = color;
 
   // Halftone
-  color = halftone(color, uShadowRepetitions, vec3(0.0, -1.0, 0.0), -0.8, 1.5, uShadowColor, normal);
-  color = halftone(color, uLightRepetitions, vec3(1.0, 1.0, 0.0), 0.5, 1.5, uLightColor, normal);
+  // color = halftone(color, uShadowRepetitions, vec3(0.0, -1.0, 0.0), -0.8, 1.5, uShadowColor, normal);
+  // color = halftone(color, uLightRepetitions, vec3(1.0, 1.0, 0.0), 0.5, 1.5, uLightColor, normal);
 
   // color = mix(color, pointColor, color);
 
@@ -116,12 +116,12 @@ void main() {
     uv = fract(uv * 1.5) - 0.5;
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = palette(length(uv0) + i * 0.5 + uAudioFrequency * PI);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 * uAudioFrequency * PI);
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 
-    distanceToCenter = 1.0 + sin(uAudioFrequency * 2.3 * distanceToCenter) * 1.5;
-    distanceToCenter = abs(sin(distanceToCenter));
+    distanceToCenter = sin(abs(uAudioFrequency * 0.02 + ceil(floor(PI * fract(distanceToCenter)) * 2.0 + 1.0)));
+    distanceToCenter = abs(distanceToCenter);
 
     distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
 

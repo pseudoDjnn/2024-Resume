@@ -65,20 +65,20 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.scale.set(13, 13, 13)
-    this.mesh.position.set(0, 0, 0)
-    this.mesh.rotation.set(21, 0, -55)
+    this.mesh.scale.set(5, 5, 5)
+    // this.mesh.position.set(0, 0, 0)
+    // this.mesh.rotation.set(0, 0, 0)
     this.scene.add(this.mesh)
   }
 
   update() {
 
-    // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.02
+    this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.00002
     // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
-    // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.00003)
+    this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.00003)
 
-    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed - 0.5) * 0.0055
-    this.material.uniforms.uTime.value = (this.time.elapsed - 0.5) * 0.00002
+    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed) * 0.000055
+    this.material.uniforms.uTime.value = (this.time.elapsed) * 0.00002
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
   }

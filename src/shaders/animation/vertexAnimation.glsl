@@ -43,7 +43,7 @@ void main() {
   modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
   modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
   modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
-  modelPosition.xy += sin(uTime * smoothstep(-1.0, 0.8, uAudioFrequency * 0.02) + elevation);
+  modelPosition.xy += sin(uTime * 2.0 * smoothstep(-1.0, 0.8, uAudioFrequency * 0.02) + elevation + PI);
   modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
   modelPosition.z -= 1.0 * sin(uAudioFrequency * 0.02 + elevation);
 

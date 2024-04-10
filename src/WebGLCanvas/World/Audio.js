@@ -21,7 +21,7 @@ export default class Audio {
     this.audioLoader.load('/sound/LFO_uKno.mp3', (bufnr) => {
       this.sound.setBuffer(bufnr)
       window.addEventListener('click', () => {
-        this.sound.setVolume(0.3)
+        this.sound.setVolume(0.5)
         this.sound.play()
       })
     })

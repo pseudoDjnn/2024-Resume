@@ -1,4 +1,4 @@
-#define PI 3.1415926538
+#define PI 3.1415926535897932384626433832795
 
 uniform vec2 uResolution;
 uniform vec3 uColor;
@@ -27,12 +27,12 @@ varying vec2 vUv;
 
 vec3 palette(float tone) {
 
-  vec3 a = vec3(0.149, 0.141, 0.912);
-  vec3 b = vec3(1.000, 0.833, 0.224);
-  vec3 c = vec3(0.3, 0.3, 0.8);
+  vec3 a = vec3(0.5, 0.5, 0.5);
+  vec3 b = vec3(0.5, 0.5, 0.5);
+  vec3 c = vec3(1.0, 1.0, 1.0);
   vec3 d = vec3(0.263, 0.416, 0.557);
 
-  return a + b * cos(sin(uTime + c) * tone + d) * uAudioFrequency;
+  return a + b * cos(sin(c) * tone + d) * pow(uAudioFrequency, 1.0);
 }
 
 void main() {
@@ -54,7 +54,7 @@ void main() {
   // float strength = random2D(vUv * vRandom * 89.0);
 
   // Strips
-  float stripes = mod((vPosition.y - uTime * 0.03) * uAudioFrequency, 1.0);
+  float stripes = mod((vPosition.y - uAudioFrequency) * 21.0, 1.0);
   stripes = pow(stripes, 3.0);
 
   // Fresnel
@@ -78,10 +78,10 @@ void main() {
   color = smoothstep(0.03, 0.8, color);
 
   // Smoother edges
-  color *= smoothstep(0.1, 0.8, vUv.x);
-  color *= smoothstep(0.5, 1.0, vUv.x);
-  color *= smoothstep(0.1, 0.8, vUv.y);
-  color *= smoothstep(0.5, 1.0, vUv.y);
+  color *= sin(smoothstep(0.8, 0.0, vUv.x * 144.0) + 0.5);
+  color *= sin(smoothstep(-1.0, 0.1, vUv.x * 144.0) + 0.5);
+  color *= smoothstep(0.8, 0.0, vUv.y);
+  color *= smoothstep(-1.0, 0., vUv.y);
 
   // Lights
   // vec3 light = vec3(0.0);
@@ -104,23 +104,24 @@ void main() {
   // float distanceToCenter = length(uv - vec2(0.5));
 
   // if (distanceToCenter > 0.5)
-  //   discard;
+  //   discard; 
 
   vec2 uv = vUv;
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
-  float minimumDistance = 100.0;
+  float minimumDistance = 1.0;
 
-  for (float i = 0.0; i < 3.0; i++) {
+  for (float i = 0.0; i < 4.0; i++) {
     uv = fract(uv * 1.5) - 0.5;
+
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = palette(length(uv0) + i * 0.5 * uAudioFrequency * PI);
+    vec3 colorLoop = palette(length(uv0) + i * 0.5 * distance(uAudioFrequency, minimumDistance));
 
     minimumDistance = min(minimumDistance, distanceToCenter);
 
-    distanceToCenter = sin(abs(uAudioFrequency * 0.02 + ceil(floor(PI * fract(distanceToCenter)) * 2.0 + 1.0)));
+    distanceToCenter = sin(distanceToCenter * 8.0 + step(uAudioFrequency * 0.2, minimumDistance)) / 8.0;
     distanceToCenter = abs(distanceToCenter);
 
     distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
@@ -130,8 +131,8 @@ void main() {
     finalColor += colorLoop * distanceToCenter;
   }
 
-  color *= finalColor;
-  // color -= step(0.8, abs(sin(55.0 * minimumDistance))) * 0.3;
+  // color *= finalColor;
+  // finalColor -= step(0.8, abs(sin(55.0 * minimumDistance))) * 0.3;
   // finalColor = smoothstep(0.3, 0.8, finalColor);
   // fragColor = vec4(finalColor, 1.0);
 

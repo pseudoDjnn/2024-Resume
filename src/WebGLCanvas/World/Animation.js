@@ -15,8 +15,9 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.IcosahedronGeometry(3, 34)
+    this.geometry = new THREE.IcosahedronGeometry(3, 55)
     this.geometry.setIndex(null)
+    this.geometry.deleteAttribute('uv')
     this.geometry.deleteAttribute('normal')
 
     this.count = this.geometry.attributes.position.count
@@ -33,39 +34,41 @@ export default class Animation {
     this.materialAnimationParamters.shadowColor = '#ff794d'
     this.materialAnimationParamters.lightColor = '#e5ffe0'
 
+    this.uniforms = {
+      //
+      uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
+      uColorOffset: new THREE.Uniform(0.925),
+      uColorMultiplier: new THREE.Uniform(1),
+      uShadeColor: new THREE.Uniform(),
+      uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
+      uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
+      //
+      uAudioFrequency: new THREE.Uniform(0),
+      uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
+      uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
+      uShadowRepetitions: new THREE.Uniform(13),
+      uLightRepetitions: new THREE.Uniform(55),
+      uTimeAnimation: new THREE.Uniform(0),
+      uTime: new THREE.Uniform(0),
+      //
+      uWaveElevation: new THREE.Uniform(0.5),
+      uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
+      uWaveSpeed: new THREE.Uniform(0.21),
+    }
+
     this.material = new THREE.ShaderMaterial({
       // wireframe: true,
       vertexShader: animationVertexShader,
       fragmentShader: animationFragmentShader,
       transparent: true,
       side: THREE.DoubleSide,
-      uniforms: {
-        //
-        uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
-        uColorOffset: new THREE.Uniform(0.925),
-        uColorMultiplier: new THREE.Uniform(1),
-        uShadeColor: new THREE.Uniform(),
-        uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
-        uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
-        //
-        uAudioFrequency: new THREE.Uniform(0),
-        uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
-        uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
-        uShadowRepetitions: new THREE.Uniform(13),
-        uLightRepetitions: new THREE.Uniform(55),
-        uTimeAnimation: new THREE.Uniform(0),
-        uTime: new THREE.Uniform(0),
-        //
-        uWaveElevation: new THREE.Uniform(0.5),
-        uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
-        uWaveSpeed: new THREE.Uniform(0.21),
-      },
+      uniforms: this.uniforms,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.scale.set(5, 5, 5)
+    // this.mesh.scale.set(1, 1, 1)
     // this.mesh.position.set(0, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)
     this.scene.add(this.mesh)
@@ -73,12 +76,12 @@ export default class Animation {
 
   update() {
 
-    this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.00002
+    this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.0001
     // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
-    this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.00003)
+    this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
 
     this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed) * 0.000055
-    this.material.uniforms.uTime.value = (this.time.elapsed) * 0.00002
+    this.material.uniforms.uTime.value = (this.time.elapsed) * 0.001
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
   }

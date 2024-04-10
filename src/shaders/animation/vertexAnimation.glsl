@@ -1,4 +1,4 @@
-#define PI 3.1415926538
+#define PI 3.1415926535897932384626433832795
 
 uniform vec2 uFrequency;
 uniform vec2 uResolution;
@@ -18,10 +18,10 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 
-#include ../includes/effects/perlin.glsl
+// #include ../includes/effects/perlin.glsl
 #include ../includes/effects/random2D.glsl
 #include ../includes/effects/waveElevation.glsl
-#include ../includes/effects/simplexNoise3D.glsl
+// #include ../includes/effects/simplexNoise3D.glsl
 
 void main() {
   // Base Postion
@@ -34,18 +34,28 @@ void main() {
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x += sin(abs(uTimeAnimation * ceil(floor(PI * fract(uAudioFrequency * 0.02)) * 2.0 + 1.0)));
-  // modelPosition.y += elevation;
-  // modelPosition.z += sin(modelPosition.x + modelPosition.y) * uAudioFrequency;
 
-  modelPositionAlpha.xy += waveElevation(modelPositionAlpha);
-  modelPositionBeta.yz += waveElevation(modelPositionBeta);
+  // if (modelPosition.z < uAudioFrequency) {
+  //   modelPosition.z *= uAudioFrequency * 0.03;
+  // modelPosition.x *= sin(modelPosition.x + modelPosition.y * uAudioFrequency);
+  // }
+
+  modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
+  modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
+  modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
+  modelPosition.xy += sin(uTime * smoothstep(-1.0, 0.8, uAudioFrequency * 0.02) + elevation);
+  modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
+  modelPosition.z -= 1.0 * sin(uAudioFrequency * 0.02 + elevation);
+
+  modelPositionAlpha.y += waveElevation(modelPositionAlpha);
+  modelPositionBeta.y += waveElevation(modelPositionBeta);
 
   // Compute Normal
-  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
+  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz) * uAudioFrequency;
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
-  computeNormal = smoothstep(0.8, 0.0, computeNormal);
+  // computeNormal = smoothstep(0.8, 0.0, computeNormal);
 
   // modelPosition.x = uAudioFrequency;
   // modelPosition.y += fract(sin(elevation * aRandom) * uAudioFrequency);
@@ -69,9 +79,10 @@ void main() {
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
+  stuttering *= uAudioFrequency * 0.2;
   stuttering *= 0.21;
-  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency * uTime) - 0.5) * stuttering;
-  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency * uTimeAnimation) - 0.5) * stuttering;
+  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
+  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

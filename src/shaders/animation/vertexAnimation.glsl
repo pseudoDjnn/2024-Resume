@@ -28,6 +28,10 @@ float sinc(float x, float k) {
   return sin(a) / a;
 }
 
+float cubicRational(float x) {
+  return x * x * x * (3.0 * x * x - 3.0 * x + 1.0);
+}
+
 void main() {
   // Base Postion
   float shift = 0.01;
@@ -45,12 +49,12 @@ void main() {
   // modelPosition.x *= sin(modelPosition.x + modelPosition.y * uAudioFrequency);
   // }
 
-  modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
-  modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
-  modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
-  modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
-  modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
-  modelPosition.z -= 1.0 * sin(uAudioFrequency * 0.02 + elevation);
+  // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
+  // modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
+  // modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
+  // modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
+  // modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
+  modelPosition.z -= 1.0 * cubicRational(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation));
 
   modelPositionAlpha.y += waveElevation(modelPositionAlpha);
   modelPositionBeta.y += waveElevation(modelPositionBeta);
@@ -84,6 +88,7 @@ void main() {
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);
+  // stuttering = quinticPolynomial(stuttering);
   stuttering *= uAudioFrequency * 0.2;
   stuttering *= 0.21;
   modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;

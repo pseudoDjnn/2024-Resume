@@ -35,6 +35,14 @@ vec3 palette(float tone) {
   return a + b * cos(sin(c) * tone + d) * pow(uAudioFrequency, 1.0);
 }
 
+float parabola(float x, float k) {
+  return pow(4.0 * x * (1.0 - x), k);
+}
+
+float quinticPolynomial(float x) {
+  return x * x * x * (x * (x * 6.0 - 15.0) + 1.0);
+}
+
 void main() {
 
   // Base color
@@ -68,6 +76,7 @@ void main() {
   float holographic = stripes * fresnel;
   holographic += fresnel * 1.21;
   holographic *= falloff;
+  // holographic *= palette(holographic);
 
   // Color mixing
   // vec3 blackColor = vec3(0.0);
@@ -75,11 +84,12 @@ void main() {
   // vec3 mixedColor = mix(blackColor, uvColor, color);
 
   // Color Remap
-  color = smoothstep(0.03, 0.8, color);
+  // color = smoothstep(0.3, 0.8, color * uAudioFrequency);
+  color *= parabola(uTime * holographic * uAudioFrequency, 1.0);
 
   // Smoother edges
-  color *= sin(smoothstep(0.8, 0.0, vUv.x * 144.0) + 0.5);
-  color *= sin(smoothstep(-1.0, 0.1, vUv.x * 144.0) + 0.5);
+  color *= smoothstep(0.8, 0.0, vUv.x);
+  color *= smoothstep(-1.0, 0.1, vUv.x);
   color *= smoothstep(0.8, 0.0, vUv.y);
   color *= smoothstep(-1.0, 0., vUv.y);
 
@@ -124,7 +134,7 @@ void main() {
     distanceToCenter = sin(distanceToCenter * 8.0 + step(uAudioFrequency * 0.2, minimumDistance)) / 8.0;
     distanceToCenter = abs(distanceToCenter);
 
-    distanceToCenter = pow(0.01 / distanceToCenter, 1.2);
+    distanceToCenter = quinticPolynomial(0.01 / distanceToCenter);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 

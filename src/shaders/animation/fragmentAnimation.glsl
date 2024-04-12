@@ -25,22 +25,22 @@ varying vec2 vUv;
 #include ../includes/lights/directionalLight.glsl
 #include ../includes/effects/halftone.glsl
 
-vec3 palette(float tone) {
-
-  vec3 a = vec3(0.5, 0.5, 0.5);
-  vec3 b = vec3(0.5, 0.5, 0.5);
-  vec3 c = vec3(1.0, 1.0, 1.0);
-  vec3 d = vec3(0.263, 0.416, 0.557);
-
-  return a + b * cos(sin(c) * tone + d) * pow(uAudioFrequency, 1.0);
-}
-
 float parabola(float x, float k) {
   return pow(4.0 * x * (1.0 - x), k);
 }
 
 float quinticPolynomial(float x) {
   return x * x * x * (x * (x * 6.0 - 15.0) + 1.0);
+}
+
+vec3 palette(float tone) {
+
+  vec3 a = cos(uAudioFrequency * 0.02 * vec3(0.5, 0.5, 0.5));
+  vec3 b = atan(uTime * uTime * vec3(0.5, 0.5, 0.5));
+  vec3 c = cos(uTime * vec3(1.0, 1.0, 1.0));
+  vec3 d = sin(uAudioFrequency * 0.02 * uTime * vec3(0.263, 0.416, 0.557));
+
+  return a + b * cos(sin(c) * tone + d) * pow(uAudioFrequency, 1.0);
 }
 
 void main() {

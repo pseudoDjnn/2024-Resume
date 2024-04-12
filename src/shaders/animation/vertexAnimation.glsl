@@ -32,6 +32,21 @@ float cubicRational(float x) {
   return x * x * x * (3.0 * x * x - 3.0 * x + 1.0);
 }
 
+float polynomialImpluse(float k, float x) {
+  return 2.0 * sqrt(k) * x / (1.0 + k * x * x);
+}
+
+float sdBoxFrame(vec3 p, vec3 b, float e) {
+  p = abs(p) - b;
+  vec3 q = abs(p + e) - e;
+  return min(min(length(max(vec3(p.x, q.y, q.z), 0.0)) + min(max(p.x, max(q.y, q.z)), 0.0), length(max(vec3(q.x, p.y, q.z), 0.0)) + min(max(q.x, max(p.y, q.z)), 0.0)), length(max(vec3(q.x, q.y, p.z), 0.0)) + min(max(q.x, max(q.y, p.z)), 0.0));
+}
+
+float sdRoundBox(vec3 p, vec3 b, float r) {
+  vec3 q = abs(p) - b + r;
+  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+}
+
 void main() {
   // Base Postion
   float shift = 0.01;
@@ -49,12 +64,12 @@ void main() {
   // modelPosition.x *= sin(modelPosition.x + modelPosition.y * uAudioFrequency);
   // }
 
-  // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
-  // modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
+  modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
+  modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
   // modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
   // modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
   // modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
-  modelPosition.z -= 1.0 * cubicRational(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation));
+  modelPosition.z += 1.0 * polynomialImpluse(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation), 1.0);
 
   modelPositionAlpha.y += waveElevation(modelPositionAlpha);
   modelPositionBeta.y += waveElevation(modelPositionBeta);
@@ -62,6 +77,8 @@ void main() {
   // Compute Normal
   vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz) * uAudioFrequency;
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
+  float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
+  modelPosition.z += boxFrame;
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
 
   // computeNormal = smoothstep(0.8, 0.0, computeNormal);

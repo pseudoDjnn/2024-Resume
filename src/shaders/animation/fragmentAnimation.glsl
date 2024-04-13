@@ -33,12 +33,18 @@ float quinticPolynomial(float x) {
   return x * x * x * (x * (x * 6.0 - 15.0) + 1.0);
 }
 
+float integralSmoothstep(float x, float T) {
+  if (x > T)
+    return x - T / 2.0;
+  return x * x * x * (1.0 - x * 0.5 / T) / T / T;
+}
+
 vec3 palette(float tone) {
 
   vec3 a = cos(uAudioFrequency * 0.02 * vec3(0.5, 0.5, 0.5));
-  vec3 b = atan(uTime * uTime * vec3(0.5, 0.5, 0.5));
-  vec3 c = cos(uTime * vec3(1.0, 0.7, 0.4));
-  vec3 d = sin(uAudioFrequency * 0.02 * uTime * vec3(0.00, 0.15, 0.20));
+  vec3 b = atan(uAudioFrequency * uAudioFrequency * vec3(0.5, 0.5, 0.5));
+  vec3 c = cos(uAudioFrequency * vec3(1.0, 0.7, 0.4));
+  vec3 d = sin(uAudioFrequency * 0.02 * uAudioFrequency * uAudioFrequency * vec3(0.00, 0.15, 0.20));
 
   return a + b * cos(6.28318 * (c + tone + d) + fract(uAudioFrequency));
 }
@@ -85,7 +91,7 @@ void main() {
 
   // Color Remap
   // color = smoothstep(0.3, 0.8, color * uAudioFrequency);
-  color *= parabola(uTime * holographic * uAudioFrequency, 1.0);
+  // color *= parabola(uTime * holographic * uAudioFrequency, 1.0);
 
   // Smoother edges
   color *= smoothstep(0.8, 0.0, vUv.x);
@@ -116,7 +122,7 @@ void main() {
   // if (distanceToCenter > 0.5)
   //   discard; 
 
-  vec2 uv = vUv;
+  vec2 uv = vUv * 4.0;
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
 
@@ -134,7 +140,7 @@ void main() {
     distanceToCenter = sin(distanceToCenter * 8.0 + step(uAudioFrequency * 0.2, minimumDistance)) / 8.0;
     distanceToCenter = abs(distanceToCenter);
 
-    distanceToCenter = quinticPolynomial(0.01 / distanceToCenter);
+    distanceToCenter = integralSmoothstep(0.01 / distanceToCenter, 0.5);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 

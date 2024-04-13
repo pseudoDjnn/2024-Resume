@@ -23,31 +23,40 @@ varying vec2 vUv;
 #include ../includes/effects/terrainGeneration.glsl
 // #include ../includes/effects/simplexNoise3D.glsl
 
-float sinc(float x, float k) {
-  float a = PI * (k * x - 1.0);
-  return sin(a) / a;
+float cubicPolynomial(float x) {
+  return x * x * (3.0 - 2.0 * x);
+}
+
+float quarticPolynomial(float x) {
+  return x * x * (2.0 - x * x);
+}
+
+float quinticPolynomial(float x) {
+  return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
+}
+
+float quadraticRational(float x) {
+  return x * x / (2.0 * x * x - 2.0 * x + 1.0);
 }
 
 float cubicRational(float x) {
   return x * x * x / (3.0 * x * x - 3.0 * x + 1.0);
 }
 
-float polynomialImpluse(float k, float x) {
-  return 2.0 * sqrt(k) * x / (1.0 + k * x * x);
-}
-
 float rational(float x, float n) {
   return pow(x, n) / (pow(x, n) + pow(1.0 - x, n));
 }
 
-float integralSmoothstep(float x, float T) {
-  if (x > T)
-    return x - T / 2.0;
-  return x * x * x * (1.0 - x * 0.5 / T) / T / T;
+float piecewiseQuadratic(float x) {
+  return (x < 0.5) ? 2.0 * x * x : 2.0 * x * (2.0 - x) - 1.0;
 }
 
-float quarticPolynomial(float x) {
-  return x * x * (2.0 - x * x);
+float piecewisePolynomial(float x, float n) {
+  return (x < 0.5) ? 0.5 * pow(2.0 * x, n) : 1.0 - 0.5 * pow(2.0 * (1.0 - x), n);
+}
+
+float trigonmetric(float x) {
+  return 0.5 - 0.5 * cos(PI * x);
 }
 
 void main() {
@@ -57,15 +66,18 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-  float elevation = terrainGeneration(modelPosition.xyz, 1.0);
+  float elevation = terrainGeneration(modelPosition.xyz, 0.0);
   // float frame = sdBoxFrame(modelPositionAlpha, modelPositionBeta, elevation);
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x += sin(abs(uTimeAnimation * ceil(floor(PI * fract(uAudioFrequency * 0.02)) * 2.0 + 1.0)));
+  modelPosition.z += elevation;
 
-  modelPosition.y += elevation;
+  // modelPosition.z += quarticPolynomial(elevation);
+  // modelPosition.y += quadraticRational(elevation) * 0.2;
+  // modelPosition.z += trigonmetric(elevation) * 0.2;
 
-  // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
+  // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.0002)) * 2.0 + 1.0));
   // modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
   // modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
   // modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
@@ -106,16 +118,16 @@ void main() {
   // displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
 
   // Glitching effect
-  // float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
-  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  // stuttering /= 3.0;
-  // // stuttering = smoothstep(0.3, 1.0, stuttering);
-  // // stuttering = polynomialImpluse(stuttering, 1.0);
-  // // stuttering = rational(stuttering, 1.0);
-  // stuttering *= uAudioFrequency * 0.1;
-  // stuttering *= 0.21;
-  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
-  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
+  float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
+  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  stuttering /= 3.0;
+  // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // stuttering = polynomialImpluse(stuttering, 1.0);
+  // stuttering = rational(stuttering, 1.0);
+  stuttering *= uAudioFrequency * 0.1;
+  stuttering *= 0.21;
+  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
+  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

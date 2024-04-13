@@ -20,7 +20,7 @@ varying vec2 vUv;
 
 // #include ../includes/effects/perlin.glsl
 #include ../includes/effects/random2D.glsl
-#include ../includes/effects/waveElevation.glsl
+#include ../includes/effects/terrainGeneration.glsl
 // #include ../includes/effects/simplexNoise3D.glsl
 
 float sinc(float x, float k) {
@@ -29,22 +29,25 @@ float sinc(float x, float k) {
 }
 
 float cubicRational(float x) {
-  return x * x * x * (3.0 * x * x - 3.0 * x + 1.0);
+  return x * x * x / (3.0 * x * x - 3.0 * x + 1.0);
 }
 
 float polynomialImpluse(float k, float x) {
   return 2.0 * sqrt(k) * x / (1.0 + k * x * x);
 }
 
-float sdBoxFrame(vec3 p, vec3 b, float e) {
-  p = abs(p) - b;
-  vec3 q = abs(p + e) - e;
-  return min(min(length(max(vec3(p.x, q.y, q.z), 0.0)) + min(max(p.x, max(q.y, q.z)), 0.0), length(max(vec3(q.x, p.y, q.z), 0.0)) + min(max(q.x, max(p.y, q.z)), 0.0)), length(max(vec3(q.x, q.y, p.z), 0.0)) + min(max(q.x, max(q.y, p.z)), 0.0));
+float rational(float x, float n) {
+  return pow(x, n) / (pow(x, n) + pow(1.0 - x, n));
 }
 
-float sdRoundBox(vec3 p, vec3 b, float r) {
-  vec3 q = abs(p) - b + r;
-  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+float integralSmoothstep(float x, float T) {
+  if (x > T)
+    return x - T / 2.0;
+  return x * x * x * (1.0 - x * 0.5 / T) / T / T;
+}
+
+float quarticPolynomial(float x) {
+  return x * x * (2.0 - x * x);
 }
 
 void main() {
@@ -54,32 +57,34 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-  float elevation = waveElevation(modelPosition.xyz);
+  float elevation = terrainGeneration(modelPosition.xyz, 1.0);
+  // float frame = sdBoxFrame(modelPositionAlpha, modelPositionBeta, elevation);
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x += sin(abs(uTimeAnimation * ceil(floor(PI * fract(uAudioFrequency * 0.02)) * 2.0 + 1.0)));
 
-  // if (modelPosition.z < uAudioFrequency) {
-  //   modelPosition.z *= uAudioFrequency * 0.03;
-  // modelPosition.x *= sin(modelPosition.x + modelPosition.y * uAudioFrequency);
-  // }
+  modelPosition.y += elevation;
 
-  modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
-  modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
+  // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.002)) * 2.0 + 1.0));
+  // modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
   // modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
   // modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
   // modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
-  modelPosition.z += 1.0 * polynomialImpluse(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation), 1.0);
+  // modelPosition.xy -= cubicRational(uAudioFrequency * 0.1 * elevation);
+  // modelPosition.xy += cubicRational(uAudioFrequency * 0.1 * elevation);
+  // modelPosition.z += 1.0 * polynomialImpluse(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation), 1.0);
 
-  modelPositionAlpha.y += waveElevation(modelPositionAlpha);
-  modelPositionBeta.y += waveElevation(modelPositionBeta);
+  modelPositionAlpha.y += terrainGeneration(modelPositionAlpha, 1.0);
+  modelPositionBeta.y += terrainGeneration(modelPositionBeta, 1.0);
 
   // Compute Normal
-  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz) * uAudioFrequency;
+  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
-  float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
-  modelPosition.z += boxFrame;
+
+  // float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
+  // modelPosition.z += boxFrame;
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
+  // modelPosition += map(vec3(computeNormal * 0.2));
 
   // computeNormal = smoothstep(0.8, 0.0, computeNormal);
 
@@ -101,15 +106,16 @@ void main() {
   // displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
 
   // Glitching effect
-  float glitchTime = uAudioFrequency - modelPosition.y * 0.2;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  stuttering /= 3.0;
-  stuttering = smoothstep(0.3, 1.0, stuttering);
-  // stuttering = quinticPolynomial(stuttering);
-  stuttering *= uAudioFrequency * 0.2;
-  stuttering *= 0.21;
-  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
-  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
+  // float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
+  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  // stuttering /= 3.0;
+  // // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // // stuttering = polynomialImpluse(stuttering, 1.0);
+  // // stuttering = rational(stuttering, 1.0);
+  // stuttering *= uAudioFrequency * 0.1;
+  // stuttering *= 0.21;
+  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
+  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

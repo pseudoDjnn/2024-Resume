@@ -24,7 +24,7 @@ export default class Animation {
     this.randoms = new Float32Array(this.count, 2)
 
     for (let x = 0; x < this.count; x++) {
-      this.randoms[x] = Math.hypot(this.count * Math.abs(Math.sin(Math.random() * 10000.0)) * -1 - 1)
+      this.randoms[x] = Math.random()
     }
 
     this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))

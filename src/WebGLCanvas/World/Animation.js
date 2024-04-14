@@ -37,23 +37,23 @@ export default class Animation {
     this.uniforms = {
       //
       uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
-      uColorOffset: new THREE.Uniform(0.925),
-      uColorMultiplier: new THREE.Uniform(1),
-      uShadeColor: new THREE.Uniform(),
-      uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
-      uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
+      // uColorOffset: new THREE.Uniform(0.925),
+      // uColorMultiplier: new THREE.Uniform(1),
+      // uShadeColor: new THREE.Uniform(),
+      // uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
+      // uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
       //
       uAudioFrequency: new THREE.Uniform(0),
-      uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
+      // uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
       uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uShadowRepetitions: new THREE.Uniform(13),
       uLightRepetitions: new THREE.Uniform(55),
       uTimeAnimation: new THREE.Uniform(0),
       uTime: new THREE.Uniform(0),
       //
-      uWaveElevation: new THREE.Uniform(0.5),
-      uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
-      uWaveSpeed: new THREE.Uniform(0.21),
+      // uWaveElevation: new THREE.Uniform(0.5),
+      // uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
+      // uWaveSpeed: new THREE.Uniform(0.21),
     }
 
     this.material = new THREE.ShaderMaterial({

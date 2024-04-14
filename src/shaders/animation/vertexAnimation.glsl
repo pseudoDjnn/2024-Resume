@@ -19,7 +19,7 @@ varying vec3 vPosition;
 varying vec2 vUv;
 
 // #include ../includes/effects/perlin.glsl
-#include ../includes/effects/random2D.glsl
+// #include ../includes/effects/random2D.glsl
 #include ../includes/effects/terrainGeneration.glsl
 #include ../includes/effects/boxFrame.glsl
 
@@ -49,39 +49,66 @@ void main() {
   vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
-  float elevation = terrainGeneration(modelPosition.xyz, 0.0);
-  vec3 frame = calcNormal(vec3(elevation));
+  float elevation = terrainGeneration(modelPosition.xyz, 1.0);
+  modelPosition.y += elevation;
+  vec3 frame = calcNormal(modelPositionAlpha * modelPositionBeta);
+
+  const int octaves = 1;
+  float lacunarity = 2.0;
+  float gain = 0.5;
+
+  float amplitude = 0.5;
+  float frequency = 1.0;
+
+  // for (int i = 0; i < octaves; i++) {
+  //   modelPosition.x += amplitude * terrainGeneration(frequency * modelPositionAlpha, 1.0);
+  //   modelPosition.x += amplitude * terrainGeneration(frequency * modelPositionBeta, 1.0);
+  //   frequency *= lacunarity;
+  //   amplitude *= gain;
+  // }
+
+  float time = -uAudioFrequency * 0.1;
+  modelPosition.y += sin(elevation * frequency * 2.1 + time) * 5.5;
+  modelPosition.z += cos(elevation * frequency * 1.89 + time * 1.144) * 5.0;
+  modelPosition.x *= sin(elevation * frequency * 2.233 + time * 0.610) * 5.0;
+  modelPosition.z += cos(elevation * frequency * 3.1597 + time * 3.233) * 2.5;
+  // modelPosition.y *= amplitude * 0.05;
+
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x += sin(abs(uTimeAnimation * ceil(floor(PI * fract(uAudioFrequency * 0.02)) * 2.0 + 1.0)));
-  // modelPosition.z = frame / 1.0;
 
   // modelPosition.z += quadraticPolynomial(uTime, 1.0, -uTime);
-  modelPosition.yx += quadraticRational(elevation) * 0.001;
+  modelPosition.yx += quadraticRational(elevation) * 0.01;
   // modelPosition.z += trigonmetric(elevation) * 0.2;
 
   // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.0002)) * 2.0 + 1.0));
   // modelPosition.x += cos(uTime * -uAudioFrequency * 0.002 + fract(elevation * 0.0002)) * 2.0 + 1.0;
   // modelPosition.x -= 1.0 + atan(uAudioFrequency * 0.1 + uTime, 1.0) + elevation;
-  // modelPosition.xy += sin(uTime * 2.0 * sinc(uAudioFrequency * 0.02, -1.0) + elevation + PI);
+  // modelPosition.xy += sin(uTime * 2.0 * sin(uAudioFrequency * 0.02) + elevation + PI);
   // modelPosition.y += sin(uAudioFrequency * 0.02 + elevation * 0.2);
   // modelPosition.xy -= cubicRational(uAudioFrequency * 0.1 * elevation);
   // modelPosition.xy += cubicRational(uAudioFrequency * 0.1 * elevation);
-  // modelPosition.z += 1.0 * polynomialImpluse(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation), 1.0);
+  // modelPosition.z += quarticPolynomial(uAudioFrequency * 0.02 + exp(uTime * uTime * elevation));
 
-  modelPositionAlpha.y += terrainGeneration(modelPositionAlpha, 1.0);
-  modelPositionBeta.y += terrainGeneration(modelPositionBeta, 1.0);
+  // modelPositionAlpha.y += terrainGeneration(modelPositionAlpha, 0.0);
+  // modelPositionBeta *= frame;
+  // modelPositionBeta.z += terrainGeneration(modelPositionBeta, 1.0);
 
   // Compute Normal
   vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
+  // alphaNeighbor += frame;
   vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
+  // betaNeighbor += frame;
+  // modelPosition *= sdBoxFrame(alphaNeighbor, betaNeighbor, elevation);
 
   // float boxFrame = sdBoxFrame(alphaNeighbor, betaNeighbor, elevation);
 
   // float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
   // modelPosition.z += boxFrame;
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
-  // computeNormal *= frame;
+  // modelPosition += map(computeNormal);
+  // computeNormal += frame;
   // modelPosition += map(vec3(computeNormal * 0.2));
 
   // computeNormal = smoothstep(0.8, 0.0, computeNormal);
@@ -130,5 +157,4 @@ void main() {
   vNormal = computeNormal;
   vPosition = modelPosition.xyz;
   vUv = uv;
-
 }

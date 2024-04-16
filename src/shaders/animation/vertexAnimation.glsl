@@ -21,7 +21,7 @@ varying vec2 vUv;
 // #include ../includes/effects/perlin.glsl
 // #include ../includes/effects/random2D.glsl
 #include ../includes/effects/terrainGeneration.glsl
-#include ../includes/effects/boxFrame.glsl
+// #include ../includes/effects/boxFrame.glsl
 
 float quarticPolynomial(float x) {
   return x * x * (2.0 - x * x);
@@ -42,6 +42,33 @@ float quadraticPolynomial(float a, float b, float k) {
   return min(a, b) - h * h * k * (1.0 / 4.0);
 }
 
+float pcurve(float x, float a, float b) {
+  float k = pow(a + b, a + b) / (pow(a, a) * pow(b, b));
+  return k * pow(x, a) * pow(1.0 - x, b);
+}
+
+float cubicPulse(float c, float w, float x) {
+  x = abs(x - c);
+  if (x > w)
+    return 0.0;
+  x /= w;
+  return 1.0 - x * x * (3.0 - 2.0 * x);
+}
+
+float expStep(float x, float n) {
+  return exp2(-exp2(n) * pow(x, n));
+}
+
+mat2 rotate(float axis) {
+  return mat2(cos(axis), -sin(axis), sin(axis), cos(axis));
+}
+
+float smin(float a, float b, float k) {
+  k *= 1.0 / (1.0 - sqrt(0.5));
+  return max(k, min(a, b)) -
+    length(max(k - vec2(a, b), 0.0));
+}
+
 void main() {
   // Base Postion
   float shift = 0.01;
@@ -50,36 +77,35 @@ void main() {
   vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
   float elevation = terrainGeneration(modelPosition.xyz, 1.0);
-  modelPosition.y += elevation;
-  vec3 frame = calcNormal(modelPositionAlpha * modelPositionBeta);
+  // elevation += smin(uAudioFrequency, 0.0, 1.0);
+  // modelPosition.y += elevation;
+  // vec3 frame = calcNormal(modelPositionAlpha * modelPositionBeta);
 
-  const int octaves = 1;
-  float lacunarity = 2.0;
-  float gain = 0.5;
-
-  float amplitude = 0.5;
+  float amplitude = 3.0;
   float frequency = 1.0;
 
-  // for (int i = 0; i < octaves; i++) {
-  //   modelPosition.x += amplitude * terrainGeneration(frequency * modelPositionAlpha, 1.0);
-  //   modelPosition.x += amplitude * terrainGeneration(frequency * modelPositionBeta, 1.0);
-  //   frequency *= lacunarity;
-  //   amplitude *= gain;
-  // }
+  modelPosition.y += sin(elevation * frequency + uAudioFrequency * 0.01);
+  // modelPosition.z *= random2D(clamp(elevation * frequency, modelPosition.x, modelPosition.z) * modelPosition.xz);
 
-  float time = -uAudioFrequency * 0.1;
-  modelPosition.y += sin(elevation * frequency * 2.1 + time) * 5.5;
-  modelPosition.z += cos(elevation * frequency * 1.89 + time * 1.144) * 5.0;
-  modelPosition.x *= sin(elevation * frequency * 2.233 + time * 0.610) * 5.0;
-  modelPosition.z += cos(elevation * frequency * 3.1597 + time * 3.233) * 2.5;
-  // modelPosition.y *= amplitude * 0.05;
+  float time = 0.02 * (uTime * 144.0);
+  modelPosition.xyz *= cos(exp(-length(elevation)) * frequency * 2.1 - clamp(length(-uAudioFrequency * 0.2), 0.02, 0.610) * time + smoothstep(-uAudioFrequency * 0.02, elevation, -sin(elevation))) * 5.5;
+  modelPosition.xy *= rotate(-uAudioFrequency * -0.01 + uAudioFrequency * 0.01);
+  // modelPosition.x += cos(elevation * 3.0);
+  // modelPosition.x += abs(cos(elevation * 2.5)) * 0.5 + 0.3;
+  // modelPosition.x += abs(cos(elevation * 13.0) * sin(elevation * 3.0) * 0.8 + 0.1);
+  // modelPosition.x += smoothstep(-0.5, 1.0, cos(elevation * 13.0)) * 0.2 + 0.5;
+  // modelPosition.x -= sin(uAudioFrequency - -sin(time + elevation * frequency));
+  // modelPosition.z *= -cos(elevation * frequency * 1.89 + time + uAudioFrequency * 1.89) * 2.0;
+  // modelPosition.x *= expStep(elevation * frequency * 2.233 + time * 0.610, elevation) * 5.0;
+  // modelPosition.z *= -sin(elevation * frequency * 5.1597 + time * 3.233) * 2.5;
+  // modelPosition.xy += sin(abs(uAudioFrequency * 0.1 * ceil(floor(PI * fract(amplitude * 0.005)) * 2.0 + 1.0)));
 
   // elevation = pow(elevation, 2.0);
   // elevation += smoothstep(0.3, 1.0, uAudioFrequency);
   // modelPosition.x += sin(abs(uTimeAnimation * ceil(floor(PI * fract(uAudioFrequency * 0.02)) * 2.0 + 1.0)));
 
   // modelPosition.z += quadraticPolynomial(uTime, 1.0, -uTime);
-  modelPosition.yx += quadraticRational(elevation) * 0.01;
+  modelPosition.yx += quadraticRational(elevation * modelPosition.x * modelPosition.y) * 0.01;
   // modelPosition.z += trigonmetric(elevation) * 0.2;
 
   // modelPosition.x -= sin(uAudioFrequency * 0.02 * ceil(floor(PI * fract(elevation * 0.0002)) * 2.0 + 1.0));
@@ -107,6 +133,7 @@ void main() {
   // float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
   // modelPosition.z += boxFrame;
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
+  // computeNormal *= calcNormal(computeNormal);
   // modelPosition += map(computeNormal);
   // computeNormal += frame;
   // modelPosition += map(vec3(computeNormal * 0.2));
@@ -131,16 +158,16 @@ void main() {
   // displacementInteger = smoothstep(0.0, 1.0, displacementFraction);
 
   // Glitching effect
-  float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  stuttering /= 3.0;
-  // stuttering = smoothstep(0.3, 1.0, stuttering);
-  // stuttering = polynomialImpluse(stuttering, 1.0);
-  // stuttering = rational(stuttering, 1.0);
-  stuttering *= uAudioFrequency * 0.1;
-  stuttering *= 0.21;
-  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
-  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
+  // float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
+  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  // stuttering /= 3.0;
+  // // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // // stuttering = polynomialImpluse(stuttering, 1.0);
+  // // stuttering = rational(stuttering, 1.0);
+  // stuttering *= uAudioFrequency * 0.1;
+  // stuttering *= 0.21;
+  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering;
+  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

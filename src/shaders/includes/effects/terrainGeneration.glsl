@@ -2,10 +2,6 @@
 #include ../effects/perlin.glsl
 #include ../effects/random2D.glsl
 
-float fnoise(in float x, in float w) {
-  return simplexNoise3d(vec3(x)) * smoothstep(1.0, 0.5, w);
-}
-
 float terrainGeneration(in vec3 position, in float Helo) {
 
   // Elevation
@@ -21,7 +17,7 @@ float terrainGeneration(in vec3 position, in float Helo) {
   float elevation = 0.0;
   // elevation *= fnoise(uWarpFrequency, uWarpFrequency);
   elevation += simplexNoise3d(warpedPosition * uPositionFrequency) / 3.0;
-  // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0, uWarpFrequency);
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0, uWarpFrequency;
   // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0, uWarpFrequency);
   // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 5.0) / 13.0, uWarpFrequency);
 

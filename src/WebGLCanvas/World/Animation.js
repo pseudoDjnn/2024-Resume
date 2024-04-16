@@ -31,8 +31,8 @@ export default class Animation {
 
     this.materialAnimationParamters = {}
     this.materialAnimationParamters.color = '#70c1ff'
-    this.materialAnimationParamters.shadowColor = '#ff794d'
-    this.materialAnimationParamters.lightColor = '#e5ffe0'
+    // this.materialAnimationParamters.shadowColor = '#ff794d'
+    // this.materialAnimationParamters.lightColor = '#e5ffe0'
 
     this.uniforms = {
       //
@@ -69,7 +69,7 @@ export default class Animation {
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
     // this.mesh.scale.set(1, 1, 1)
-    // this.mesh.position.set(0, 0, 0)
+    // this.mesh.position.set(-3, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)
     this.scene.add(this.mesh)
   }

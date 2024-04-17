@@ -36,7 +36,7 @@ export default class Animation {
 
     this.uniforms = {
       //
-      uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
+      // uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
       // uColorOffset: new THREE.Uniform(0.925),
       // uColorMultiplier: new THREE.Uniform(1),
       // uShadeColor: new THREE.Uniform(),
@@ -68,7 +68,7 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    // this.mesh.scale.set(1, 1, 1)
+    this.mesh.scale.set(5, 5, 5)
     // this.mesh.position.set(-3, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)
     this.scene.add(this.mesh)

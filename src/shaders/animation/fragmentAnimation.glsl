@@ -41,6 +41,10 @@ float integralSmoothstep(float x, float T) {
   return x * x * x * (1.0 - x * 0.5 / T) / T / T;
 }
 
+float expStep(float x, float k, float n) {
+  return exp(-k * pow(x, n));
+}
+
 vec3 palette(float tone) {
 
   vec3 a = cos(vec3(0.5, 0.5, 0.5));
@@ -53,44 +57,30 @@ vec3 palette(float tone) {
 
 vec3 getColor(float amount) {
   vec3 color = 0.5 + 0.5 * cos(uTime * (sin(vec3(0.0, 0.3, 0.8)) + -sin(amount) * cos(vec3(1.0, 1.0, 1.0))));
-  return color * palette(amount * length(uAudioFrequency));
+  return color * palette(amount * mod(uAudioFrequency, 0.5));
 }
 
-mat2 m = mat2(0.8, 0.6, -0.6, 0.8);
+// mat2 m = mat2(0.8, 0.6, -0.6, 0.8);
 
-float fnoise(in float x, in float w) {
-  return random2D(vec2(x)) * smoothstep(1.0, 0.5, w);
-}
+// float fnoise(in float x, in float w) {
+//   return random2D(vec2(x)) * smoothstep(1.0, 0.5, w);
+// }
 
-float noise(in vec2 x);
+// float noise(in vec2 x);
 
-float fbm(vec2 p) {
-  float f = 0.0;
-  f += 0.5000 * random2D(p);
-  p * m * 2.02;
-  f += 0.2500 * random2D(p);
-  p * m * 2.03;
-  f += 0.1250 * random2D(p);
-  p * m * 2.01;
-  f += 0.0625 * random2D(p);
-  p * m * 2.01;
-  f /= 0.9375;
-  return f;
-}
-
-float ffbm(in float x) {
-  float w = fwidth(x);
-  float f = 1.0;
-  float a = 0.5;
-  float t = 0.0;
-  for (int i = 0; i < nOcts; i++) {
-    t += a * fnoise(f * x, w);
-    f *= 2.01;
-    w *= 2.01;
-    a *= 0.50;
-  }
-  return t;
-}
+// float fbm(vec2 p) {
+//   float f = 0.0;
+//   f += 0.5000 * random2D(p);
+//   p * m * 2.02;
+//   f += 0.2500 * random2D(p);
+//   p * m * 2.03;
+//   f += 0.1250 * random2D(p);
+//   p * m * 2.01;
+//   f += 0.0625 * random2D(p);
+//   p * m * 2.01;
+//   f /= 0.9375;
+//   return f;
+// }
 
 // cubic polynomial
 vec3 smin(float a, float b, float k) {
@@ -110,28 +100,49 @@ float cApprox(float a, float b, float k) {
   return min(a, b) - k * h * h * (h * b3 * (h - 4.0) + b2);
 }
 
+// float sdfCircle(vec3 p, float r) {
+//   // srqt(pow(p.x,2.0)+pow(p.y,2.0))-r;
+//   return length(p) - r;
+// }
+
+float sdBoxFrame(vec3 p, vec3 b, float e) {
+  p = abs(p) - b;
+  vec3 q = abs(p + e) - e;
+  return min(min(length(max(vec3(p.x, q.y, q.z), 0.0)) + min(max(p.x, max(q.y, q.z)), 0.0), length(max(vec3(q.x, p.y, q.z), 0.0)) + min(max(q.x, max(p.y, q.z)), 0.0)), length(max(vec3(q.x, q.y, p.z), 0.0)) + min(max(q.x, max(q.y, p.z)), 0.0));
+}
+
 void main() {
-  vec2 q = gl_FragCoord.xy / uResolution.xy;
-  vec2 p = -1.0 + 2.0 * q;
-  p.x *= uResolution.x / uResolution.y;
+  // vec2 vUv = gl_FragCoord.xy / uResolution;
+  // vUv = vUv - 0.5;
+  // // vUv = vUv * 2.0;
+  // vUv = vUv * uResolution / 100.0;
 
-  float background = smoothstep(-0.25, 0.25, p.x);
+  // // Base color
+  vec3 viewDirection = normalize(vPosition + cameraPosition);
+  // // vec3 frame = calcNormal(viewDirection);
+  // // float mixedStrength = (vElevation + uColorOffset) * uColorMultiplier;
+  // // mixedStrength = smoothstep(0.0, 1.0, mixedStrength);
+  // // vec3 color = mix(uDepthColor, uSurfaceColor, mixedStrength);
 
-  p.x -= 0.75;
-  float r = sqrt(dot(p, p));
-  float a = atan(p.y, p.x);
+  vec3 color = uColor;
 
-  // Base color
-  vec3 viewDirection = normalize(vPosition - cameraPosition);
-  // vec3 frame = calcNormal(viewDirection);
-  // float mixedStrength = (vElevation + uColorOffset) * uColorMultiplier;
-  // mixedStrength = smoothstep(0.0, 1.0, mixedStrength);
-  // vec3 color = mix(uDepthColor, uSurfaceColor, mixedStrength);
+  // // vec2 st = gl_FragCoord.xy / uResolution.xy;
+  // // st += st * abs(sin(uTime * 0.1) * 3.0);
+  // vec3 black = vec3(0.0);
+  // vec3 white = vec3(1.0);
+  // vec3 red = vec3(1.0, 0.0, 0.0);
+  // vec3 blue = vec3(0.65, 0.85, 1.0);
+  // vec3 orange = vec3(0.9, 0.6, 0.3);
+  // vec3 color = orange;
+  // color = vec3(vUv.x, vUv.y, 0.0);
+  // // st.x *= uResolution.x / uResolution.y;
 
-  // vec2 st = gl_FragCoord.xy / uResolution.xy;
-  // st += st * abs(sin(uTime * 0.1) * 3.0);
-  vec3 color = vec3(1.0);
-  // st.x *= uResolution.x / uResolution.y;
+  // // Draw sdf circle
+  // float radius = 2.5;
+  // vec2 center = vec2(0.0, 0.0);
+  // // center = vec2(sin(2.0 * uTime), 0.0);
+  // float distanceToCircle = sdfCircle(vUv - center, radius);
+  // color = distanceToCircle > 0.0 ? orange : blue;
 
   // vec2 q = vec2(0.0);
   // q.x = fbm(st + 0.00 * uTime);
@@ -148,22 +159,6 @@ void main() {
   // color = mix(color, vec3(0, 0, 0.164706), clamp(length(q), 0.0, 1.0));
 
   // color = mix(color, vec3(0.666667, 1, 1), clamp(length(r.x), 0.0, 1.0));
-
-  if (r < 0.8) {
-    color = vec3(0.2, 0.3, 0.4);
-
-    float f = fbm(5.0 * p);
-    color = mix(color, vec3(0.2, 0.5, 0.4), f);
-
-    f = 1.0 - smoothstep(0.2, 0.5, r);
-    color = mix(color, vec3(0.9, 0.6, 0.2), f);
-
-    f = fbm(vec2(6.0 * r, 21.0 * a));
-    color = mix(color, vec3(1.0), f);
-
-    f = 1.0 - smoothstep(0.2, 0.25, r);
-    color *= f;
-  }
 
   // Normal
   vec3 normal = normalize(vNormal);
@@ -200,9 +195,9 @@ void main() {
   // color *= parabola(uTime * holographic * uAudioFrequency, 1.0);
 
   // Smoother edges
-  color *= smoothstep(0.8, 0.0, vUv.x);
+  color *= smoothstep(0.0, 0.1, vUv.x);
   color *= smoothstep(-1.0, 0.1, vUv.x);
-  color *= smoothstep(0.8, 0.0, vUv.y);
+  color *= smoothstep(0.0, 0.1, vUv.y);
   color *= smoothstep(-1.0, 0.1, vUv.y);
 
   // Lights
@@ -231,19 +226,21 @@ void main() {
   vec2 uv = vUv * 4.0;
   vec2 uv0 = uv;
   vec3 finalColor = vec3(0.0);
+  float radius = 2.5;
+  float box = sdBoxFrame(viewDirection, color, radius * uAudioFrequency);
 
   float minimumDistance = 1.0;
 
-  for (float i = 0.0; i < 4.0; i++) {
+  for (float i = 0.0; i < 5.0; i++) {
     uv = fract(uv * 1.5) - 0.5;
 
     float distanceToCenter = length(uv) * exp(-length(uv0));
 
-    vec3 colorLoop = getColor(length(uv0) + i * 0.5 * distance(length(uAudioFrequency), minimumDistance));
+    vec3 colorLoop = getColor(length(uv0) + i * 0.5 * distance(length(uAudioFrequency * 0.2), minimumDistance));
 
     minimumDistance = max(minimumDistance, distanceToCenter);
 
-    distanceToCenter = sin(distanceToCenter * 8.0 + step(uAudioFrequency * 0.1, minimumDistance)) / 8.0;
+    distanceToCenter = sin(distanceToCenter * 8.0 + pow(uAudioFrequency * 0.1, box)) / 8.0;
     distanceToCenter = abs(length(distanceToCenter));
 
     distanceToCenter = integralSmoothstep(0.01 / distanceToCenter, 0.5);
@@ -259,8 +256,9 @@ void main() {
   // color = mix(finalColor, color, finalColor);
 
   color += smin(stripes, falloff * uAudioFrequency * 0.2, fresnel);
-  color += cApprox(stripes, uTime, falloff);
+  color += cApprox(stripes, uTime, fresnel);
   color *= finalColor;
+  // color *= uTime + box;
 
   // finalColor -= step(0.8, abs(sin(55.0 * minimumDistance))) * 0.3;
   // finalColor = smoothstep(0.3, 0.8, finalColor);
@@ -271,3 +269,36 @@ void main() {
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }
+
+// void main() {
+//   vec2 uv = gl_FragCoord.xy / uResolution;
+//   uv = uv - 0.5;
+//   // uv = uv * 2.0;
+//   uv = uv * uResolution / 100.0;
+
+//   vec3 black = vec3(0.0);
+//   vec3 white = vec3(1.0);
+//   vec3 red = vec3(1.0, 0.0, 0.0);
+//   vec3 blue = vec3(0.65, 0.85, 1.0);
+//   vec3 orange = vec3(0.9, 0.6, 0.3);
+//   vec3 color = black;
+//   color = vec3(uv.x, uv.y, 0.0);
+
+//   // Draw sdf circle
+//   float radius = 2.5;
+//   vec2 center = vec2(0.0, 0.0);
+//   center = vec2(sin(2.0 * uTime), 0.0);
+//   float distanceToCircle = sdfCircle(uv - center, radius);
+//   color = distanceToCircle > 0.0 ? orange : blue;
+
+// // Add a black outline to the circle
+//   color = color * (1.0 - exp(-2.0 * abs(distanceToCircle)));
+
+//   // adding waves
+//   color = color * 0.8 + color * 0.2 * sin(50.0 * distanceToCircle - 4.0 * uTime);
+
+//   // adding a whtie border
+//   color = mix(white, color, 2.0 * abs(distanceToCircle));
+
+//   gl_FragColor = vec4(color, 1.0);
+// }

@@ -2,27 +2,29 @@
 #include ../effects/perlin.glsl
 #include ../effects/random2D.glsl
 
-float terrainGeneration(in vec3 position, in float Helo) {
+float terrainGeneration(in vec3 position) {
 
   // Elevation
   // float elevation = sin(position.x * uWaveFrequency.x + uTimeAnimation * uWaveSpeed) * sin(position.z * uWaveFrequency.y + uTimeAnimation * uWaveSpeed) * uWaveElevation;\
   float uPositionFrequency = 0.2;
-  float uStrength = 0.89;
-  float uWarpFrequency = 3.89;
+  float uStrength = 1.89;
+  float uWarpFrequency = 5.0;
   float uWarpStrength = 0.5;
 
   vec3 warpedPosition = position;
+  warpedPosition += uTime * 0.2;
   warpedPosition += simplexNoise3d(warpedPosition * uPositionFrequency * uWarpFrequency) * uWarpStrength;
 
   float elevation = 0.0;
+  elevation = 0.02 * (uAudioFrequency * 0.3);
   // elevation *= fnoise(uWarpFrequency, uWarpFrequency);
-  elevation += simplexNoise3d(warpedPosition * uPositionFrequency) / 3.0;
-  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0, uWarpFrequency;
-  // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0, uWarpFrequency);
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency) / 2.0;
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0;
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0;
   // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 5.0) / 13.0, uWarpFrequency);
 
   float elevationSign = sin(elevation);
-  elevation = pow(abs(elevation), 2.0) * elevationSign;
+  elevation = pow(elevation, 2.0) * elevationSign;
   elevation *= uStrength;
   // elevation += uAudioFrequency * 0.2;
 
@@ -37,16 +39,6 @@ float terrainGeneration(in vec3 position, in float Helo) {
 
   // int i = 0;
 
-  float Gulf = exp2(-Helo);
-  float frequency = 1.5;
-  float alpha = 0.8;
-  float terra = 0.0;
-  for (int i = 0; i < 12; i++) {
-    terra += alpha * perlinClassic3d(frequency * warpedPosition);
-    frequency *= 1.05;
-    alpha *= Gulf;
-  }
-  return terra;
   // }
-  // return elevation;
+  return elevation;
 }

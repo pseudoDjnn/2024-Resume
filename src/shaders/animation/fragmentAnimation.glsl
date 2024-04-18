@@ -60,28 +60,6 @@ vec3 getColor(float amount) {
   return color * palette(amount * mod(uAudioFrequency, 0.5));
 }
 
-// mat2 m = mat2(0.8, 0.6, -0.6, 0.8);
-
-// float fnoise(in float x, in float w) {
-//   return random2D(vec2(x)) * smoothstep(1.0, 0.5, w);
-// }
-
-// float noise(in vec2 x);
-
-// float fbm(vec2 p) {
-//   float f = 0.0;
-//   f += 0.5000 * random2D(p);
-//   p * m * 2.02;
-//   f += 0.2500 * random2D(p);
-//   p * m * 2.03;
-//   f += 0.1250 * random2D(p);
-//   p * m * 2.01;
-//   f += 0.0625 * random2D(p);
-//   p * m * 2.01;
-//   f /= 0.9375;
-//   return f;
-// }
-
 // cubic polynomial
 vec3 smin(float a, float b, float k) {
   float h = 1.0 - min(abs(a - b) / (6.0 * k), 1.0);
@@ -112,10 +90,26 @@ float sdBoxFrame(vec3 p, vec3 b, float e) {
 }
 
 void main() {
-  // vec2 vUv = gl_FragCoord.xy / uResolution;
+
+  vec2 uv = (gl_FragCoord.xy / uResolution.xy) * 2.0 - 1.0;
+  uv.x *= uResolution.x / uResolution.y;
   // vUv = vUv - 0.5;
   // // vUv = vUv * 2.0;
   // vUv = vUv * uResolution / 100.0;
+
+  vec3 positionOfCamera = vec3(0.0, 0.0, -3.0);
+  vec3 directionOfCamera = normalize(vec3(uv, 1.0));
+
+  vec3 ip;
+
+  float t = 0.0;
+  for (int i = 0; i < 32; i++) {
+    ip = positionOfCamera + directionOfCamera * t;
+    float temp = sdBoxFrame(ip, vNormal, t);
+    if (temp < 0.01)
+      break;
+    t += temp;
+  }
 
   // // Base color
   vec3 viewDirection = normalize(vPosition + cameraPosition);
@@ -223,8 +217,8 @@ void main() {
   // if (distanceToCenter > 0.5)
   //   discard; 
 
-  vec2 uv = vUv * 4.0;
-  vec2 uv0 = uv;
+  vec2 uv0 = vUv * 4.0;
+  vec2 uv1 = uv0;
   vec3 finalColor = vec3(0.0);
   float radius = 2.5;
   float box = sdBoxFrame(viewDirection, color, radius * uAudioFrequency);
@@ -232,11 +226,11 @@ void main() {
   float minimumDistance = 1.0;
 
   for (float i = 0.0; i < 5.0; i++) {
-    uv = fract(uv * 1.5) - 0.5;
+    uv0 = fract(uv0 * 1.5) - 0.5;
 
-    float distanceToCenter = length(uv) * exp(-length(uv0));
+    float distanceToCenter = length(uv0) * exp(-length(uv1));
 
-    vec3 colorLoop = getColor(length(uv0) + i * 0.5 * distance(length(uAudioFrequency * 0.2), minimumDistance));
+    vec3 colorLoop = getColor(length(uv1) + i * 0.5 * distance(length(uAudioFrequency * 0.2), minimumDistance));
 
     minimumDistance = max(minimumDistance, distanceToCenter);
 

@@ -15,19 +15,19 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.IcosahedronGeometry(3, 55)
-    this.geometry.setIndex(null)
-    this.geometry.deleteAttribute('uv')
-    this.geometry.deleteAttribute('normal')
+    this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
+    // this.geometry.setIndex(null)
+    // this.geometry.deleteAttribute('uv')
+    // this.geometry.deleteAttribute('normal')
 
-    this.count = this.geometry.attributes.position.count
-    this.randoms = new Float32Array(this.count, 2)
+    // this.count = this.geometry.attributes.position.count
+    // this.randoms = new Float32Array(this.count, 2)
 
-    for (let x = 0; x < this.count; x++) {
-      this.randoms[x] = Math.random()
-    }
+    // for (let x = 0; x < this.count; x++) {
+    //   this.randoms[x] = Math.random()
+    // }
 
-    this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))
+    // this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))
 
     this.materialAnimationParamters = {}
     this.materialAnimationParamters.color = '#70c1ff'
@@ -45,7 +45,7 @@ export default class Animation {
       //
       uAudioFrequency: new THREE.Uniform(0),
       // uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
-      uResolution: new THREE.Uniform(new THREE.Vector2(this.width * this.pixelRatio, this.height * this.pixelRatio)),
+      uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uShadowRepetitions: new THREE.Uniform(13),
       uLightRepetitions: new THREE.Uniform(55),
       uTimeAnimation: new THREE.Uniform(0),
@@ -60,11 +60,11 @@ export default class Animation {
       // wireframe: true,
       vertexShader: animationVertexShader,
       fragmentShader: animationFragmentShader,
-      transparent: true,
+      // transparent: true,
       side: THREE.DoubleSide,
       uniforms: this.uniforms,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      // depthWrite: false,
+      // blending: THREE.AdditiveBlending,
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)

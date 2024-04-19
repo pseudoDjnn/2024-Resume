@@ -1,13 +1,19 @@
 #include ../effects/simplexNoise3d.glsl
-#include ../effects/perlin.glsl
 #include ../effects/random2D.glsl
+#include ../effects/voronoi.glsl
+
+float lerp(float t) {
+  float v1 = t * t;
+  float v2 = 1.0 - (1.0 - t) * (1.0 - t);
+  return smoothstep(v1, v2, smoothstep(-1.0, 0.5, t));
+}
 
 float terrainGeneration(in vec3 position) {
 
   // Elevation
   // float elevation = sin(position.x * uWaveFrequency.x + uTimeAnimation * uWaveSpeed) * sin(position.z * uWaveFrequency.y + uTimeAnimation * uWaveSpeed) * uWaveElevation;\
   float uPositionFrequency = 0.2;
-  float uStrength = 1.89;
+  float uStrength = 5.89;
   float uWarpFrequency = 5.0;
   float uWarpStrength = 0.5;
 
@@ -16,12 +22,12 @@ float terrainGeneration(in vec3 position) {
   warpedPosition += simplexNoise3d(warpedPosition * uPositionFrequency * uWarpFrequency) * uWarpStrength;
 
   float elevation = 0.0;
-  elevation = 0.02 * (uAudioFrequency * 0.3);
+  elevation = 0.02 * lerp(uAudioFrequency);
   // elevation *= fnoise(uWarpFrequency, uWarpFrequency);
-  elevation += simplexNoise3d(warpedPosition * uPositionFrequency) / 2.0;
-  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0;
+  elevation += voroNoise(warpedPosition * uPositionFrequency, uWarpFrequency, uPositionFrequency) / 2.0;
+  elevation += voroNoise(warpedPosition * uPositionFrequency * 2.0, uWarpFrequency, uPositionFrequency) / 5.0;
   elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0;
-  // elevation += fnoise(simplexNoise3d(warpedPosition * uPositionFrequency * 5.0) / 13.0, uWarpFrequency);
+  // elevation += iqnoise(warpedPosition, uWarpFrequency * 5.0, uStrength);
 
   float elevationSign = sin(elevation);
   elevation = pow(elevation, 2.0) * elevationSign;
@@ -40,5 +46,5 @@ float terrainGeneration(in vec3 position) {
   // int i = 0;
 
   // }
-  return elevation;
+  return log(elevation);
 }

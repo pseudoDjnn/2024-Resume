@@ -24,7 +24,7 @@
 html,
 body {
     /* background: -webkit-linear-gradient(to right, #303030, #361515c1); */
-    background-image: var(--gradient);
+    /* background-image: var(--gradient); */
     background-size: 987%;
     animation: bg-animation 377s infinite alternate;
     /* background: url('/pictures/echo.png') no-repeat 50% 50%; */

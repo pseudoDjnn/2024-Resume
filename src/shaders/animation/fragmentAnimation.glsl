@@ -1,5 +1,6 @@
 #define PI 3.1415926535897932384626433832795
 
+uniform vec2 uMouse;
 uniform vec4 uResolution;
 uniform vec3 uColor;
 uniform vec3 uLightColor;
@@ -238,12 +239,46 @@ float cApprox(float a, float b, float k) {
 //     #include <colorspace_fragment>
 // }
 
+mat4 rotationMatrix(vec3 axis, float angle) {
+  axis = normalize(axis);
+  float s = sin(angle);
+  float c = cos(angle);
+  float oc = 1.0 - c;
+
+  return mat4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0, oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0.0, oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0.0, 0.0, 0.0, 0.0, 1.0);
+}
+
+vec3 rotate(vec3 v, vec3 axis, float angle) {
+  mat4 m = rotationMatrix(axis, angle);
+  return (m * vec4(v, 1.0)).xyz;
+}
+
+float polynominalSMin(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+
 float sdSphere(vec3 position, float radius) {
   return length(position) - radius;
 }
 
+float sdBox(vec3 position, vec3 b) {
+  vec3 q = abs(position) - b;
+  return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
 float sdf(vec3 position) {
-  return sdSphere(position, 0.5);
+  vec3 position1 = rotate(position, vec3(1.0), uTime / 5.0);
+  float box = sdBox(position1, vec3(0.3));
+  float sphere = sdSphere(position, 0.5);
+  // return sdSphere(position, 0.5);
+  return polynominalSMin(box, sphere, 0.1);
+}
+
+vec3 calcNormal(in vec3 popsition) {
+  const float epsilon = 0.001;
+  const vec2 h = vec2(epsilon, 0);
+  return normalize(vec3(sdf(popsition + h.xyy) - sdf(popsition - h.xyy), sdf(popsition + h.yxy) - sdf(popsition - h.yxy), sdf(popsition + h.yyx) - sdf(popsition - h.yyx)));
 }
 
 void main() {
@@ -266,9 +301,14 @@ void main() {
     t += h;
   }
 
-  vec3 color = vec3(0.0);
+  vec3 color = vec3(0.005);
   if (t < tMax) {
+    vec3 position = camPos + t * ray;
     color = vec3(1.0);
+    vec3 normal = calcNormal(position);
+    color = normal;
+    float diff = dot(vec3(1.0), normal);
+    color = vec3(diff);
   }
 
   gl_FragColor = vec4(color, 1.0);

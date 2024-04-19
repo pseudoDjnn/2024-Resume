@@ -54,6 +54,7 @@ export default class Animation {
       // uWaveElevation: new THREE.Uniform(0.5),
       // uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
       // uWaveSpeed: new THREE.Uniform(0.21),
+      uMouse: new THREE.Uniform(new THREE.Vector2(0, 0)),
     }
 
     this.material = new THREE.ShaderMaterial({
@@ -72,7 +73,17 @@ export default class Animation {
     // this.mesh.position.set(-3, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)
     this.scene.add(this.mesh)
+
+    // this.mouseEvents()
   }
+
+  // mouseEvents() {
+  //   this.mouse = new THREE.Vector2()
+  //   document.addEventListener('mousemove', (event) => {
+  //     this.mouse.x = event.pageX / this.width - 0.5
+  //     this.mouse.y = -event.pageY / this.height + 0.5
+  //   })
+  // }
 
   update() {
 
@@ -84,6 +95,9 @@ export default class Animation {
     this.material.uniforms.uTime.value = (this.time.elapsed) * 0.001
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
+    // if (this.mouse) {
+    //   this.material.uniforms.uMouse.value = this.mouse
+    //   console.log(this.mouse)
+    // }
   }
-
 }

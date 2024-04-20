@@ -268,11 +268,23 @@ float sdBox(vec3 position, vec3 b) {
 }
 
 float sdf(vec3 position) {
-  vec3 position1 = rotate(position, vec3(1.0), uTime / 5.0);
-  float box = sdBox(position1, vec3(0.3));
-  float sphere = sdSphere(position, 0.5);
+  vec3 position1 = rotate(position, vec3(2.0), uTime / 5.0);
+  float box = polynominalSMin(sdBox(position1, vec3(0.2)), sdSphere(position, 0.2), uAudioFrequency * 0.2);
+
+  float sphere = sdSphere(position1, 0.3);
+  float final = mix(box, sphere, uAudioFrequency * 0.1);
   // return sdSphere(position, 0.5);
-  return polynominalSMin(box, sphere, 0.1);
+
+  for (float i = 0.0; i < 10.0; i++) {
+    float random = random2D(vec2(i, 0.0));
+    float progress = 1.0 - fract(uTime / 3.0 + random * 3.0);
+    vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), 0.0);
+    float goToCenter = sdSphere(position - positionLoop * progress, 0.1);
+    final = polynominalSMin(final, goToCenter, 0.3);
+
+  }
+
+  return polynominalSMin(final, sphere, 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {
@@ -282,6 +294,11 @@ vec3 calcNormal(in vec3 popsition) {
 }
 
 void main() {
+
+  // background
+  float dist = length(vUv - vec2(0.5));
+  vec3 background = mix(vec3(0.3), vec3(0.0), dist);
+
   // Use new UV
   vec2 newUv = (vUv - vec2(0.5)) * uResolution.zw + vec2(0.5);
   // Create position of camera
@@ -301,7 +318,7 @@ void main() {
     t += h;
   }
 
-  vec3 color = vec3(0.005);
+  vec3 color = background;
   if (t < tMax) {
     vec3 position = camPos + t * ray;
     color = vec3(1.0);
@@ -309,6 +326,11 @@ void main() {
     color = normal;
     float diff = dot(vec3(1.0), normal);
     color = vec3(diff);
+
+    float fresnel = pow(1.0 + dot(ray, normal), 3.0);
+    color = vec3(fresnel);
+
+    color = mix(color, background, fresnel);
   }
 
   gl_FragColor = vec4(color, 1.0);

@@ -62,7 +62,7 @@ vec3 palette(float tone) {
 }
 
 vec3 getColor(float amount) {
-  vec3 color = 0.5 + 0.5 * sin(uTime * (sin(vec3(0.2, 0.3, 0.8)) * tan(amount) * cos(vec3(1.0, 1.0, 1.0))));
+  vec3 color = 0.5 + 0.5 * cos(6.2831 * (sin(vec3(0.0, 0.1, 0.2)) * tan(amount) * cos(vec3(1.0, 1.0, 1.0))));
   return color * palette(amount + min(uAudioFrequency * 0.1, 0.5));
 }
 
@@ -253,9 +253,28 @@ vec3 rotate(vec3 v, vec3 axis, float angle) {
   return (m * vec4(v, 1.0)).xyz;
 }
 
+// 3D rotation around the x-axis
+mat3 rotateX3D(float angle) {
+  float s = sin(angle);
+  float c = cos(angle);
+  return mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c);
+}
+
 float polynominalSMin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
   return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+float smoothMax(float a, float b, float k) {
+  return log(exp(k * a) + exp(k * b)) / k;
+}
+
+float smoothMin(float a, float b, float k) {
+  return -smoothMax(-a, -b, k);
+}
+
+vec3 repeat(vec3 p, float c) {
+  return mod(p, c) - 0.5 * c; // (0.5 *c centers the tiling around the origin)
 }
 
 float sdSphere(vec3 position, float radius) {
@@ -268,23 +287,25 @@ float sdBox(vec3 position, vec3 b) {
 }
 
 float sdf(vec3 position) {
-  vec3 position1 = rotate(position, vec3(2.0), uTime / 5.0);
-  float box = polynominalSMin(sdBox(position1, vec3(0.2)), sdSphere(position, 0.2), uAudioFrequency * 0.2);
+  vec3 position1 = rotate(position, vec3(1.0), uTime / 5.0);
+  // position1 += smoothMax(0.0, 0.1, uTime);
+  float box = polynominalSMin(sdBox(position1, vec3(0.3)), sdSphere(position, 0.3), 0.3);
+  float morphedSphere = sdBox(position1, vec3(0.3));
+  float final = mix(box, morphedSphere, uTime);
 
-  float sphere = sdSphere(position1, 0.3);
-  float final = mix(box, sphere, uAudioFrequency * 0.1);
+  float sphere = sdSphere(position - vec3(uMouse * 2.0, 0.0), 0.3);
+
   // return sdSphere(position, 0.5);
 
   for (float i = 0.0; i < 10.0; i++) {
     float random = random2D(vec2(i, 0.0));
-    float progress = 1.0 - fract(uTime / 3.0 + random * 3.0);
+    float progress = 1.0 - fract(uTime / 1.5 + random * 3.0) * log(uAudioFrequency);
     vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), 0.0);
     float goToCenter = sdSphere(position - positionLoop * progress, 0.1);
     final = polynominalSMin(final, goToCenter, 0.3);
-
   }
 
-  return polynominalSMin(final, sphere, 0.1);
+  return polynominalSMin(final, sphere, 0.5);
 }
 
 vec3 calcNormal(in vec3 popsition) {
@@ -295,42 +316,100 @@ vec3 calcNormal(in vec3 popsition) {
 
 void main() {
 
-  // background
+  vec3 viewDirection = normalize(vPosition + cameraPosition);
+    // vec3 color = uColor;
+  vec3 normal = normalize(vNormal);
+  if (!gl_FrontFacing)
+    normal *= -1.0;
+
+    // Strips
+  float stripes = mod((vPosition.y - uTime) * 21.0, 1.0);
+  stripes = pow(stripes, 3.0);
+
+  // Fresnel
+  float fresnel = dot(viewDirection, normal) + 1.0;
+  fresnel = pow(fresnel, 2.0);
+
+  // Falloff
+  float falloff = smoothstep(0.8, 0.0, fresnel);
+
+  // Holographic
+  float holographic = stripes * fresnel;
+  holographic += fresnel * 1.21;
+  holographic *= falloff;
+
+  // Background
   float dist = length(vUv - vec2(0.5));
-  vec3 background = mix(vec3(0.3), vec3(0.0), dist);
+  vec3 background = mix(vec3(0.02), vec3(0.0), dist);
+  vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.2 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
+
+  vec2 uv0 = vUv * 4.0;
+  vec2 uv1 = uv0;
+  vec3 finalColor = vec3(0.0);
+  float radius = 2.5;
+  // float box = sdBoxFrame(viewDirection, color, radius * uAudioFrequency);
+
+  float minimumDistance = 1.0;
+
+  for (float i = 0.0; i < 5.0; i++) {
+    uv0 = fract(uv0 * 1.5) - 0.5;
+
+    float distanceToCenter = length(uv0) * exp(-length(uv1));
+
+    vec3 colorLoop = getColor(length(uv1) + i * 0.5 * distance(length(uAudioFrequency * 0.02), minimumDistance) * 0.5);
+
+    minimumDistance = min(minimumDistance, distanceToCenter);
+
+    distanceToCenter = sin(distanceToCenter * 8.0 + min(uAudioFrequency * 0.01, uTime)) / 8.0;
+    distanceToCenter = abs(length(distanceToCenter));
+
+    distanceToCenter = integralSmoothstep(0.01 / distanceToCenter, 0.5);
+
+    // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
+
+    finalColor += colorLoop * distanceToCenter;
+  }
 
   // Use new UV
   vec2 newUv = (vUv - vec2(0.5)) * uResolution.zw + vec2(0.5);
   // Create position of camera
   vec3 camPos = vec3(0.0, 0.0, 2.0);
   // Cast ray form camera to sphere
-  vec3 ray = normalize(vec3(vUv - vec2(0.5), -1));
+  vec3 ray = normalize(vec3((vUv - vec2(0.5)), -1));
+  // Color creation
+  vec3 color = background;
 
   // Start the march
   vec3 raypos = camPos;
   float t = 0.0;
   float tMax = 5.0;
   for (int i = 0; i < 256; i++) {
-    vec3 pos = camPos + t * ray;
+    vec3 pos = raypos + t * ray;
     float h = sdf(pos);
     if (h < 0.0001 || t > tMax)
       break;
     t += h;
+    // camPos *= finalColor;
+    // color *= sphereColor;
   }
 
-  vec3 color = background;
   if (t < tMax) {
     vec3 position = camPos + t * ray;
-    color = vec3(1.0);
+    color = vec3(0.5);
     vec3 normal = calcNormal(position);
     color = normal;
-    float diff = dot(vec3(1.0), normal);
+    float diff = dot(vec3(1.0), normal * uTime);
     color = vec3(diff);
 
     float fresnel = pow(1.0 + dot(ray, normal), 3.0);
     color = vec3(fresnel);
 
-    color = mix(color, background, fresnel);
+    color = mix(color, sphereColor, fresnel);
+    color *= smoothstep(0.0, 0.1, vUv.x);
+    color *= smoothstep(-1.0, 0.1, vUv.x);
+    color *= smoothstep(0.0, 0.1, vUv.y);
+    color *= smoothstep(-1.0, 0.1, vUv.y);
+    // color *= finalColor;
   }
 
   gl_FragColor = vec4(color, 1.0);

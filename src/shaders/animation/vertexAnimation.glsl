@@ -69,12 +69,6 @@ float smin(float a, float b, float k) {
     length(max(k - vec2(a, b), 0.0));
 }
 
-float sdBoxFrame(vec3 p, vec3 b, float e) {
-  p = abs(p) - b;
-  vec3 q = abs(p + e) - e;
-  return min(min(length(max(vec3(p.x, q.y, q.z), 0.0)) + min(max(p.x, max(q.y, q.z)), 0.0), length(max(vec3(q.x, p.y, q.z), 0.0)) + min(max(q.x, max(p.y, q.z)), 0.0)), length(max(vec3(q.x, q.y, p.z), 0.0)) + min(max(q.x, max(q.y, p.z)), 0.0));
-}
-
 float doubleCubicSeat(float x, float a, float b) {
 
   float epsilon = 0.00001;
@@ -94,14 +88,6 @@ float doubleCubicSeat(float x, float a, float b) {
   return y;
 }
 
-float smoothMax(float a, float b, float k) {
-  return log(exp(k * a) + exp(k * b)) / k;
-}
-
-float smoothMin(float a, float b, float k) {
-  return -smoothMax(-a, -b, k);
-}
-
 // float lerp(float t) {
 //   float v1 = t * t;
 //   float v2 = 1.0 - (1.0 - t) * (1.0 - t);
@@ -110,10 +96,10 @@ float smoothMin(float a, float b, float k) {
 
 void main() {
   // Base Postion
-  // float shift = 0.01;
+  float shift = 0.01;
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-  // vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
-  // vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
+  vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
+  vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
   // float elevation = terrainGeneration(modelPosition.zzz);
   // float amplitude = 3.0;
@@ -183,8 +169,8 @@ void main() {
 
   // Compute Normal
   // 
-  // vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
-  // vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
+  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
+  vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
   // 
   // modelPosition *= sdBoxFrame(alphaNeighbor, betaNeighbor, elevation);
   // float sdfBox = sdBoxFrame(alphaNeighbor, modelPositionAlpha, elevation);
@@ -194,7 +180,7 @@ void main() {
   // float boxFrame = sdRoundBox(alphaNeighbor, betaNeighbor, 1.0);
   // modelPosition.z += boxFrame;
   // 
-  // vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
+  vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
   // 
   // computeNormal *= min(alphaNeighbor, sdfBox);
   // computeNormal *= box;
@@ -211,16 +197,16 @@ void main() {
   // modelPosition.z += sin(-aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
 
   // Glitching effect
-  // float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
-  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  // stuttering /= 3.0;
-  // // stuttering = smoothstep(0.3, 1.0, stuttering);
-  // // stuttering = polynomialImpluse(stuttering, 1.0);
-  // // stuttering = rational(stuttering, 1.0);
-  // stuttering *= uAudioFrequency * 0.1;
-  // stuttering *= 0.34;
-  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;
-  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
+  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  stuttering /= 3.0;
+  // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // stuttering = polynomialImpluse(stuttering, 1.0);
+  // stuttering = rational(stuttering, 1.0);
+  stuttering *= uAudioFrequency * 0.1;
+  stuttering *= 0.34;
+  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering / 3.0;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;
@@ -234,7 +220,8 @@ void main() {
   // Varyings
   // vRandom = aRandom;
   // vElevation = elevation;
-  // vNormal = computeNormal;
+  vNormal = computeNormal;
   // vPosition = modelPosition.xyz;
   vUv = uv;
+  // vUv = gl_Position.xy * 0.5 + 0.5;
 }

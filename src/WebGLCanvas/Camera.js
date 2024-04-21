@@ -17,8 +17,10 @@ export default class Camera {
   }
 
   setInstance() {
-    this.instance = new THREE.PerspectiveCamera(89, this.sizes.width / this.sizes.height, 0.01, 100)
-    this.instance.position.set(0, 0, 21.5)
+    this.frustumSize = 1
+    this.aspect = this.sizes.width / this.sizes.height
+    this.instance = new THREE.PerspectiveCamera(89, this.aspect, 0.01, 100)
+    this.instance.position.set(0, 0, 3.5)
     // this.instance.lookAt(0, 0, 0)
     this.scene.add(this.instance)
   }
@@ -53,8 +55,8 @@ export default class Camera {
   update() {
     this.controls.update()
 
-    this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.003
-    this.instance.position.y += (-this.mouseY - this.instance.position.y) * 0.02
+    this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.0003
+    this.instance.position.y += (-this.mouseY - this.instance.position.y) * 0.0002
 
     this.instance.lookAt(this.scene.position)
   }

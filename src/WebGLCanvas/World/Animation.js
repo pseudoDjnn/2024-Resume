@@ -67,7 +67,7 @@ export default class Animation {
       // transparent: true,
       side: THREE.DoubleSide,
       uniforms: this.uniforms,
-      // depthWrite: false,
+      depthWrite: false,
       // blending: THREE.AdditiveBlending,
     })
 
@@ -90,12 +90,12 @@ export default class Animation {
 
   update() {
 
-    this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.0001
+    // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.0001
     // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
-    this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
+    // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
 
-    this.material.uniforms.uTimeAnimation.value = Math.sin(this.time.elapsed) * 0.000055
-    this.material.uniforms.uTime.value = (this.time.elapsed) * 0.001
+    this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
+    this.material.uniforms.uTime.value = this.time.elapsed * 0.001
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
 
     if (this.mouse) {

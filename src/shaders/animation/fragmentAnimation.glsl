@@ -30,7 +30,7 @@ varying vec2 vUv;
 float lerp(float t) {
   float v1 = t * t;
   float v2 = 1.0 - (1.0 - t) * (1.0 - t);
-  return smoothstep(v1, v2, smoothstep(0.3, 1.0, t));
+  return smoothstep(v1, v2, smoothstep(0.0, 0.1, t));
 }
 
 float parabola(float x, float k) {
@@ -258,23 +258,12 @@ float polynomialSMin(float a, float b, float k) {
   return mix(b, a, h) - k * h * (1.0 - h);
 }
 
-// quartic polynomial
-float quarticPolynomial(float a, float b, float k) {
-  k *= 16.0 / 3.0;
-  float h = max(k - abs(a - b), 0.0) / k;
-  return min(a, b) - h * h * h * (4.0 - h) * k * (1.0 / 16.0);
-}
-
 float smoothMax(float a, float b, float k) {
   return log(exp(k * a) + exp(k * b)) / k;
 }
 
 float smoothMin(float a, float b, float k) {
   return -smoothMax(-a, -b, k);
-}
-
-vec3 repeat(vec3 p, float c) {
-  return mod(p, c) - 0.5 * c; // (0.5 *c centers the tiling around the origin)
 }
 
 float sdSphere(vec3 position, float radius) {
@@ -303,16 +292,23 @@ float sdOctahedron(vec3 p, float s) {
   return length(vec3(q.x, q.y - s + k, q.z - k));
 }
 
-float sdHexPrism(vec3 p, vec2 h) {
-  const vec3 k = vec3(-0.8660254, 0.5, 0.57735);
-  p = abs(p);
-  p.xy -= 2.0 * min(dot(k.xy, p.xy), 0.0) * k.xy;
-  vec2 d = vec2(length(p.xy - vec2(clamp(p.x, -k.z * h.x, k.z * h.x), h.x)) * sign(p.y - h.x), p.z - h.y);
-  return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
+float map(vec3 p) {
+  float sphere = sdSphere(p, 1.0);
+
+  return sphere;
 }
 
 float opIntersection(float d1, float d2) {
-  return max(d1, d2);
+  return min(d1, d2);
+}
+
+float opSmoothUnion(float d1, float d2, float k) {
+  float h = max(k - abs(d1 - d2), 0.0);
+  return min(d1, d2) - h * h * 0.25 / k;
+}
+
+float rounding(in float d, in float h) {
+  return d - h;
 }
 
 float euclideanDistance(float p1, float p2) {
@@ -321,40 +317,44 @@ float euclideanDistance(float p1, float p2) {
 }
 
 float sdf(vec3 position) {
-  vec3 position1 = rotate(position, vec3(1.0), uTime / 5.0);
-  vec3 position2 = rotate(position, vec3(1.0), uTime / 3.0);
-  // position1 += smoothMax(0.0, 0.1, uAudioFrequency);
-  // position2 += smoothMin(0.0, 0.1, uAudioFrequency);
-  float morphedShaped = polynomialSMin(sdBox(position1, vec3(0.2)), sdOctahedron(position1, 0.8), sdSphere(position, 0.5));
-  // morphedShaped = cubicPolynomial(sdBox(position1, vec3(0.1)), sdSphere(position, 0.2), 0.3);
-  // morphedShaped = opIntersection(sdBox(position1, vec3(0.3)), sdHexPrism(position,vec2));
-  // box = euclideanDistance(box, box);
+  // Various rotational speeds
+  vec3 position1 = rotate(position, vec3(1.0), -uTime / 5.0);
+  vec3 position2 = rotate(position, vec3(1.0), sin(uTime / 2.0));
+  vec3 position3 = rotate(position, vec3(1.0), -uTime * 2.0);
+// Copy of the vec3 position
+  vec3 copyPosition = position;
+  //TODO: Work on this line when you wake up
+  // copyPosition.z *= log(uAudioFrequency);
+  copyPosition.xy = (fract(position.xy * uAudioFrequency) - 0.5);
+  copyPosition.z = mod(position.z, 0.21) - 0.144;
 
-  float morphedSphere = sdBox(position1, vec3(0.3));
-  float finalShape = mix(morphedShaped, morphedSphere, uAudioFrequency * 0.02);
-  // final = sin(uAudioFrequency * 0.2 + final);
+  float morphedShaped = polynomialSMin(sdBox(position2, vec3(0.2)), sdOctahedron(position1, 0.8), sdSphere(position, 0.5));
+
+  float morphedPosition = sdBox(position3, vec3(0.3));
+  float finalShape = mix(morphedShaped, morphedPosition, 0.2);
+  // finalShape = opOnion(morphedSphere, morphedShaped);
 
   // return sdSphere(position, 0.5);
 
   for (float i = 0.0; i < 10.0; i++) {
     float random = random2D(vec2(i, 0.0));
-    // random = (sin(random));
-    // random = random * 43758.5453;
-    // random = fract(random);
     float progress = 1.0 - fract(uTime / 5.0 + random * 5.0);
     vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), atan(random * 2.0 * PI));
-    // progress = euclideanDistance(random, random);
-    float goToCenter = sdSphere(position - positionLoop * progress, 0.1);
-    finalShape = polynomialSMin(finalShape, goToCenter, 0.1);
+
+    float goToCenter = sdSphere(copyPosition - positionLoop * progress, 0.02);
+    // goToCenter = opOnion(finalShape, morphedShaped);
+    finalShape = polynomialSMin(finalShape, goToCenter, 0.2);
   }
 
-  float mouseSphere = sdSphere(position - vec3(uMouse * 6.0, 0.0), 0.2);
+  float mouseSphere = sdSphere(position - vec3(uMouse * 3.0, 0.3), 0.2);
 
-  return polynomialSMin(finalShape, mouseSphere, 0.2);
+  float ground = position.y + .34;
+
+  return polynomialSMin(ground, polynomialSMin(finalShape, mouseSphere, 0.1), 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {
-  const float epsilon = 0.001;
+  const float epsilon = 0.00001;
   const vec2 h = vec2(epsilon, 0);
   return normalize(vec3(sdf(popsition + h.xyy) - sdf(popsition - h.xyy), sdf(popsition + h.yxy) - sdf(popsition - h.yxy), sdf(popsition + h.yyx) - sdf(popsition - h.yyx)));
 }
@@ -407,7 +407,7 @@ void main() {
     distanceToCenter = sin(distanceToCenter * 8.0 + min(uAudioFrequency * 0.01, uTime)) / 8.0;
     distanceToCenter = abs(length(distanceToCenter));
 
-    distanceToCenter = integralSmoothstep(0.01 / distanceToCenter, 0.5);
+    distanceToCenter = pow(0.01 / distanceToCenter, 0.5);
 
     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
 
@@ -427,7 +427,7 @@ void main() {
   vec3 raypos = camPos;
   // Distance travelled
   float t = 0.0;
-  float tMax = 5.0;
+  float tMax = 2.0;
   for (int i = 0; i < 256; i++) {
     // The position along the ray
     vec3 pos = raypos + t * ray;
@@ -438,7 +438,7 @@ void main() {
       // The "march" of the ray
     t += h;
     // camPos *= finalColor;
-    color = 1.0 - getColor(uTime * 0.01 + t + uAudioFrequency * 0.01);
+    color = 1.0 - getColor(uTime * 0.01 + tMax + uAudioFrequency * 0.01);
   }
 
   if (t < tMax) {

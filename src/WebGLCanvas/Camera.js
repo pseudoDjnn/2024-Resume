@@ -20,7 +20,7 @@ export default class Camera {
     this.frustumSize = 1
     this.aspect = this.sizes.width / this.sizes.height
     this.instance = new THREE.PerspectiveCamera(89, this.aspect, 0.01, 100)
-    this.instance.position.set(0, 0, 3.5)
+    this.instance.position.set(0, 0, 4.3)
     // this.instance.lookAt(0, 0, 0)
     this.scene.add(this.instance)
   }

@@ -277,7 +277,7 @@ float sdBox(vec3 position, vec3 b) {
 
 float sdOctahedron(vec3 p, float s) {
   p = abs(p);
-  float m = p.x + p.y + p.z - s;
+  float m = p.x + p.y + p.z - s - sin(uAudioFrequency * 0.002);
   vec3 q;
   if (3.0 * p.x < m)
     q = p.xyz;
@@ -317,18 +317,25 @@ float euclideanDistance(float p1, float p2) {
 }
 
 float sdf(vec3 position) {
+  // position += uAudioFrequency * 0.003;
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), -uTime / 5.0);
+  position1 -= -sin(uAudioFrequency * 0.003) * cos(uAudioFrequency * 0.03);
   vec3 position2 = rotate(position, vec3(1.0), sin(uTime / 2.0));
+  // position2.yz -= sin(uAudioFrequency * 0.03);
   vec3 position3 = rotate(position, vec3(1.0), -uTime * 2.0);
+  vec3 position4 = rotate(position, vec3(1.0), uTime * sin(uAudioFrequency * 0.02) * cos(uAudioFrequency * 0.02));
+  // position4 = getColor(uTime * 0.02);
+
 // Copy of the vec3 position
-  vec3 copyPosition = position;
-  //TODO: Work on this line when you wake up
-  // copyPosition.z *= log(uAudioFrequency);
-  copyPosition.xy = (fract(position.xy * uAudioFrequency) - 0.5);
+  vec3 copyPosition = position4;
+  vec3 copyPositionRotation = fract(uAudioFrequency * PI * 2.0 * rotate(copyPosition, vec3(1.0), uTime / 13.0 - uAudioFrequency * 0.02));
+  copyPosition.z += uTime * 0.5;
+  copyPosition.xy = (fract(copyPositionRotation.xy * uAudioFrequency) - 0.5);
   copyPosition.z = mod(position.z, 0.21) - 0.144;
 
-  float morphedShaped = polynomialSMin(sdBox(position2, vec3(0.2)), sdOctahedron(position1, 0.8), sdSphere(position, 0.5));
+  float morphedShaped = polynomialSMin(sdBox(position2, vec3(0.2)), sdOctahedron(position1, 0.8), sdSphere(position2, 0.5));
+  // morphedShaped = getColor(uTime);
 
   float morphedPosition = sdBox(position3, vec3(0.3));
   float finalShape = mix(morphedShaped, morphedPosition, 0.2);
@@ -336,7 +343,8 @@ float sdf(vec3 position) {
 
   // return sdSphere(position, 0.5);
 
-  for (float i = 0.0; i < 10.0; i++) {
+  int i;
+  for (i = 0; i < 10; i++) {
     float random = random2D(vec2(i, 0.0));
     float progress = 1.0 - fract(uTime / 5.0 + random * 5.0);
     vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), atan(random * 2.0 * PI));
@@ -349,6 +357,7 @@ float sdf(vec3 position) {
   float mouseSphere = sdSphere(position - vec3(uMouse * 3.0, 0.3), 0.2);
 
   float ground = position.y + .34;
+  // ground = getColor(0.0);
 
   return polynomialSMin(ground, polynomialSMin(finalShape, mouseSphere, 0.1), 0.1);
 }
@@ -386,7 +395,7 @@ void main() {
   // Background
   float dist = length(vUv - vec2(0.5));
   vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
-  vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.1 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
+  vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.02 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
 
   vec2 uv0 = vUv * 4.0;
   vec2 uv1 = uv0;
@@ -428,9 +437,11 @@ void main() {
   // Distance travelled
   float t = 0.0;
   float tMax = 2.0;
-  for (int i = 0; i < 256; i++) {
+  int i;
+  for (i = 0; i < 256; i++) {
     // The position along the ray
     vec3 pos = raypos + t * ray;
+    pos.y += sin(t * (uMouse.y - 0.5) * 0.5) * 0.34;
     // The Current distance to the scene
     float h = sdf(pos);
     if (h < 0.0001 || t > tMax)
@@ -438,7 +449,9 @@ void main() {
       // The "march" of the ray
     t += h;
     // camPos *= finalColor;
-    color = 1.0 - getColor(uTime * 0.01 + tMax + uAudioFrequency * 0.01);
+    // color = getColor(tMax * 0.4 + float(i) * 0.005);
+    color = 1.0 - getColor(uTime * 0.01 + t * 0.5 + uAudioFrequency * 0.02);
+
   }
 
   if (t < tMax) {
@@ -452,7 +465,9 @@ void main() {
     float fresnel = pow(1.5 + dot(ray, normal), 3.0);
     color = vec3(fresnel * holographic);
 
+    color = vec3(float(i) / 235.0);
     color = mix(color, sphereColor * background, fresnel);
+
     // color *= smoothstep(0.0, 0.1, vUv.x);
     // color *= smoothstep(-1.0, 0.1, vUv.x);
     // color *= smoothstep(0.0, 0.1, vUv.y);

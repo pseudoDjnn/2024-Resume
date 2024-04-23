@@ -55,7 +55,7 @@ export default class Camera {
   update() {
     this.controls.update()
 
-    this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.00003
+    this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.00002
     this.instance.position.y += (-this.mouseY - this.instance.position.y) * 0.00002
 
     this.instance.lookAt(this.scene.position)

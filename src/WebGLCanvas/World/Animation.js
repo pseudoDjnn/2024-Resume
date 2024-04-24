@@ -47,7 +47,7 @@ export default class Animation {
       // uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
       //
       uAudioFrequency: new THREE.Uniform(0),
-      uMouse: new THREE.Uniform(new THREE.Vector2(0, 0)),
+      uMouse: new THREE.Uniform(new THREE.Vector3(0, 0, 0)),
       // uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
       uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uShadowRepetitions: new THREE.Uniform(13),
@@ -67,11 +67,12 @@ export default class Animation {
       // transparent: true,
       side: THREE.DoubleSide,
       uniforms: this.uniforms,
-      depthWrite: false,
+      // depthWrite: false,
       // blending: THREE.AdditiveBlending,
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
+    this.mesh.rotation.x = -0.01
     // this.mesh.scale.set(5, 5, 5)
     // this.mesh.position.set(-3, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)

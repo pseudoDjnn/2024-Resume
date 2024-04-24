@@ -197,7 +197,7 @@ void main() {
   // modelPosition.z += sin(-aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
 
   // Glitching effect
-  float glitchTime = uAudioFrequency * 0.2 - modelPosition.y * 0.2;
+  float glitchTime = uAudioFrequency * 0.01 - modelPosition.y * 0.2;
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   // stuttering = smoothstep(0.3, 1.0, stuttering);

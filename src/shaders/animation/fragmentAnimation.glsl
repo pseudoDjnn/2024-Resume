@@ -282,6 +282,17 @@ float sdBox(vec3 position, vec3 b) {
   return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), uTime * uTime * uAudioFrequency * 8.0);
 }
 
+float opTwist(vec3 p, float k, float twistAmount) {
+  float angle = k * p.y * twistAmount;
+  // Calculate a twist factor based on angle (modify as needed)
+  float twist = abs(sin(angle)); // Example using absolute value of sine
+  return twist;
+}
+
+float sdGyroid(vec3 position, float h) {
+  return abs(dot(uAudioFrequency * 0.8 * sin(position), cos(position.zxy))) - h;
+}
+
 float sdOctahedron(vec3 p, float s) {
   p = abs(p);
   float m = p.x + p.y + p.z - s;
@@ -319,46 +330,21 @@ float sdPyramid(vec3 p, float h) {
   return sqrt((d2 + q.z * q.z) / m2) * sign(max(q.z, -p.y));
 }
 
-float sdTriPrism(vec3 p, vec2 h) {
-  vec3 q = abs(p + uAudioFrequency);
-  return max(q.z - h.y, max(q.x * 0.866025 + p.y * 0.5, -p.y) - h.x * 0.5);
+float opDisplace(float d1, float d2) {
+  return d1 + d2;
 }
 
-float sdHexPrism(vec3 p, vec2 h) {
-  const vec3 k = vec3(-0.8660254, 0.5, 0.57735);
-  p = abs(p);
-  p.xy -= 2.0 * min(dot(k.xy, p.xy), 0.0) * k.xy;
-  vec2 d = vec2(length(p.xy - vec2(clamp(p.x, -k.z * h.x, k.z * h.x), h.x)) * sign(p.y - h.x), p.z - h.y);
-  return min(max(d.x, d.y), uAudioFrequency) + length(max(d, 0.0));
-}
-
-float opIntersection(float d1, float d2) {
-  return min(d1, d2);
-}
-
-float opSmoothUnion(float d1, float d2, float k) {
-  float h = max(k - abs(d1 - d2), 0.0);
-  return min(d1, d2) - h * h * 0.25 / k;
-}
-
-float rounding(in float d, in float h) {
-  return d - h;
-}
-
-float euclideanDistance(float p1, float p2) {
-  float d1 = (p1 - p2);
-  return sqrt(pow(d1, 2.0));
-}
-
-vec4 opElongate(in vec3 p, in vec3 h) {
-    //return vec4( p-clamp(p,-h,h), 0.0 ); // faster, but produces zero in the interior elongated box
-
-  vec3 q = abs(p) - h;
-  return vec4(max(q, 0.0), min(max(q.x, max(q.y, q.z)), 0.0));
+float opCheapBend(vec3 p, float k) {
+  float s = sin(k * p.x);
+  float c = cos(k * p.x);
+  // Calculate bend based on matrix multiplication (modify as needed)
+  mat2x2 m = mat2x2(vec2(c, s), vec2(-s, c));
+  float bend = dot(vec2(p.x, p.y), vec2(m[0][0], m[0][1])); // Example using dot product
+  return bend;
 }
 
 float sdf(vec3 position) {
-  vec3 shapesPosition = vec3(sin(uTime * 0.01) * 1.5, -1.0, 0.5);
+  vec3 shapesPosition = vec3(sin(uTime * 0.01) * 1.5, -1.0, 0.3);
   // vec3 shapesPosition2 = vec3(sin(uAudioFrequency) * 1.0, 0.0, 0.3);
   // float voroCopy = voroNoise(shapePosition, 0.0, 0.0);
 
@@ -366,7 +352,7 @@ float sdf(vec3 position) {
   vec3 position1 = rotate(position, vec3(1.0), -uTime / 5.0);
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
-  vec3 position2 = rotate(position - shapesPosition * 0.5, vec3(1.0), uAudioFrequency * 0.01);
+  vec3 position2 = rotate(position - shapesPosition * 0.5, vec3(1.0), uAudioFrequency * 0.003);
 
   vec3 position3 = rotate(position, vec3(1.0), cos(-uTime * 0.1 * PI));
 
@@ -382,12 +368,15 @@ float sdf(vec3 position) {
   copyPosition.z = mod(position.z, 0.21) - 0.144;
 
 // Shapes used 
-  float morphedShaped = polynomialSMin(sdBox(position3, vec3(0.2)), sdOctahedron(position1, 0.8), sdSphere(position, 0.5));
+  float morphedShaped = polynomialSMin(sdBox(position3, vec3(0.2)), sdOctahedron(position1, 0.8), max(sdSphere(position1, 0.5), 0.5 * sdGyroid((position1 + vec3(2.0)) * 21.5 + uTime, 0.2) / -21.5));
+  // morphedShaped += opDisplace(uTime, uAudioFrequency);
   // TODO: Work on this tomorrow
   // float morphedPrism = polynomialSMin(sdSphere(position, 0.2), sdHexPrism(position3, vec2(0.3)), sdOctahedron(position3, 0.8));
   // float morphedShaped2 = polynomialSMin(sdHexPrism(position1, vec2(0.2)), sdTriPrism(position1, vec2(0.5)), sdSphere(copyPosition - position2, 0.5));
-  float morphedShaped2 = polynomialSMin(sdPyramid(position2, min(uAudioFrequency, 0.3)), sdOctahedron(position2, 0.8), sdSphere(position2, 0.5));
-  float morphedShaped3 = sdOctahedron(position2, 0.8);
+  float morphedShaped2 = polynomialSMin(sdPyramid(position2, min(uAudioFrequency, 0.5)), sdOctahedron(position2, 0.8), sdSphere(position2, 0.5));
+  float pyramid = sdPyramid(position2, 0.8);
+
+  float test = max(sdSphere(position1, 0.8), 0.5 * sdGyroid((position1 + vec3(2.0)) * 21.5, 0.2) / 21.5);
   // morphedPrism = min(morphedPrism, w.w + sdHexPrism(w.xyz, vec2(0.2, 0.1)));
   // float morphedMin = polynomialSMin(uAudioFrequency, morphedPrism, 0.8);
 
@@ -414,7 +403,7 @@ float sdf(vec3 position) {
   float ground = position.y + .34;
   // ground = getColor(0.0);
 
-  return polynomialSMin(ground, polynomialSMin(finalShape, morphedShaped2, 0.1), 0.1);
+  return polynomialSMin(ground, polynomialSMin(finalShape, 0.1, 0.1), 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {

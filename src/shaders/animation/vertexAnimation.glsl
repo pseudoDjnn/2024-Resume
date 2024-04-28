@@ -197,16 +197,16 @@ void main() {
   // modelPosition.z += sin(-aRandom * 0.01 * (uFrequency.y - uTimeAnimation * smoothstep(-0.212, 1.188, uAudioFrequency * 0.05)) * 0.02) * 13.21;
 
   // Glitching effect
-  float glitchTime = uAudioFrequency * 0.01 - modelPosition.y * 0.2;
-  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  stuttering /= 3.0;
-  // stuttering = smoothstep(0.3, 1.0, stuttering);
-  // stuttering = polynomialImpluse(stuttering, 1.0);
-  // stuttering = rational(stuttering, 1.0);
-  stuttering *= uAudioFrequency * 0.1;
-  stuttering *= 0.34;
-  modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;
-  modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  // float glitchTime = uAudioFrequency * 0.01 - modelPosition.y * 0.2;
+  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  // stuttering /= 3.0;
+  // // stuttering = smoothstep(0.3, 1.0, stuttering);
+  // // stuttering = polynomialImpluse(stuttering, 1.0);
+  // // stuttering = rational(stuttering, 1.0);
+  // stuttering *= uAudioFrequency * 0.1;
+  // stuttering *= 0.34;
+  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering / 3.0;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

@@ -10,6 +10,7 @@ export default class Time extends EventEmitter {
     this.current = this.start
     this.elapsed = 0
     this.delta = 16
+    this.fpsLimit = 30
 
     window.requestAnimationFrame(() => {
       this.tick()
@@ -22,11 +23,15 @@ export default class Time extends EventEmitter {
     // console.log('tick')
 
     const currentTime = Date.now()
-    this.delta = currentTime - this.current
+    this.delta = currentTime - this.elapsed
     this.current = currentTime
     // console.log(this.delta)
     this.elapsed = this.current - this.start
     // console.log(this.elapsed)
+
+    if (this.fpsLimit && this.elapsed < 1000 / this.fpsLimit) {
+      return
+    }
 
     this.trigger('tick')
 

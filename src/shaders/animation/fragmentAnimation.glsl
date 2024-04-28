@@ -1,4 +1,5 @@
 #define PI 3.1415926535897932384626433832795
+#define NUM_OCTAVES 5
 
 uniform vec3 uMouse;
 uniform vec4 uResolution;
@@ -38,20 +39,6 @@ float parabola(float x, float k) {
   return pow(4.0 * x * (1.0 - x), k);
 }
 
-float quinticPolynomial(float x) {
-  return x * x * x * (x * (x * 6.0 - 15.0) + 1.0);
-}
-
-float integralSmoothstep(float x, float T) {
-  if (x > T)
-    return x - T / 2.0;
-  return x * x * x * (1.0 - x * 0.5 / T) / T / T;
-}
-
-float expStep(float x, float k, float n) {
-  return exp(-k * pow(x, n));
-}
-
 vec3 palette(float tone) {
 
   vec3 a = cos(vec3(0.5, 0.5, 0.5));
@@ -65,16 +52,6 @@ vec3 palette(float tone) {
 vec3 getColor(float amount) {
   vec3 color = 0.5 + 0.5 * cos(6.2831 * (sin(vec3(0.0, 0.1, 0.2)) * tan(amount) * cos(vec3(1.0, 1.0, 1.0))));
   return color * palette(amount);
-}
-
-vec3 bg(vec3 rayDirection) {
-  vec3 col = vec3(0);
-
-  float y = rayDirection.y * 0.5 + 0.5;
-
-  col += (1.0 - y) * vec3(1, 4, 1);
-
-  return col;
 }
 
 // cubic polynomial
@@ -95,161 +72,6 @@ float cApprox(float a, float b, float k) {
   return min(a, b) - k * h * h * (h * b3 * (h - 4.0) + b2);
 }
 
-// void main() {
-
-//   // // Base color
-//   vec3 viewDirection = normalize(vPosition + cameraPosition);
-//   // // vec3 frame = calcNormal(viewDirection);
-//   // // float mixedStrength = (vElevation + uColorOffset) * uColorMultiplier;
-//   // // mixedStrength = smoothstep(0.0, 1.0, mixedStrength);
-//   // // vec3 color = mix(uDepthColor, uSurfaceColor, mixedStrength);
-
-//   vec3 color = uColor;
-
-//   // // vec2 st = gl_FragCoord.xy / uResolution.xy;
-//   // // st += st * abs(sin(uTime * 0.1) * 3.0);
-//   // vec3 black = vec3(0.0);
-//   // vec3 white = vec3(1.0);
-//   // vec3 red = vec3(1.0, 0.0, 0.0);
-//   // vec3 blue = vec3(0.65, 0.85, 1.0);
-//   // vec3 orange = vec3(0.9, 0.6, 0.3);
-//   // vec3 color = orange;
-//   // color = vec3(vUv.x, vUv.y, 0.0);
-//   // // st.x *= uResolution.x / uResolution.y;
-
-//   // // Draw sdf circle
-//   // float radius = 2.5;
-//   // vec2 center = vec2(0.0, 0.0);
-//   // // center = vec2(sin(2.0 * uTime), 0.0);
-//   // float distanceToCircle = sdfCircle(vUv - center, radius);
-//   // color = distanceToCircle > 0.0 ? orange : blue;
-
-//   // vec2 q = vec2(0.0);
-//   // q.x = fbm(st + 0.00 * uTime);
-//   // q.y = fbm(st + vec2(1.0));
-
-//   // vec2 r = vec2(0.0);
-//   // r.x = fbm(st + 1.0 * q + vec2(1.7, 9.2) + 0.15 * uTime);
-//   // r.y = fbm(st + 1.0 * q + vec2(8.3, 2.8) + 0.126 * uTime);
-
-//   // float f = fbm(st + r);
-
-//   // color = mix(vec3(0.101961, 0.619608, 0.666667), vec3(0.666667, 0.666667, 0.498039), clamp((f * f) * 4.0, 0.0, 1.0));
-
-//   // color = mix(color, vec3(0, 0, 0.164706), clamp(length(q), 0.0, 1.0));
-
-//   // color = mix(color, vec3(0.666667, 1, 1), clamp(length(r.x), 0.0, 1.0));
-
-//   // Normal
-//   vec3 normal = normalize(vNormal);
-//   if (!gl_FrontFacing)
-//     normal *= -1.0;
-
-//   // Randoms
-//   // float strength = random2D(vUv * vRandom * 89.0);
-
-//   // Strips
-//   float stripes = mod((vPosition.y - uTime) * 21.0, 1.0);
-//   stripes = pow(stripes, 3.0);
-
-//   // Fresnel
-//   float fresnel = dot(viewDirection, normal) + 1.0;
-//   fresnel = pow(fresnel, 2.0);
-
-//   // Falloff
-//   float falloff = smoothstep(0.8, 0.0, fresnel);
-
-//   // Holographic
-//   float holographic = stripes * fresnel;
-//   holographic += fresnel * 1.21;
-//   holographic *= falloff;
-//   // holographic *= palette(holographic);
-
-//   // Color mixing
-//   // vec3 blackColor = vec3(0.0);
-//   // vec3 uvColor = vec3(vUv, strength);
-//   // vec3 mixedColor = mix(blackColor, uvColor, color);
-
-//   // Color Remap
-//   // color = smoothstep(0.3, 0.8, color * uAudioFrequency);
-//   // color *= parabola(uTime * holographic * uAudioFrequency, 1.0);
-
-//   // Smoother edges
-//   color *= smoothstep(0.0, 0.1, vUv.x);
-//   color *= smoothstep(-1.0, 0.1, vUv.x);
-//   color *= smoothstep(0.0, 0.1, vUv.y);
-//   color *= smoothstep(-1.0, 0.1, vUv.y);
-
-//   // Lights
-//   // vec3 light = vec3(0.0);
-
-//   // light += ambientLight(vec3(1.0), 1.0);
-//   // light += directionalLight(vec3(1.0, 0.0, 0.5), 1.0, normal, vec3(0.0, 0.25, 0.0), viewDirection, 1.0);
-
-//   // color *= light;
-
-//   // color = mixedColor;
-//   // mixedColor = color;
-
-//   // Halftone
-//   // color = halftone(color, uShadowRepetitions, vec3(0.0, -1.0, 0.0), -0.8, 1.5, uShadowColor, normal);
-//   // color = halftone(color, uLightRepetitions, vec3(1.0, 1.0, 0.0), 0.5, 1.5, uLightColor, normal);
-
-//   // color = mix(color, pointColor, color);
-
-//   // vec2 uv = gl_PointCoord;
-//   // float distanceToCenter = length(uv - vec2(0.5));
-
-//   // if (distanceToCenter > 0.5)
-//   //   discard; 
-
-//   vec2 uv0 = vUv * 4.0;
-//   vec2 uv1 = uv0;
-//   vec3 finalColor = vec3(0.0);
-//   float radius = 2.5;
-//   // float box = sdBoxFrame(viewDirection, color, radius * uAudioFrequency);
-
-//   float minimumDistance = 1.0;
-
-//   for (float i = 0.0; i < 5.0; i++) {
-//     uv0 = fract(uv0 * 1.5) - 0.5;
-
-//     float distanceToCenter = length(uv0) * exp(-length(uv1));
-
-//     vec3 colorLoop = getColor(length(uv1) + i * 0.5 * distance(length(uAudioFrequency * 0.02), minimumDistance) * 0.5);
-
-//     minimumDistance = min(minimumDistance, distanceToCenter);
-
-//     distanceToCenter = sin(distanceToCenter * 8.0 + min(uAudioFrequency * 0.01, uTime)) / 8.0;
-//     distanceToCenter = abs(length(distanceToCenter));
-
-//     distanceToCenter = integralSmoothstep(0.01 / distanceToCenter, 0.5);
-
-//     // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
-
-//     finalColor += colorLoop * distanceToCenter;
-//   }
-
-//   // color += ffbm(holographic * 3.0);
-//   // finalColor += color;
-
-//   // color = mix(finalColor, color, finalColor);
-
-//   color += smin(stripes, holographic * uAudioFrequency * 0.1, fresnel);
-//   // color += cApprox(stripes, uTime, fresnel);
-//   color *= finalColor;
-//   // color *= uTime + box;
-
-//   // finalColor -= step(0.8, abs(sin(55.0 * minimumDistance))) * 0.3;
-//   // finalColor = smoothstep(0.3, 0.8, finalColor);
-//   // fragColor = vec4(finalColor, 1.0);
-
-//   // Final color
-//   gl_FragColor = vec4(color, holographic);
-//     #include <tonemapping_fragment>
-//     #include <colorspace_fragment>
-// }
-
 mat4 rotationMatrix(vec3 axis, float angle) {
   axis = normalize(axis);
   float s = sin(angle);
@@ -269,8 +91,6 @@ mat2 rot2d(float angle) {
   float c = cos(angle);
   return mat2(c, -s, s, c);
 }
-
-#define NUM_OCTAVES 5
 
 float mod289(float x) {
   return x - floor(x * (1.0 / 289.0)) * 289.0;
@@ -341,10 +161,11 @@ float sdBox(vec3 position, vec3 b) {
 float sdGyroid(vec3 position, float h) {
   position.yz *= rot2d(uTime * 0.2);
   position *= 13.0;
-  return abs(dot(8.0 * sin(position), cos(position.yzx)) / 13.0) - h;
+  return abs(dot(5.0 * sin(vec3(fbm(position))), cos(position.yzx)) / 13.0) - h;
 }
 
 float sdOctahedron(vec3 p, float s) {
+  p.yz *= rot2d(uTime * 0.3);
   p = abs(p);
   float m = p.x + p.y + p.z - s;
   vec3 q;
@@ -361,33 +182,13 @@ float sdOctahedron(vec3 p, float s) {
   return length(vec3(q.x, q.y - s + k, q.z - k));
 }
 
-float sdPyramid(vec3 p, float h) {
-  float m2 = h * h + 0.25;
-
-  p.xz = abs(p.xz);
-  p.xz = (p.z > p.x) ? p.zx : p.xz;
-  p.xz -= 0.5;
-
-  vec3 q = vec3(p.z, h * p.y - 0.5 * p.x, h * p.x + 0.5 * p.y);
-
-  float s = max(-q.x, 0.0);
-  float t = clamp((q.y - 0.5 * p.z) / (m2 + 0.25), 0.0, 1.0);
-
-  float a = m2 * (q.x + s) * (q.x + s) + q.y * q.y;
-  float b = m2 * (q.x + 0.5 * t) * (q.x + 0.5 * t) + (q.y - m2 * t) * (q.y - m2 * t);
-
-  float d2 = min(q.y, -q.x * m2 - q.y * 0.5) > 0.0 ? 0.0 : min(a, b);
-
-  return sqrt((d2 + q.z * q.z) / m2) * sign(max(q.z, -p.y));
-}
-
 float glitter(vec2 position, float a) {
 
   position *= 13.0;
   vec2 id = floor(position);
 
   position = fract(position) - 0.5;
-  float noise = random2D(id) - sin(uAudioFrequency) * 0.3;
+  float noise = random2D(id) - sin(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1)) * 0.3;
 
   float disc = length(position);
   float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
@@ -398,9 +199,7 @@ float glitter(vec2 position, float a) {
 }
 
 float sdf(vec3 position) {
-
-  float hexPostion = dot(position, normalize(vec3(0, 1, 0)));
-  vec3 shapesPosition = vec3(sin(uTime * 0.01) * 1.5, -1.0, 0.3);
+  vec3 shapesPosition = vec3(sin(uTime) * 1.5, -1.0, 0.3);
   // vec3 shapesPosition2 = vec3(sin(uAudioFrequency) * 1.0, 0.0, 0.3);
   // float voroCopy = voroNoise(shapePosition, 0.0, 0.0);
 
@@ -421,8 +220,8 @@ float sdf(vec3 position) {
   vec3 position4 = rotate(position, vec3(1.0), uTime * 0.5 * sin(uAudioFrequency * 0.0001) * cos(uAudioFrequency * 0.0001));
 
 // Copy of the vec3 position
-  vec3 copyPosition = position4 - shapesPosition;
-  vec3 copyPositionRotation = abs(sin(uAudioFrequency * PI * 2.0 * rotate(copyPosition, vec3(0.5), fract(uTime / 8.0) * cos(uAudioFrequency * 0.02))));
+  vec3 copyPosition = position4;
+  vec3 copyPositionRotation = abs(sin(uAudioFrequency * PI * 2.0 * rotate(position, vec3(0.5), fract(uTime / 8.0) * cos(uAudioFrequency * 0.02))));
   copyPosition.z += uTime * 0.5;
   copyPosition.xy = sin(fract(copyPositionRotation.xy * uAudioFrequency) - 0.5);
   copyPosition.z = mod(position.z, 0.21) - 0.144;
@@ -431,72 +230,71 @@ float sdf(vec3 position) {
   float scale = mix(1.0, 3.0, smoothstep(-1.0, 1.0, position.y));
   // position.xz *= scale;
   // position.xz *= rot2d(smoothstep(0.0, 1.0, position.y));
-  float displacement = length(sin(position * uAudioFrequency * 0.3)) * 0.5;
+  float displacement = length(sin(position * uAudioFrequency * 0.03)) * 0.2;
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
 // TODO: Fix this when you wake up
+  // float distortion = -sin(position.z * 3.0 + uTime * 0.3 - dot(uTime * 0.2, -uAudioFrequency * 0.01)) * 0.2;
 
-// float box = sdBox()
+  // float smoothDistortion = 13.0 * smoothstep(-0.3, 0.5, uAudioFrequency * 0.2) * 0.2;
 
-  float ball = sdSphere(position, 0.5);
-  ball = abs(ball) - 0.3;
+  float randomFBM = fbm(vec3(1.0));
 
-  float gyroid = sdGyroid(position1, 0.3);
+  float ball = sdSphere(position1, 0.3);
+  ball = abs(ball) - 0.03;
+  // position1 += getColor(strength);
 
-  ball = polynomialSMin(ball, gyroid, -0.3);
+  float octahedron = sdOctahedron(position1, 0.5);
+  // octahedron = abs(octahedron) - 0.3;
 
-  float octalPolyZ = polynomialSMin(sdOctahedron(position1, displacement * 0.5) - sin(position.z * 8.0 + uTime * 3.5 - uAudioFrequency * 0.03) * 0.2, -sdGyroid(abs(position3), displacement * 0.8), -0.3) / scale;
-  // octalDistanceMax = abs(octalDistanceMax) - 0.1;
-  // float octalDistanceMax = max(sdf(position), -sdf(position));
-  float octalPolyX = polynomialSMin(sdOctahedron(position1, displacement * 0.5) - sin(position.x * 8.0 + uTime * 3.5 - uAudioFrequency * 0.03) * 0.2, -sdGyroid(position3, displacement * 0.5), -0.1) / scale;
+  float gyroid = sdGyroid(position1.yxz, 0.03);
+  // gyroid = abs(gyroid) * 0.3;
 
+  // float secondShape = polynomialSMin(ball, octahedron, -gyroid) - fract(displacement);
+
+  // float octalPolyZ = polynomialSMin(octahedron - sin(position.z * 8.0 + uTime * 3.5 - uAudioFrequency * 0.03) * 0.2, -gyroid * displacement * 0.5, -0.3) / scale;
+
+  // float octalPolyX = polynomialSMin(sdOctahedron(position1, displacement * 0.5) - sin(position.x * 8.0 + uTime * 3.5 - uAudioFrequency * 0.03) * 0.2, -sdGyroid(position3, displacement * 0.5), -0.1) / scale;
+
+  float firstShape = polynomialSMin(ball, octahedron, -gyroid);
   // float finalOctal = mix(octalPolyZ, octalPolyX, 1.0);
 
 // Shapes used 
-  float morphedShaped = polynomialSMin(sdBox(position1, vec3(fbm(vec3(0.1)))), octalPolyZ, polynomialSMin(sdSphere(position1, 0.5), 2.5 * sdGyroid(abs(position3 + vec3(2.0)) * 21.5 + uTime, 0.2) / -21.5, -0.3));
-  // morphedShaped += opDisplace(uTime, uAudioFrequency);
-  // float morphedPrism = polynomialSMin(sdSphere(position, 0.2), sdHexPrism(position3, vec2(0.3)), sdOctahedron(position3, 0.8));
-  // float morphedShaped2 = polynomialSMin(sdHexPrism(position1, vec2(0.2)), sdTriPrism(position1, vec2(0.5)), sdSphere(copyPosition - position2, 0.5));
-  float morphedShaped2 = polynomialSMin(sdPyramid(position2, min(uAudioFrequency, 0.5)), sdOctahedron(position2, smoothstep(-1.0, 3.0, 0.8)), sdSphere(abs(position2), 0.5));
-  // float pyramid = sdPyramid(position2, 0.8);
+  // float morphedShaped = polynomialSMin(sdBox(position1, vec3(fbm(vec3(0.1)))), octalPolyZ, polynomialSMin(sdSphere(position1, 0.5), 2.5 * sdGyroid(abs(position3 + vec3(2.0)) * 21.5 + uTime, 0.2) / -21.5, -0.3));
 
-  // float test = max(sdSphere(position1, 0.8), 0.5 * sdGyroid((position1 + vec3(2.0)) * 21.5, 0.2) / 21.5);
-  // morphedPrism = min(morphedPrism, w.w + sdHexPrism(w.xyz, vec2(0.2, 0.1)));
-  // float morphedMin = polynomialSMin(uAudioFrequency, morphedPrism, 0.8);
+  // float morphedShaped2 = polynomialSMin(sdPyramid(position2, min(uAudioFrequency, 0.5)), sdOctahedron(position2, smoothstep(-1.0, 3.0, 0.8)), sdSphere(abs(position2), 0.5));
 
-  float finalShape = mix(morphedShaped, morphedShaped2, 0.2);
-  // finalShape = opOnion(morphedSphere, morphedShaped);
+  // float finalShape = mix(firstShape, secondShape, 0.2);
+  // finalShape = normalize(finalShape);
 
   // return sdSphere(position, 0.5);
 
-  int i;
-  for (i = 0; i < 10; i++) {
-    float random = random2D(vec2(i, 0.0));
-    // float randomV = voroNoise(position, 0.1, 1.0);
-    float progress = 1.0 - fract(uTime / 5.0 + random * 5.0);
-    vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), atan(random * 2.0 * PI));
+  // int i;
+  // for (i = 0; i < 10; i++) {
+  //   float random = random2D(vec2(i, 0.0));
+  //   random = fract(random * 13.0);
+  //   // float randomV = voroNoise(position, 0.1, 1.0);
+  //   float progress = 1.0 - fract(uTime / 5.0 + random * 5.0);
+  //   vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), atan(random * 2.0 * PI));
 
-    float goToCenter = sdSphere(copyPosition - positionLoop * progress, 0.02);
-    // float morphLoop = sdBoxFrame();
-    // goToCenter = opOnion(finalShape, morphedShaped);
-    finalShape = polynomialSMin(finalShape, goToCenter, 0.02);
-  }
+  //   float goToCenter = sdSphere(copyPosition - positionLoop * progress, 0.02);
+  //   // float morphLoop = sdBoxFrame();
+  //   // goToCenter = opOnion(finalShape, morphedShaped);
+
+  //   // finalShape = polynomialSMin(finalShape, goToCenter, 0.2);
+  // }
 
   // float mouseSphere = sdSphere(position - vec3(uMouse.xy * 2.0, 0.3), 0.1);
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 5.0;
-  position.y += sin(position.z) * 0.5;
+  position.y += sin(position.z) * 0.3;
   float groundWave = dot(sin(position), cos(position.yzx)) * 0.1;
   ground += groundWave;
-  // position = getColor(position4.x);
+  // position *= getColor(ground * 8.0);
 
-  // float march = min(ball, ground * 0.8);
-
-  // return march;
-
-  return polynomialSMin(ground, polynomialSMin(0.1, ball, 0.1), 0.1);
+  return polynomialSMin(ground, polynomialSMin(firstShape, 0.1, 0.1), 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {
@@ -507,27 +305,27 @@ vec3 calcNormal(in vec3 popsition) {
 
 void main() {
 
-  vec3 viewDirection = normalize(vPosition + cameraPosition);
-    // vec3 color = uColor;
-  vec3 normal = normalize(vNormal);
-  if (!gl_FrontFacing)
-    normal *= -1.0;
+  // vec3 viewDirection = normalize(vPosition + cameraPosition);
+  //   // vec3 color = uColor;
+  // vec3 normal = normalize(vNormal);
+  // if (!gl_FrontFacing)
+  //   normal *= -1.0;
 
-    // Strips
-  float stripes = mod((vPosition.y - uTime) * 21.0, 1.0);
-  stripes = pow(stripes, 3.0);
+  //   // Strips
+  // float stripes = mod((vPosition.y - uTime) * 21.0, 1.0);
+  // stripes = pow(stripes, 3.0);
 
-  // Fresnel
-  float fresnel = dot(viewDirection, normal) + 1.0;
-  fresnel = pow(fresnel, 2.0);
+  // // Fresnel
+  // float fresnel = dot(viewDirection, normal) + 1.0;
+  // fresnel = pow(fresnel, 2.0);
 
-  // Falloff
-  float falloff = smoothstep(0.8, 0.0, fresnel);
+  // // Falloff
+  // float falloff = smoothstep(0.8, 0.0, fresnel);
 
-  // Holographic
-  float holographic = stripes * fresnel;
-  holographic += fresnel * 1.21;
-  holographic *= falloff;
+  // // Holographic
+  // float holographic = stripes * fresnel;
+  // holographic += fresnel * 1.21;
+  // holographic *= falloff;
 
   // Background
   float dist = length(vUv - vec2(0.5));
@@ -591,7 +389,7 @@ void main() {
     // pos.xy *= rotate(pos.xy, vec3(1.0), uTime);
     position.xy *= rot2d(t * 0.2 * uMouse.x);
     position.y = max(-0.9, position.y);
-    position.y += sin(t * (uMouse.y - 0.5) * 0.2) * 0.21;
+    position.y += sin(t * (uMouse.y - 0.5) * 0.02) * 0.21;
     // The Current distance to the scene
     float h = sdf(position);
     // The "march" of the ray
@@ -632,7 +430,7 @@ void main() {
     color = vec3(fresnel);
 
     color = vec3(float(i) / 235.0);
-    // color = mix(color, (1.0 - sphereColor * background), fresnel);
+    color = mix(color, (1.0 - sphereColor * background), fresnel);
     // color = mix(color, bg(position), smoothstep(0.0, 7.0, diff));
     // color *= smoothstep(-0.1, 0.1, octalDistanceMax);
     // color = 1.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
@@ -648,11 +446,11 @@ void main() {
     // color = pow(color, vec3(.4545));
   }
 
-  float centralLight = dot(vUv, vUv);
+  float centralLight = dot(newUv, newUv);
   float light = 0.003 / centralLight;
-  color += light * smoothstep(0.0, 0.5, raypos - 2.0);
+  color += light * smoothstep(0.0, 0.5, camPos - 2.0);
 
-  float glow = sdGyroid(normalize(raypos), 0.3);
+  float glow = sdGyroid(normalize(camPos), 0.3);
   color += light * smoothstep(0.0, 0.03, glow);
 
   // color = pow(color, vec3(.4545));

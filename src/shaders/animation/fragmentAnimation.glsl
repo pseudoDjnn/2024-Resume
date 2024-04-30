@@ -143,7 +143,7 @@ float sdSphere(vec3 position, float radius) {
 }
 
 float sdOctahedron(vec3 p, float s) {
-  p.yz *= rot2d(uTime * 0.5);
+  p.yx *= rot2d(uTime * 0.5);
   p = abs(p);
   float m = p.x + p.y + p.z - s;
   vec3 q;
@@ -171,7 +171,7 @@ float glitter(vec2 position, float a) {
   float disc = length(position);
   float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
 
-  manageDisc *= pow(a + sin(uTime + fract(noise * 13.0) * PI * 2.0) * 0.5 + 0.5, 89.0);
+  manageDisc *= pow(a + sin(uTime + fract(noise * 8.0) * PI * 2.0) * 0.5 + 0.5, 55.0);
 
   return manageDisc;
 }
@@ -212,15 +212,15 @@ float sdf(vec3 position) {
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
 // TODO: Fix this when you wake up
-  float distortion = sin(position.z * 3.0 + uAudioFrequency * 0.02 - dot(uTime * 0.02, -uAudioFrequency * 0.01)) * 0.2;
+  float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
   float smoothDistortion = 13.0 * smoothstep(-0.3, 0.5, uAudioFrequency * 0.2) * 0.2;
 
-  float ball = sdSphere(position1, 0.3) - sin(position1.z * uAudioFrequency * 0.02);
+  float ball = sdSphere(position1, 0.3);
   ball = abs(ball);
   // position1 += getColor(strength);
 
-  float octahedron = sdOctahedron(position1, 0.3);
+  float octahedron = sdOctahedron(position1, 0.5);
   // octahedron = abs(octahedron) - 0.3;
 
   float gyroid = sdGyroid(position1, 5.89, 0.05, 1.5);
@@ -236,6 +236,7 @@ float sdf(vec3 position) {
   gyroid -= gyroid2 * 0.3;
   gyroid += gyroid3 * 0.1;
   gyroid -= gyroid4 * 0.1;
+  gyroid += sin(assembledGyroid + smoothstep(-0.3, 0.2, fract(uAudioFrequency * 0.2))) * 0.2;
 
   // float secondShape = polynomialSMin(ball, octahedron, -gyroid) - fract(displacement);
 
@@ -440,7 +441,7 @@ void main() {
   float light = 0.001 / centralLight;
   color += light * smoothstep(0.0, 0.5, camPos - 2.0);
 
-  float glow = sdGyroid(normalize(camPos), 0.3, 0.02, 1.0);
+  float glow = sdGyroid(normalize(camPos), 0.3, uAudioFrequency, 1.0);
   color += light * smoothstep(0.0, 0.003, glow);
 
   // color = pow(color, vec3(.4545));

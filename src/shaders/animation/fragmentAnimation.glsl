@@ -27,7 +27,6 @@ varying vec2 vUv;
 // #include ../includes/lights/ambientLight.glsl
 // #include ../includes/lights/directionalLight.glsl
 // #include ../includes/effects/halftone.glsl
-// #include ../includes/effects/boxFrame.glsl
 
 float lerp(float t) {
   float v1 = t * t;
@@ -214,29 +213,31 @@ float sdf(vec3 position) {
 // TODO: Fix this when you wake up
   float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  float smoothDistortion = 13.0 * smoothstep(-0.3, 0.5, uAudioFrequency * 0.2) * 0.2;
+  // float smoothDistortion = 13.0 * smoothstep(-0.3, 0.5, uAudioFrequency * 0.2) * 0.2;
 
-  float ball = sdSphere(position1, 0.3);
+  float ball = sdSphere(position1, 0.4);
   ball = abs(ball);
   // position1 += getColor(strength);
 
-  float octahedron = sdOctahedron(position1, 0.5);
+  float octahedron = sdOctahedron(position1, 0.4);
   // octahedron = abs(octahedron) - 0.3;
 
   float gyroid = sdGyroid(position1, 5.89, 0.05, 1.5);
   float gyroid1 = sdGyroid(position1, 8.5, 0.03, 0.3);
+  // position1 += getColor();
+
   float gyroid2 = sdGyroid(position1, 13.55, 0.03, 0.3);
   float gyroid3 = sdGyroid(position1, 21.34, 0.03, 0.3);
   float gyroid4 = sdGyroid(position1, 34.21, 0.03, 0.3);
   // gyroid = abs(gyroid) * 0.3;
 
-  float assembledGyroid = max(gyroid, -gyroid1);
+  float assembledGyroid = max(gyroid, gyroid1);
 
-  gyroid -= gyroid1 * 0.2;
-  gyroid -= gyroid2 * 0.3;
-  gyroid += gyroid3 * 0.1;
-  gyroid -= gyroid4 * 0.1;
-  gyroid += sin(assembledGyroid + smoothstep(-0.3, 0.2, fract(uAudioFrequency * 0.2))) * 0.2;
+  gyroid += gyroid1 * 0.2;
+  gyroid += gyroid2 * 0.3;
+  gyroid += gyroid3 * 0.3;
+  gyroid += gyroid4 * 0.1;
+  gyroid += fract(assembledGyroid + smoothstep(-0.5, 0.03, -sin(uAudioFrequency * 0.1))) * 0.8;
 
   // float secondShape = polynomialSMin(ball, octahedron, -gyroid) - fract(displacement);
 

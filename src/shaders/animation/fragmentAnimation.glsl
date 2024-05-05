@@ -118,6 +118,22 @@ float fbm(vec2 x) {
   return v;
 }
 
+float glitter(vec2 position, float a) {
+
+  position *= 13.0;
+  vec2 id = floor(position);
+
+  position = fract(position) - 0.5;
+  float noise = random2D(id) - sin(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1)) * 0.3;
+
+  float disc = length(position);
+  float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
+
+  manageDisc *= pow(a + sin(uTime + fract(noise * 8.0) * PI * 2.0) * 0.5 + 0.5, 55.0);
+
+  return manageDisc;
+}
+
 float polynomialSMin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
   return mix(b, a, h) - k * h * (1.0 - h);
@@ -135,7 +151,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   position.yx *= rot2d(uTime * 0.2);
   position.z *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency)));
   position *= scale;
-  return abs(dot(sin(position.yxz * 1.13), cos(position.zyz * 2.89)) - bias) / scale - thickness;
+  return abs(uAudioFrequency * 0.03 + dot(sin(position.yxz * 3.13), cos(position.zxy * 2.89)) - bias) / scale - thickness;
 }
 
 float sdSphere(vec3 position, float radius) {
@@ -159,22 +175,6 @@ float sdOctahedron(vec3 p, float s) {
 
   float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
   return length(vec3(q.x, q.y - s + k, q.z - k));
-}
-
-float glitter(vec2 position, float a) {
-
-  position *= 13.0;
-  vec2 id = floor(position);
-
-  position = fract(position) - 0.5;
-  float noise = random2D(id) - sin(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1)) * 0.3;
-
-  float disc = length(position);
-  float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
-
-  manageDisc *= pow(a + sin(uTime + fract(noise * 8.0) * PI * 2.0) * 0.5 + 0.5, 55.0);
-
-  return manageDisc;
 }
 
 float sdf(vec3 position) {
@@ -207,21 +207,22 @@ float sdf(vec3 position) {
 
   float strength = smoothstep(0.5, 0.8, vUv.y);
   float scale = mix(1.0, 3.0, smoothstep(-1.0, 1.0, position.y));
+
+// TODO: Fix this when you wake up
+
   // position.xz *= scale;
   // position.xz *= rot2d(smoothstep(0.0, 1.0, position.y));
+
   float displacement = length(sin(position.z * uAudioFrequency * 0.03)) * 0.2;
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
-// TODO: Fix this when you wake up
   float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
-
-  // float smoothDistortion = 13.0 * smoothstep(-0.3, 0.5, uAudioFrequency * 0.2) * 0.2;
 
   float ball = sdSphere(position1, 0.5);
   ball = abs(ball);
   // position1 += getColor(strength);
 
-  float octahedron = sdOctahedron(position1, 0.5);
+  float octahedron = sdOctahedron(position1, 0.8);
   // octahedron = abs(octahedron) - 0.3;
 
   float gyroid = sdGyroid(position1, 5.89, 0.08, 1.5);
@@ -273,7 +274,7 @@ float sdf(vec3 position) {
   //   // float morphLoop = sdBoxFrame();
   //   // goToCenter = opOnion(finalShape, morphedShaped);
 
-  //   // finalShape = polynomialSMin(finalShape, goToCenter, 0.2);
+  //   firstShape = polynomialSMin(firstShape, goToCenter, 0.2);
   // }
 
   // float mouseSphere = sdSphere(position - vec3(uMouse.xy * 2.0, 0.3), 0.1);
@@ -281,8 +282,8 @@ float sdf(vec3 position) {
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 3.0;
-  position.y += sin(position.z) * 0.3;
-  float groundWave = dot(sin(position), cos(position.yzx)) * 0.1;
+  position.y += sin(position.z) * 0.5;
+  float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave;
   // position *= getColor(ground * 8.0);
 
@@ -378,6 +379,8 @@ void main() {
 
     // float voroPosition = voroNoise(position, t,tMax);
     // pos.xy *= rotate(pos.xy, vec3(1.0), uTime);
+
+    // Image movement with mouse (not actual rotation of plane)
     position.xy *= rot2d(t * 0.2 * uMouse.x);
     position.y = max(-0.9, position.y);
     position.y += sin(t * (uMouse.y - 0.5) * 0.02) * 0.21;
@@ -401,7 +404,10 @@ void main() {
     color = vec3(1.0);
     vec3 normal = calcNormal(position);
     vec3 rayReflect = reflect(ray, normal);
-    float diff = dot(normal, normalize(vec3(1, 2, 3))) * 0.5 + 0.5;
+    vec3 lightDir = -normalize(position);
+
+    float diff = dot(normal, lightDir) * 0.5 + 0.5;
+    float centerDist = length(position);
     color = vec3(diff);
 
     // color = vec3(diff);
@@ -415,35 +421,37 @@ void main() {
     // color -= getColor(position.xy * 8.0, 0.01) * 8.0;
 
     // color = 1.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
-    vec3 lightDir = -normalize(position);
 
     // color = 1.0 - getColor(color.y);
-    float centerDist = length(position);
-    if (centerDist > 0.3) {
-      // color *= vec3(0, 1, 0);
-      float shapeShadow = sdGyroid(-lightDir, 0.3, 0.02, 1.0);
-      float shadowBlur = centerDist * 0.2;
-      float shadow = smoothstep(-shadowBlur, shadowBlur, shapeShadow);
-      color *= shadow * 0.9 + 0.1;
 
-      // position.z -= uTime * 0.2;
-      color -= glitter(position.xy * 89.0, 0.01) * 8.0 * shadow;
-      color /= centerDist * getColor(centerDist + smoothstep(-0.3, 0.3, uAudioFrequency * 0.2));
-    }
-
-    color *= smoothstep(-0.8, 0.2, vUv.x);
-    color *= smoothstep(-1.0, 0.3, vUv.x);
-    color *= smoothstep(-0.8, 0.2, vUv.y);
-    color *= smoothstep(-1.0, 0.3, vUv.y);
     // color *= finalColor;
 
     // color = pow(color, vec3(.4545));
+    if (t < tMax) {
+
+      if (centerDist > .08) {
+      // color *= vec3(0, 1, 0);
+        float shapeShadow = sdGyroid(-lightDir, 0.3, 0.02, 1.0);
+        float shadowBlur = centerDist * 0.02;
+        float shadow = smoothstep(-shadowBlur, shadowBlur, shapeShadow);
+        color *= shadow * 0.9 + 0.1;
+
+        position.z -= uTime * 0.2;
+        color -= glitter(position.xy * 5.0, 0.01) * 8.0 * shadow;
+        color /= centerDist * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.2));
+      }
+    }
     float centralLight = dot(newUv, newUv);
     float light = 0.001 / centralLight;
     color += light * smoothstep(0.0, 0.5, camPos - 2.0);
 
     float glow = sdGyroid(normalize(camPos), 0.3, uAudioFrequency, 1.0);
     color += light * smoothstep(0.0, 0.03, glow);
+
+    color *= smoothstep(-0.8, 0.2, vUv.x);
+    color *= smoothstep(-1.0, 0.3, vUv.x);
+    color *= smoothstep(-0.8, 0.2, vUv.y);
+    color *= smoothstep(-1.0, 0.3, vUv.y);
     // color = mix(1.0 - color, (1.0 - sphereColor + background * light * glow), fresnel);
   }
 

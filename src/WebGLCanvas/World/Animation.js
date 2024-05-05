@@ -64,11 +64,11 @@ export default class Animation {
       // wireframe: true,
       vertexShader: animationVertexShader,
       fragmentShader: animationFragmentShader,
-      // transparent: true,
+      transparent: true,
       side: THREE.DoubleSide,
       uniforms: this.uniforms,
-      // depthWrite: false,
-      // blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)

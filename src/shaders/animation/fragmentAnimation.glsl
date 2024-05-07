@@ -353,6 +353,7 @@ void main() {
 
   // Use new UV
   vec2 newUv = (vUv - vec2(0.5)) + vec2(0.5);
+  // vec2 newUv = (vUv - vec2(0.5) + vec2(0.5) * uResolution.xy) / uResolution.y;
   // Create position of camera
   vec3 camPos = vec3(0.0, 0.0, 2.0);
   // Cast ray form camera to sphere
@@ -401,7 +402,7 @@ void main() {
   if (t < tMax) {
     vec3 position = camPos + t * ray;
     // position.x += sin(t * (uMouse.x - 0.5) * 0.5) * 0.89;
-    color = vec3(1.0);
+    // color = vec3(1.0);
     vec3 normal = calcNormal(position);
     vec3 rayReflect = reflect(ray, normal);
     vec3 lightDir = -normalize(position);
@@ -409,8 +410,6 @@ void main() {
     float diff = dot(normal, lightDir) * 0.5 + 0.5;
     float centerDist = length(position);
     color = vec3(diff);
-
-    // color = vec3(diff);
 
     float fresnel = pow(1.5 + dot(ray, normal), 3.0);
     color = vec3(fresnel);
@@ -432,7 +431,7 @@ void main() {
       if (centerDist > .08) {
       // color *= vec3(0, 1, 0);
         float shapeShadow = sdGyroid(-lightDir, 0.3, 0.02, 1.0);
-        float shadowBlur = centerDist * 0.02;
+        float shadowBlur = centerDist * 0.1;
         float shadow = smoothstep(-shadowBlur, shadowBlur, shapeShadow);
         color *= shadow * 0.9 + 0.1;
 
@@ -441,19 +440,24 @@ void main() {
         color /= centerDist * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.2));
       }
     }
-    float centralLight = dot(newUv, newUv);
-    float light = 0.001 / centralLight;
-    color += light * smoothstep(0.0, 0.5, camPos - 2.0);
-
-    float glow = sdGyroid(normalize(camPos), 0.3, uAudioFrequency, 1.0);
-    color += light * smoothstep(0.0, 0.03, glow);
-
-    color *= smoothstep(-0.8, 0.2, vUv.x);
-    color *= smoothstep(-1.0, 0.3, vUv.x);
-    color *= smoothstep(-0.8, 0.2, vUv.y);
-    color *= smoothstep(-1.0, 0.3, vUv.y);
     // color = mix(1.0 - color, (1.0 - sphereColor + background * light * glow), fresnel);
+    float centralLight = dot(newUv, newUv);
+    centralLight *= camPos.z - 1.0;
+
+    float light = 0.03 / centralLight;
+    vec3 lightColor = vec3(1.0, 0.8, 0.5);
+    color += light * smoothstep(0.0, 0.5, camPos - 2.0) * lightColor;
+
+    float glow = sdGyroid(normalize(camPos), 0.3, 0.03, 1.0);
+    color += light * smoothstep(0.0, 0.03, glow) * lightColor;
+
+    color *= 1.0 - centralLight * 0.8;
   }
+
+  color *= smoothstep(-0.8, 0.2, vUv.x);
+  color *= smoothstep(-1.0, 0.3, vUv.x);
+  color *= smoothstep(-0.8, 0.2, vUv.y);
+  color *= smoothstep(-1.0, 0.3, vUv.y);
 
   // color = pow(color, vec3(.4545));
 

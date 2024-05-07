@@ -147,6 +147,11 @@ float smoothMin(float a, float b, float k) {
   return -smoothMax(-a, -b, k);
 }
 
+float sdBox(vec3 p, vec3 b) {
+  vec3 q = abs(p) - b;
+  return length(max(q, -uAudioFrequency * 0.2)) + min(max(q.x, max(q.y, q.z)), 0.0);
+}
+
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   position.yx *= rot2d(uTime * 0.2);
   position.z *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency)));
@@ -222,7 +227,7 @@ float sdf(vec3 position) {
   ball = abs(ball);
   // position1 += getColor(strength);
 
-  float octahedron = sdOctahedron(position1, 0.8);
+  float octahedron = sdOctahedron(position1, 0.5);
   // octahedron = abs(octahedron) - 0.3;
 
   float gyroid = sdGyroid(position1, 5.89, 0.08, 1.5);
@@ -253,11 +258,11 @@ float sdf(vec3 position) {
   // float finalOctal = mix(octalPolyZ, octalPolyX, 1.0);
 
 // Shapes used 
-  // float morphedShaped = polynomialSMin(sdBox(position1, vec3(fbm(vec3(0.1)))), octalPolyZ, polynomialSMin(sdSphere(position1, 0.5), 2.5 * sdGyroid(abs(position3 + vec3(2.0)) * 21.5 + uTime, 0.2) / -21.5, -0.3));
+  float morphedShaped = polynomialSMin(sdBox(position1, vec3(0.5)), octahedron, polynomialSMin(sdSphere(position1, 0.8), 2.5 * sdGyroid(abs(position3 + vec3(2.0)) * 21.5 * uAudioFrequency, 5.2, 0.08, 2.8) / -21.5, -0.3));
 
   // float morphedShaped2 = polynomialSMin(sdPyramid(position2, min(uAudioFrequency, 0.5)), sdOctahedron(position2, smoothstep(-1.0, 3.0, 0.8)), sdSphere(abs(position2), 0.5));
 
-  // float finalShape = mix(firstShape, secondShape, 0.2);
+  float finalShape = mix(firstShape, morphedShaped, 0.2);
   // finalShape = normalize(finalShape);
 
   // return sdSphere(position, 0.5);
@@ -287,7 +292,7 @@ float sdf(vec3 position) {
   ground += groundWave;
   // position *= getColor(ground * 8.0);
 
-  return polynomialSMin(ground, polynomialSMin(firstShape, 0.1, 0.1), 0.1);
+  return polynomialSMin(ground, polynomialSMin(finalShape, 0.1, 0.1), 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {

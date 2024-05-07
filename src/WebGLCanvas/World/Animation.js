@@ -32,20 +32,7 @@ export default class Animation {
 
     // this.geometry.setAttribute('aRandom', new THREE.BufferAttribute(this.randoms, 2))
 
-    this.materialAnimationParamters = {}
-    this.materialAnimationParamters.color = '#70c1ff'
-    // this.materialAnimationParamters.shadowColor = '#ff794d'
-    // this.materialAnimationParamters.lightColor = '#e5ffe0'
-
     this.uniforms = {
-      //
-      // uColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.color)),
-      // uColorOffset: new THREE.Uniform(0.925),
-      // uColorMultiplier: new THREE.Uniform(1),
-      // uShadeColor: new THREE.Uniform(),
-      // uShadowColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.shadowColor)),
-      // uLightColor: new THREE.Uniform(new THREE.Color(this.materialAnimationParamters.lightColor)),
-      //
       uAudioFrequency: new THREE.Uniform(0),
       uMouse: new THREE.Uniform(new THREE.Vector3(0, 0, 0)),
       // uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
@@ -54,10 +41,6 @@ export default class Animation {
       uLightRepetitions: new THREE.Uniform(55),
       uTimeAnimation: new THREE.Uniform(0),
       uTime: new THREE.Uniform(0),
-      //
-      // uWaveElevation: new THREE.Uniform(0.5),
-      // uWaveFrequency: new THREE.Uniform(new THREE.Vector2(8, 2.5)),
-      // uWaveSpeed: new THREE.Uniform(0.21),
     }
 
     this.material = new THREE.ShaderMaterial({

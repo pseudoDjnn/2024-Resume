@@ -155,8 +155,8 @@ float sdBox(vec3 p, vec3 b) {
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   position.yx *= rot2d(uTime * 0.2);
   position.z *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency)));
-  position *= scale;
-  return abs(uAudioFrequency * 0.03 + dot(sin(position.yxz * 3.13), cos(position.zxy * 2.89)) - bias) / scale - thickness;
+  position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.2);
+  return abs(uAudioFrequency * 0.05 * sin(uTime * 0.01) + dot(sin(position.yxz * 3.13), cos(position.zxy * 2.89)) - bias) / scale - thickness;
 }
 
 float sdSphere(vec3 position, float radius) {
@@ -165,16 +165,16 @@ float sdSphere(vec3 position, float radius) {
 
 float sdOctahedron(vec3 p, float s) {
   p.yx *= rot2d(uTime * 0.5);
-  p.z *= smoothstep(-2.0 * uTime, 0.1, rand(vec2(uAudioFrequency)));
+  p.z *= smoothstep(-3.0 * uTime, 0.1, rand(vec2(uAudioFrequency)));
   p = abs(p);
   float m = p.x + p.y + p.z - s;
   vec3 q;
   if (5.0 * p.x < m)
-    q = p.xyz;
+    q = p.xyz * uTime;
   else if (2.0 * p.y < m)
-    q = p.yzx;
+    q = p.yzx * uTime;
   else if (8.0 * p.z < m)
-    q = p.zxy;
+    q = p.zxy * uTime;
   else
     return m * rand(vec2(0.57735027));
 

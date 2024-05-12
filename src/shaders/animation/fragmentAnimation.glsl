@@ -2,7 +2,7 @@
 #define NUM_OCTAVES 5
 
 uniform vec3 uMouse;
-uniform vec4 uResolution;
+uniform vec2 uResolution;
 uniform vec3 uColor;
 uniform vec3 uLightColor;
 uniform vec3 uShadowColor;
@@ -154,7 +154,7 @@ float sdBox(vec3 p, vec3 b) {
 
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   position.yx *= rot2d(uTime * 0.2);
-  position.z *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency)));
+  position.zx *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency)) / length(position) - scale);
   position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.2);
   return abs(uAudioFrequency * 0.05 * sin(uTime * 0.01) + dot(sin(position.yxz * 3.13), cos(position.zxy * 2.89)) - bias) / scale - thickness;
 }
@@ -170,15 +170,15 @@ float sdOctahedron(vec3 p, float s) {
   float m = p.x + p.y + p.z - s;
   vec3 q;
   if (5.0 * p.x < m)
-    q = p.xyz * uTime;
-  else if (2.0 * p.y < m)
-    q = p.yzx * uTime;
+    q = sin(p.xyz * uAudioFrequency * uTime * PI);
+  else if (3.0 * p.y < m)
+    q = sin(p.yzx * uAudioFrequency * uTime * PI);
   else if (8.0 * p.z < m)
-    q = p.zxy * uTime;
+    q = sin(abs(uTime * ceil(floor(PI * fract(p.zxy * uAudioFrequency)) * 2.0 + 1.0)));
   else
     return m * rand(vec2(0.57735027));
 
-  float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
+  float k = clamp(0.5 * (q.z - q.y + s), 0.0, s / uAudioFrequency * 0.5);
   return length(vec3(q.x, q.y - s + k, q.z - k));
 }
 
@@ -360,7 +360,7 @@ void main() {
 
   // Use new UV
   vec2 newUv = (vUv - vec2(0.5)) + vec2(0.5);
-  // vec2 newUv = (vUv - vec2(0.5) + vec2(0.5) * uResolution.xy) / uResolution.y;
+  // vec2 newUv = (gl_FragCoord - 0.5 * uResolution.xy) / uResolution.y;
   // Create position of camera
   vec3 camPos = vec3(0.0, 0.0, 2.0);
   // Cast ray form camera to sphere

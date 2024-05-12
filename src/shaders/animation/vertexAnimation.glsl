@@ -88,12 +88,6 @@ float doubleCubicSeat(float x, float a, float b) {
   return y;
 }
 
-// float lerp(float t) {
-//   float v1 = t * t;
-//   float v2 = 1.0 - (1.0 - t) * (1.0 - t);
-//   return smoothstep(v1, v2, smoothstep(-1.0, 0.5, t));
-// }
-
 void main() {
   // Base Postion
   float shift = 0.01;
@@ -200,9 +194,6 @@ void main() {
   // float glitchTime = uAudioFrequency * 0.01 - modelPosition.y * 0.2;
   // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   // stuttering /= 3.0;
-  // // stuttering = smoothstep(0.3, 1.0, stuttering);
-  // // stuttering = polynomialImpluse(stuttering, 1.0);
-  // // stuttering = rational(stuttering, 1.0);
   // stuttering *= uAudioFrequency * 0.1;
   // stuttering *= 0.34;
   // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;

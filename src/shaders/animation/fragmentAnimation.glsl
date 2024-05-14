@@ -147,16 +147,27 @@ float smoothMin(float a, float b, float k) {
   return -smoothMax(-a, -b, k);
 }
 
+/*
+  Box
+*/
 float sdBox(vec3 p, vec3 b) {
   vec3 q = abs(p) - b;
   return length(max(q, uAudioFrequency * 0.1)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
+/*
+  Gyroid
+*/
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   position *= scale;
 
-  // position.yx *= rot2d(sin(uTime * 0.2));
+  float x = atan(position.x, position.z);
+  float y = atan(length(position.xz) - 1.0, position.y);
+
+  position += sin(y * 8.0 + x * 13.0);
+
+  position.xz *= rot2d(sin(uTime * 0.2));
   // position.zx *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency * 0.3)) / length(position) - scale);
   // position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.02);
 
@@ -164,17 +175,23 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   // return abs(dot(sin(position * scale), cos(position.zxy)) - 0.5) / scale;
 }
 
+/*
+  Sphere
+*/
 float sdSphere(vec3 position, float radius) {
   return length(position) - radius;
 }
 
+/*
+  Octahedron
+*/
 float sdOctahedron(vec3 p, float s) {
-  p.zx *= rot2d(sin(abs(uTime * 0.03 * ceil(floor(PI * fract(p.x / p.y - p.z)) * 2.0 + 1.0))));
+  p.zx *= rot2d(sin(abs(uTime * 0.03 * ceil(floor(PI * 3.0 * fract(smoothstep(-0.8, 0.3, uAudioFrequency) * p.y)) * 2.0 + 1.0)))) * -(rot2d(sin(abs(uTime * 0.03 * ceil(floor(PI * 3.0 * fract(smoothstep(-0.8, 0.3, uAudioFrequency) * p.z)) * 2.0 + 1.0)))));
   p.yx *= rot2d(uTime * 0.5);
-  p.z *= smoothstep(-3.0 * uTime, 0.5, rand(vec2(uAudioFrequency * 0.3)));
+  // p.x /= smoothstep(3.0 * uTime, 0.5, rand(vec2(uAudioFrequency)));
 
   p = sin(abs(p));
-  // p.x = sin(p.x);
+  p.x = sin(p.x);
   // p.y = sin(p.y);
   // p.z = sin(p.z);
 
@@ -195,7 +212,7 @@ float sdOctahedron(vec3 p, float s) {
 }
 
 float sdf(vec3 position) {
-  vec3 shapesPosition = vec3(sin(uTime) * 1.5, -1.0, uAudioFrequency * 0.02);
+  vec3 shapesPosition = vec3(sin(uTime) * 1.5, -1.0, uAudioFrequency * 0.005);
   // vec3 shapesPosition2 = vec3(sin(uAudioFrequency) * 1.0, 0.0, 0.3);
   // float voroCopy = voroNoise(shapePosition, 0.0, 0.0);
 
@@ -244,19 +261,18 @@ float sdf(vec3 position) {
   float octahedron = sdOctahedron(position1, 0.5);
   octahedron = abs(octahedron) - 0.2;
 
-  float gyroid = sdGyroid(position1, 21.13, 0.03, 0.8);
-  float gyroid1 = sdGyroid(position3, 8.5, 0.02, 0.3);
-  // position1 += getColor();
+  float gyroid = sdGyroid(position1, 21.13, 0.01, uAudioFrequency);
+  float gyroid1 = sdGyroid(position3, 144.5, 0.02, 0.3);
+  // ball = max(ball, gyroid);
 
-  ball = max(ball, gyroid);
-  float test = polynomialSMin(ball, gyroid, -0.01);
+  float shapeIdea = polynomialSMin(octahedron * sin(length(position - uAudioFrequency * 0.002) - 0.5), gyroid - sin(uAudioFrequency * 0.002), -0.01);
 
   float gyroid2 = sdGyroid(copyPosition, 13.55, 0.03, 0.3);
   float gyroid3 = sdGyroid(position3, 21.34, 0.03, 0.3);
   float gyroid4 = sdGyroid(copyPosition, 34.21, 0.5, 8.3);
   // gyroid = abs(gyroid) * 0.3;
 
-  // float assembledGyroid = max(gyroid, gyroid1);
+  float assembledGyroid = polynomialSMin(max(ball, gyroid), max(octahedron, gyroid), -0.01);
 
   // gyroid += gyroid1 * 0.08;
   // gyroid += gyroid2 * 0.03;
@@ -296,7 +312,7 @@ float sdf(vec3 position) {
   //   // float morphLoop = sdBoxFrame();
   //   // goToCenter = opOnion(finalShape, morphedShaped);
 
-  //   firstShape = polynomialSMin(firstShape, goToCenter, 0.2);
+  //   test = polynomialSMin(test, goToCenter, 0.2);
   // }
 
   // float mouseSphere = sdSphere(position - vec3(uMouse.xy * 2.0, 0.3), 0.1);
@@ -309,7 +325,7 @@ float sdf(vec3 position) {
   ground += groundWave;
   // position *= getColor(ground * 8.0);
 
-  return polynomialSMin(ground, test, 0.1);
+  return polynomialSMin(ground, shapeIdea, 0.1);
 }
 
 vec3 calcNormal(in vec3 popsition) {
@@ -396,7 +412,7 @@ void main() {
   // }
 
   int i;
-  for (i = 0; i < 256; i++) {
+  for (i = 0; i < 100; i++) {
     // The position along the ray
     vec3 position = raypos + t * ray;
 
@@ -407,8 +423,10 @@ void main() {
     position.xy *= rot2d(t * 0.2 * uMouse.x);
     position.y = max(-0.9, position.y);
     position.y += sin(t * (uMouse.y - 0.5) * 0.02) * 0.21;
+
     // The Current distance to the scene
     float h = sdf(position);
+
     // The "march" of the ray
     t += h;
     if (abs(h) < 0.0001 || t > tMax)
@@ -427,7 +445,7 @@ void main() {
     // position.x += sin(t * (uMouse.x - 0.5) * 0.5) * 0.89;
     // color = vec3(1.0);
     vec3 normal = calcNormal(position);
-    // vec3 rayReflect = reflect(ray, normal);
+    vec3 rayReflect = reflect(ray, normal);
     vec3 lightDir = -normalize(position);
 
     float diff = dot(normal, lightDir) * 0.5 + 0.5;
@@ -460,7 +478,7 @@ void main() {
 
         position.z -= uTime * 0.2;
         color -= glitter(position.xy * 5.0, 0.01) * 8.0 * shadow;
-        color /= centerDist * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.2));
+        color += -(shadowBlur * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.2)));
       }
     }
     // color = mix(1.0 - color, (1.0 - sphereColor + background * light * glow), fresnel);

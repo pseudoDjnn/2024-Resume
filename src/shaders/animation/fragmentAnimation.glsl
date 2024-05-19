@@ -162,18 +162,18 @@ float sdBox(vec3 p, vec3 b, float r) {
 */
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
-  position *= scale - sin(uAudioFrequency);
+  position *= scale;
 
   float x = atan(position.x, position.z);
   float y = atan(length(position.xz) - 1.0, position.y);
 
-  position.z += sin(x * uTime - y * uTime);
+  position.z += sin(x * 8.0 - y * 13.0) - cos(uTime) * 0.5 + 0.5;
 
-  position.xz *= rot2d(sin(uTime * 0.2) * 0.5 + 0.5);
+  // position.xz *= rot2d(sin(uTime * 0.2) * 0.5 + 0.5);
   // position.zx *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency * 0.3)) / length(position) - scale);
   // position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.02);
 
-  return abs(0.8 * dot(sin(position / uTime), cos(position.yzx - uTime)) / scale) - thickness;
+  return abs(0.8 * dot(sin(position + uTime), cos(position.yzx - uTime)) / scale) - thickness;
 }
 
 /*
@@ -211,15 +211,17 @@ float sdOctahedron(vec3 p, float s) {
   float rip = sin((x * 8.0 - y * 13.0) * 3.0) * 0.5 + 0.5;
 
   float m = sin(p.x + p.y + p.z - s);
-  p.x *= sin(uAudioFrequency * 0.2) * 0.5 + 0.5;
+  // p.xz += vec2(sin(uTime), cos(uTime))
+  // float idea = polynomialSMin(p.x, 0.1, 0.1) * 0.5 + 0.5;
+  p.z += dot(length(rip * x), uTime) * 0.5 + 0.5;
 
   vec3 q;
   if (2.0 * p.x < m)
     q = p.xyz;
-  else if (2.0 * p.y < m)
+  else if (21.0 * p.y < m)
     q = p.yzx;
   else if (5.0 * p.z < m)
-    q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz * uAudioFrequency))) * 2.0 + 1.0));
+    q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
   else
     return m * rand(vec2(0.57735027));
 
@@ -278,7 +280,7 @@ float sdf(vec3 position) {
 
   float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  vec3 twist = opTwist(position1, 5.0 * sin(uTime) * 0.5 + 0.5) - sin(displacement);
+  vec3 twist = opTwist(position1, 3.0 * sin(uTime) * 0.5 + 0.5) - sin(displacement);
 
   float box = sdBox(twist * sin(uAudioFrequency * 0.2), vec3(0.8), 1.5);
   // box = abs(box) - 0.03;
@@ -289,11 +291,11 @@ float sdf(vec3 position) {
 
   float torus = sdTorus(copyPosition * 0.02 - position, vec2(0.8, 1.0));
 
-  float octahedron = sdOctahedron(twist, 0.8);
+  float octahedron = sdOctahedron(twist, fract(0.8));
   // octahedron = abs(octahedron) - 0.03;
   // octahedron = stepUpDown(0.21, 0.55, octahedron);
 
-  float gyroid = sdGyroid(position1, 34.13, 0.01, uAudioFrequency * 0.2);
+  float gyroid = sdGyroid(position1, 13.13, 0.01, 0.5);
   // octahedron *= worley(vec2(position1), ball, gyroid);
   float gyroid1 = sdGyroid(position3, 144.5, 0.02, 0.3);
   octahedron = max(octahedron, -gyroid);
@@ -308,7 +310,7 @@ float sdf(vec3 position) {
   // shapeIdea = abs(shapeIdea) - 0.03;
   // shapeIdea = mix(octahedron, polynomialSMin(ball, octahedron, gyroid), sin(uTime) * 0.5 + 0.5);
 
-  float assembledGyroid = polynomialSMin(octahedron, max(octahedron, gyroid), sin(uTime * (uAudioFrequency * 0.0001)) * 0.1 + 0.1);
+  float assembledGyroid = polynomialSMin(octahedron, max(octahedron, gyroid), sin(uTime * (uAudioFrequency * 0.1)) * 0.1 + 0.1);
   // assembledGyroid = stepUpDown(0.21, 0.55, assembledGyroid);
 
   // gyroid += gyroid1 * 0.08;

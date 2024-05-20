@@ -194,14 +194,15 @@ float sdTorus(vec3 p, vec2 t) {
 /*
   Octahedron
 */
-float sdOctahedron(vec3 p, float s) {
+float sdOctahedron(vec3 p, float s, float t) {
   // p.yz *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) + p.x / s) * 2.0 + 1.0) * p.y)))));
-  // p.zx *= rot2d(uTime * 0.5 + 0.5);
+  p.zy *= rot2d(uTime * 0.5 - 0.5) / t;
   // p.x = rand(vec2(sin(smoothstep(-0.2, 0.2, uTime))));
   // p.x /= smoothstep(3.0 * uTime, 0.5, rand(vec2(uAudioFrequency)));
 
   p = abs(p);
-  // p.x = sin(p.x * uTime);
+  // TODO: you stopped here
+  p.x = p.x * sin(abs(cos(uTime) * 2.0 + 1.0 * ceil(floor(fract(uAudioFrequency * 0.01)))));
   // p.y = sin(p.y);
   // p.z = sin(p.z * uTime);
 
@@ -213,7 +214,7 @@ float sdOctahedron(vec3 p, float s) {
   float m = sin(p.x + p.y + p.z - s);
   // p.xz += vec2(sin(uTime), cos(uTime))
   // float idea = polynomialSMin(p.x, 0.1, 0.1) * 0.5 + 0.5;
-  p.z += dot(length(rip * x), uTime) * 0.5 + 0.5;
+  p.z += dot(length(rip * t), uTime) * 0.5 + 0.5;
 
   vec3 q;
   if (2.0 * p.x < m)
@@ -280,7 +281,7 @@ float sdf(vec3 position) {
 
   float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  vec3 twist = opTwist(position1, 3.0 * sin(uTime) * 0.5 + 0.5) - sin(displacement);
+  vec3 twist = opTwist(position1 - sin(smoothstep(-0.1, 0.8, copyPosition * 0.001)), 13.0 * cos(uTime) * 0.2 + 0.2) - sin(displacement);
 
   float box = sdBox(twist * sin(uAudioFrequency * 0.2), vec3(0.8), 1.5);
   // box = abs(box) - 0.03;
@@ -291,11 +292,14 @@ float sdf(vec3 position) {
 
   float torus = sdTorus(copyPosition * 0.02 - position, vec2(0.8, 1.0));
 
-  float octahedron = sdOctahedron(twist, fract(0.8));
+  float octahedron = sdOctahedron(twist, 0.5, 1.0);
   // octahedron = abs(octahedron) - 0.03;
   // octahedron = stepUpDown(0.21, 0.55, octahedron);
+  // if (octahedron > 0.1) {
+  //   twist /= uAudioFrequency;
+  // }
 
-  float gyroid = sdGyroid(position1, 13.13, 0.01, 0.5);
+  float gyroid = sdGyroid(position1, 13.13, 0.01, 0.3 * uTime);
   // octahedron *= worley(vec2(position1), ball, gyroid);
   float gyroid1 = sdGyroid(position3, 144.5, 0.02, 0.3);
   octahedron = max(octahedron, -gyroid);
@@ -310,7 +314,7 @@ float sdf(vec3 position) {
   // shapeIdea = abs(shapeIdea) - 0.03;
   // shapeIdea = mix(octahedron, polynomialSMin(ball, octahedron, gyroid), sin(uTime) * 0.5 + 0.5);
 
-  float assembledGyroid = polynomialSMin(octahedron, max(octahedron, gyroid), sin(uTime * (uAudioFrequency * 0.1)) * 0.1 + 0.1);
+  float assembledGyroid = polynomialSMin(fract(octahedron * uAudioFrequency * 0.1), max(octahedron, sin(gyroid)), sin(uTime * (uAudioFrequency * 0.1)) * 0.1 + 0.1);
   // assembledGyroid = stepUpDown(0.21, 0.55, assembledGyroid);
 
   // gyroid += gyroid1 * 0.08;

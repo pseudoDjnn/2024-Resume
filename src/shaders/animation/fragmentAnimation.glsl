@@ -3,23 +3,23 @@
 
 uniform vec3 uMouse;
 uniform vec2 uResolution;
-uniform vec3 uColor;
-uniform vec3 uLightColor;
-uniform vec3 uShadowColor;
+// uniform vec3 uColor;
+// uniform vec3 uLightColor;
+// uniform vec3 uShadowColor;
 // uniform vec3 uDepthColor;
 // uniform vec3 uSurfaceColor;
 uniform float uAudioFrequency;
-uniform float uColorOffset;
-uniform float uColorMultiplier;
-uniform float uLightRepetitions;
-uniform float uShadowRepetitions;
+// uniform float uColorOffset;
+// uniform float uColorMultiplier;
+// uniform float uLightRepetitions;
+// uniform float uShadowRepetitions;
 uniform float uTime;
 
 // varying vec3 vColor;
-varying float vElevation;
-varying float vRandom;
-varying vec3 vNormal;
-varying vec3 vPosition;
+// varying float vElevation;
+// varying float vRandom;
+// varying vec3 vNormal;
+// varying vec3 vPosition;
 varying vec2 vUv;
 
 #include ../includes/effects/random2D.glsl
@@ -202,9 +202,9 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.x = rand(vec2(sin(smoothstep(-0.2, 0.2, uTime))));
   // p.x /= smoothstep(3.0 * uTime, 0.5, rand(vec2(uAudioFrequency)));
   // p.z = worley(p.yx, sin(s), sin(abs(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1) * ceil(floor(PI * fract(s)) * 2.0 + 1.0))));
-  // p.y *= uAudioFrequency * 0.2;
+  // p.y *= worley(abs(sin(uTime + PI * 2.0 * fract(p.yx))), s, t);
   // p.z *= 0.8 - worley(abs(sin(fract(uAudioFrequency * 0.008 + PI * p.yz * 2.0 + 1.0))), s * 0.2, t);
-  p.x *= worley(sin(ceil(floor(uTime + PI * abs(fract(p.yx)) / 2.0 - 1.0))) + ceil(p.yz), s * 0.5, t);
+  p.z *= worley(sin(ceil(floor(uTime + PI * abs(fract(p.zx)) * 2.0 + 1.0))) + ceil(p.yz), s * 0.5, t);
   // p.z = abs(cos(uAudioFrequency * 2.5)) * 0.5 + 0.3;
 
   p = abs(p);
@@ -228,7 +228,7 @@ float sdOctahedron(vec3 p, float s, float t) {
     q -= p.yzx;
   else if (21.0 * p.z < m)
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
-    q /= p.zxy;
+    q *= p.zxy;
   else
     return m * rand(vec2(0.57735027));
 
@@ -489,7 +489,7 @@ void main() {
     // color = 1.0 - getColor(uTime * 0.01 + t * 0.5 + uAudioFrequency * 0.02);
     // color = vec3(0.5 * sin(coord.x) + 0.5, 0.5 * sin(coord.y) + 0.5, sin(coord.x + coord.y));
     // TODO: here 05/24/24
-    color = 1.5 - getColor(abs(sin(uTime + uAudioFrequency * ceil(floor(PI * fract(t)) * 2.0 + 1.0))) - uAudioFrequency * 0.002);
+    color = 1.5 - getColor(abs(sin(uTime * 0.008 * ceil(floor(PI * fract(t)) * 2.0 + 1.0))) - uAudioFrequency * 0.002);
     color = smoothstep(0.0, 1.0, color);
 
     // color *= 0.0;

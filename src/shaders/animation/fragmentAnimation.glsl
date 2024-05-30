@@ -210,9 +210,10 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.z = abs(cos(uAudioFrequency * 2.5)) * 0.5 + 0.3;
   // p.z += fbm(p.xyz);
 
-  // p.z *= sin(abs(ceil(uTime + PI * 2.0 * fract(p.z))) * floor(2.0 * 1.0));
+  // p.z *= sin(abs(ceil(uTime * PI * 2.0 + fract(p.z))) * floor(2.0 * 1.0));
 
   p = abs(p);
+  // p.z *= sin(abs(uAudioFrequency * 0.005 * PI + fract(p.z)) * ceil(2.0 + floor(1.0)));
   // p.x = p.x * sin(abs(cos(uAudioFrequency * 0.1) * 2.0 + 1.0 * ceil(fract(uAudioFrequency * 0.01))));
   // p.xy *= rot2d(sin(uTime) * 0.8 + 0.1);
   // p.y = sin(p.y);
@@ -263,7 +264,7 @@ float sdf(vec3 position) {
   // Various rotational speeds
   vec3 position1 = rotate(position, shapesPosition, sin(-uTime / 3.0));
   position1.xz *= rot2d(position.y * 0.3 + uTime * 0.2);
-  position1.yz *= rot2d(position.x * 0.3 + uTime * 0.2);
+  position1.yz *= rot2d(position.x * 0.5 + uTime * 0.3);
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
@@ -299,7 +300,7 @@ float sdf(vec3 position) {
   float box = sdRoundBox(position3, vec3(0.5), 0.5);
   // box = abs(box) - 0.03;
 
-  float ball = sdSphere(position, 0.3);
+  float ball = sdSphere(twist, 0.5);
   ball = abs(ball) - 0.03;
   // position1 += getColor(strength);
 
@@ -309,7 +310,7 @@ float sdf(vec3 position) {
   float octahedron = sdOctahedron(position1, 0.8, 0.8);
   // octahedron = abs(octahedron) - 0.03;
 
-  float gyroid = sdGyroid(position1, 21.13, 0.000001, 0.01);
+  float gyroid = sdGyroid(twist * 0.2, 21.13, 0.000001, 0.01);
   // octahedron *= worley(vec2(position1), ball, gyroid);
   float gyroid1 = sdGyroid(position3, 144.5, 0.02, 0.3);
   torus = max(torus, gyroid1);
@@ -325,7 +326,8 @@ float sdf(vec3 position) {
   // shapeIdea = abs(shapeIdea) - 0.03;
   // shapeIdea = mix(octahedron, polynomialSMin(ball, octahedron, gyroid), sin(uTime) * 0.5 + 0.5);
 
-  float assembledGyroid = polynomialSMin(box, max(octahedron, sin(abs(ceil(uAudioFrequency * 0.03 + PI * 2.0 * fract(min(ball, torus)))) * floor(2.0 * 1.0))), 0.5);
+  // float assembledGyroid = polynomialSMin(box, max(octahedron, sin(abs(uAudioFrequency * 0.02 * PI * 3.0 + fract(gyroid)) * ceil(2.0 * floor(1.0)))), 0.5);
+  float assembledGyroid = polynomialSMin(ball, max(octahedron, sin(abs(uAudioFrequency * 0.03 * PI * 3.0 + fract(torus)) * ceil(2.0 * floor(1.0)))), 0.5);
   // float assembledGyroid = polynomialSMin(octahedron, 0.1, 0.1);
   // assembledGyroid = stepUpDown(0.21, 0.55, assembledGyroid);
 

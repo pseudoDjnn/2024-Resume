@@ -184,7 +184,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   // position.zx *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency * 0.3)) / length(position) - scale);
   // position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.02);
 
-  return abs(0.8 * dot(sin(position), cos(position.yzx)) / scale) - thickness * bias;
+  return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
 }
 
 /*
@@ -219,17 +219,17 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.x -= worley(sin(ceil(floor(uTime + PI * abs(fract(p.zx)) * 2.0 + 1.0))) + ceil(p.xz), s * 0.5, t);
   // p.z = abs(cos(uAudioFrequency * 2.5)) * 0.5 + 0.3;
   // p.z += fbm(p.xyz);
-  // TODO: Start here 06/01/24
+
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(p.y) * ceil(2.0 + floor(1.0)))), p.z);
   float x = atan(p.x - 0.5, p.y - 0.5);
   x /= PI * 2.0;
   x += 0.5;
 
-  float y = atan(length(p.xz) * 0.5 + 0.5, p.y);
+  float y = atan(length(p.xz) * 0.5 + 0.5, sin(abs(uAudioFrequency * 0.3 - fract(p.y)) * ceil(2.0 + floor(1.0))));
   // y /= PI * 2.0;
   y += 0.5;
   y *= 21.0;
-  float yRising = sin(y * 144.0);
+  float yRising = sin(uTime + y * 34.0);
   // y = mod(x/, 1.0);
 
   p = abs(p);
@@ -250,6 +250,9 @@ float sdOctahedron(vec3 p, float s, float t) {
   // f = abs(distance(vUv, vec2(0.5)) - 0.25);
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
 
+  // p.x = worley(p.xz, 0.0, 2.5);
+  // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
+
   float m = p.x + p.y + p.z - dot(s, s);
   f = smoothstep(-0.5, 1.0, cos(uTime + a * 8.0)) * 0.2 + 0.5;
 
@@ -267,11 +270,11 @@ float sdOctahedron(vec3 p, float s, float t) {
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
     q = p.zxy;
   else
-    return m * 0.57735027 - digitalWave / a - yRising * 0.2;
+    return m * 0.57735027 - digitalWave / a - yRising * 0.05;
 
-  float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
+  float k = clamp(0.5 * (q.z - q.y + s), 0.0 * f, s);
   // m *= max(m, rip * uTime * x * y);
-  return length(vec3(q.x, q.y - s + k, q.z - k));
+  return length(vec3(q.x, sin(uAudioFrequency * 0.5 + q.y - s + k), q.z - k));
 }
 
 vec3 opTwist(vec3 p, float amount) {
@@ -336,13 +339,16 @@ float sdf(vec3 position) {
   float octahedron = sdOctahedron(position1, 0.8, 0.8);
   // octahedron = abs(octahedron) - 0.03;
 
-  float gyroid = sdGyroid(position, 13.89, 0.01, 0.03);
+  float gyroid = sdGyroid(position, 34.89, 0.01, 0.03);
   // ball = min(ball, gyroid);
   // ball = max(ball, gyroid);
   // octahedron *= worley(vec2(position1), ball, gyroid);
   // float gyroid1 = sdGyroid(position1 - sin(twist) * 0.5 + 0.5, 13.5, 0.00001, 0.3);
   // torus = max(torus, gyroid);
-  octahedron = max(octahedron - ball * 0.02, gyroid);
+
+// TODO: Use this
+  octahedron = mix(octahedron - ball * 0.02, gyroid, 0.3);
+
   // octahedron = clamp(octahedron, 0.0, 0.5);
 
   // float gyroid2 = sdGyroid(copyPosition, 13.55, 0.03, 0.3);

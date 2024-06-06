@@ -242,19 +242,20 @@ float sdOctahedron(vec3 p, float s, float t) {
   x /= PI * 2.0;
   x += 0.5;
 
-  float radius = length(p * p * p) * (1.0 + uTime + sin(p.x * 13.0 + x + p.y * 21.0) * 0.1);
+  float radius = 0.3 + length(p * p * p) * (1.0 + uTime + sin(p.x * 13.0 + x + p.y * 21.0) * 0.1);
 
+  float displacement = length(p.x * fract(p.y * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.8 * p)) * 0.2 + 0.1);
+
+  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.003 + PI * fract(uTime * 0.3 + fract(radius * 0.1 * p.x) + cos(radius * p.y) + sin(floor(-uAudioFrequency * 0.1 * p.z)) - s)) + ceil(2.144 * floor(1.008))) * 0.5 + 0.5 - displacement;
   // float y = atan(length(sin(p.xz)) * 0.5 + 0.5, sin(abs(uAudioFrequency * 0.3 - fract(p.y)) * ceil(2.0 + floor(1.0))));
   float y = 0.1 + 0.01 * sin(uTime + p.y * 13.0 + x);
   y /= PI * 2.0;
   y += 0.5;
   y *= 21.0;
-  float yRising = -sin(uAudioFrequency / 13.0 + y);
-  // y = mod(y, 2.0);
+  float yRising = -sin(uAudioFrequency / 89.0 + y) * digitalWave;
+  // y = sin(uTime + p.z);
 
   p = abs(p);
-
-  float displacement = length(fract(p));
 
   // p *= -0.3 - sin(abs(uTime - fract(p * 0.3)) + ceil(2.144) * floor(1.008));
 
@@ -265,13 +266,12 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.z = fract(p.z * uTime);
 
   // float rip = sin((x * 8.0 - y * 13.0) * 3.0) * 0.5 + 0.5;
-  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.003 + PI * fract(p.x + p.y + sin(floor(uTime + p.z)) - s)) + ceil(2.144 * floor(1.008))) * 0.5 + 0.5;
 
   // p *= min(uTime, digitalWave) * 0.5 + 0.5;
 
   float a = 3.0 - atan(p.y / x, p.x + y);
 
-  float f = cos(a * 3.0);
+  float f = cos(a * 34.0);
   f = smoothstep(-0.5, 1.0, cos(uTime + a * 8.0)) * 0.2 + 0.5;
   // f = abs(distance(vUv, vec2(0.5)) - 0.25);
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
@@ -279,8 +279,8 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.x = worley(p.xz, 0.0, 2.5);
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
 
-  float m = p.x + p.y + p.z - dot(s, s);
-  // p.y -= uTime + sin(p.y);
+  float m = p.x + p.y + p.z - dot(s, f);
+  // p.x -= uTime + sin(p.x);
 
   // f = min(f, m);
   // p.z += dot(length(rip * t), uTime) * 0.5 + 0.5;
@@ -294,7 +294,7 @@ float sdOctahedron(vec3 p, float s, float t) {
     q = p.xyz * yRising;
   else if (3.0 * p.y < m)
     q = p.yzx * yRising;
-  else if (3.0 * p.z < m)
+  else if (8.0 * p.z < m)
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
     q = p.zxy * yRising;
   else
@@ -315,14 +315,14 @@ vec3 opTwist(vec3 p, float amount) {
 }
 
 float sdf(vec3 position) {
-  vec3 shapesPosition = vec3(sin(uTime / 10.0), cos(uTime / 8.0), -uAudioFrequency * 0.05) * 0.3 + 0.3;
+  vec3 shapesPosition = vec3(sin(uTime), 0.0, -uAudioFrequency * 0.05) * 0.3 + 0.3;
   vec3 shapesPosition2 = vec3(cos(uTime) * 0.8 + 0.1, 0.0, uAudioFrequency * 0.01);
   // vec3 shapesPosition2 = vec3(sin(uAudioFrequency) * 1.0, 0.0, 0.3);
   // float voroCopy = voroNoise(shapePosition, 0.0, 0.0);
 
   // Various rotational speeds
-  vec3 position1 = rotate(position, shapesPosition, sin(-uTime) * 0.3);
-  position1 -= shapesPosition * sin(uTime);
+  vec3 position1 = rotate(position, vec3(1.0), sin(-uTime) * 0.3);
+  // position1 -= shapesPosition * sin(uTime);
   position1.xz *= rot2d(position.y * 0.3 + uTime * 0.3);
   position1.yz *= rot2d(position.x * 0.5 + uTime * 0.5);
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
@@ -367,7 +367,7 @@ float sdf(vec3 position) {
   float torus = sdTorus(position1, vec2(0.1, 0.5));
   // torus = abs(torus) - 0.03;
 
-  float octahedron = sdOctahedron(position1, 0.8, 0.8);
+  float octahedron = sdOctahedron(position1, 0.5, 0.5);
   // octahedron = abs(octahedron) - 0.03;
 
   float gyroid = sdGyroid(position1, 13.89, 0.03, 0.03);
@@ -456,6 +456,7 @@ float sdf(vec3 position) {
   // ground /= -(glitter(vec2(position1), uTime));
 
   // return polynomialSMin(ground, min(mix(ball, assembledGyroid, sin((uAudioFrequency * 0.05) + 0.5)), uAudioFrequency * PI * ball), 0.5);
+
   return polynomialSMin(0.1, octahedron, 0.5);
 }
 
@@ -550,7 +551,7 @@ void main() {
   // Distance travelled
   float t = 0.0;
   float tMed = 2.0;
-  float tMax = 13.0;
+  float tMax = 3.0;
 
   // vec2 m = (uMouse.xy * 2. - uResolution.xy) / uResolution.y;
 

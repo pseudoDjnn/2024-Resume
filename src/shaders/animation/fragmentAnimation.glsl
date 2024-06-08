@@ -184,7 +184,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
     float len = length(vec3(position.x, position.y, position.z));
 
     position.x = position.x - cos(position.y + sin(len)) + cos(uTime / 8.0);
-    position.y = position.y + sin(position.x + cos(len)) + sin(uTime / 13.0);
+    position.y = position.y + sin(position.x + cos(len)) + sin(uAudioFrequency / 13.0);
     // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
 
     // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
@@ -225,10 +225,10 @@ float sdTorus(vec3 p, vec2 t) {
 float sdOctahedron(vec3 p, float s, float t) {
 
   // p += 0.5;
-  // p.yz *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(uTime + PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) + p.x / s) * 2.0 + 1.0) * p.y)))));
+  // p.zx *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(uTime + PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) * uTime + p.y / s) * 2.0 + 1.0) * p.x)))));
   // p.zy *= rot2d(uTime * 0.5 - 0.5) / t;
-  // p.x = rand(vec2(sin(smoothstep(-0.2, 0.2, uTime))));
-  // p.x /= smoothstep(3.0 * uTime, 0.5, rand(vec2(uAudioFrequency)));
+  // p *= rotate(p, p.zxy, 1.0);
+
   // p.z = worley(p.yx, sin(s), sin(abs(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1) * ceil(floor(PI * fract(s)) * 2.0 + 1.0))));
   // p.y *= worley(sin(abs(uTime + PI * 3.0 * fract(p.xz)) * ceil(2.0) + floor(1.0)), s, t);
   // p.z *= 0.8 - worley(abs(sin(fract(uAudioFrequency * 0.008 + PI * p.yz * 2.0 + 1.0))), s * 0.2, t);
@@ -237,22 +237,35 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.z = abs(cos(uAudioFrequency * 2.5)) * 0.5 + 0.3;
   // p.z += fbm(p.xyz);
 
+  // for (int i = 1; i < 13; i++) {
+  //   p += 0.08;
+
+  //   float len = length(vec3(p.x, p.y, p.z));
+
+  //   p.x = p.x - cos(p.y + sin(len)) + cos(uTime / 8.0);
+  //   p.y = p.y + sin(p.x + cos(len)) + sin(uTime / 13.0);
+  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+
+  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
+  // }
+
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(p.y) * ceil(2.0 + floor(1.0)))), p.z);
   float x = atan(p.x - 0.5, p.y - 0.5);
   x /= PI * 2.0;
   x += 0.5;
+  float xRising = cos(uTime + TAU * x) * sin(uAudioFrequency) * 0.8 + 0.1;
 
   float radius = 0.3 + length(p * p * p) * (1.0 + uTime + sin(p.x * 13.0 + x + p.y * 21.0) * 0.1);
 
-  float displacement = length(p.x * fract(p.y * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.8 * p)) * 0.2 + 0.1);
+  float displacement = length(cos(p.x) * fract(p.y * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.8 * p)) * 0.2 + 0.1);
 
-  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.003 + PI * fract(uTime * 0.3 + fract(radius * 0.1 * p.x) + cos(radius * p.y) + sin(floor(-uAudioFrequency * 0.1 * p.z)) - s)) + ceil(2.144 * floor(1.008))) * 0.5 + 0.5 - displacement;
+  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.003 + PI * fract(uTime * 0.3 + length(fract(radius * 0.1 * p.x)) + length(cos(radius * p.y)) + sin(floor(-uAudioFrequency * 0.1 * p.z)) - s)) + ceil(2.144 * floor(1.008))) * 0.5 + 0.5 * displacement;
   // float y = atan(length(sin(p.xz)) * 0.5 + 0.5, sin(abs(uAudioFrequency * 0.3 - fract(p.y)) * ceil(2.0 + floor(1.0))));
-  float y = 0.1 + 0.01 * sin(uTime + p.y * 13.0 + x);
+  float y = 0.1 + 0.01 * sin(uTime + p.y * 13.0 * xRising);
   y /= PI * 2.0;
   y += 0.5;
   y *= 21.0;
-  float yRising = -sin(uAudioFrequency / 89.0 + y) * digitalWave;
+  float yRising = -sin(uAudioFrequency / 89.0 + y) * length(sin(digitalWave));
   // y = sin(uTime + p.z);
 
   p = abs(p);
@@ -279,7 +292,7 @@ float sdOctahedron(vec3 p, float s, float t) {
   // p.x = worley(p.xz, 0.0, 2.5);
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
 
-  float m = p.x + p.y + p.z - dot(s, f);
+  float m = p.x + p.y + p.z - dot(length(fract(yRising)), f);
   // p.x -= uTime + sin(p.x);
 
   // f = min(f, m);
@@ -381,16 +394,16 @@ float sdf(vec3 position) {
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
   // octahedron = max(octahedron, gyroid);
 
-  for (int i = 1; i < 13; i++) {
+  // for (int i = 1; i < 13; i++) {
 
-    float len = length(vec3(position.x, position.y, position.z));
+  //   float len = length(vec3(position.x, position.y, position.z));
 
-    position.x = position.x - cos(position.y + sin(len) + cos(uTime / 8.0));
-    position.y = position.y + sin(position.x + cos(len)) + sin(uTime / 13.0);
-    // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+  //   position.x = position.x - cos(position.y + sin(len) + cos(uTime / 8.0));
+  //   position.y = position.y + sin(position.x + cos(len)) + sin(uTime / 13.0);
+  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
 
-    // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
-  }
+  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
+  // }
 
   // octahedron = clamp(octahedron, 0.0, 0.5);
 

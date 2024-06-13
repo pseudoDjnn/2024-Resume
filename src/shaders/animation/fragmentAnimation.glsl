@@ -223,7 +223,7 @@ float sdSphere(vec3 position, float radius) {
 */
 float sdOctahedron(vec3 p, float s) {
 
-  // float motion = fbm(p, -uAudioFrequency * 0.003 + s);
+  float motion = fbm(p, -uAudioFrequency * 0.003 + s);
 
   // p += 0.5;
   // p.zx *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(uTime + PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) * uTime + p.y / s) * 2.0 + 1.0) * p.x)))));
@@ -300,7 +300,7 @@ float sdOctahedron(vec3 p, float s) {
   // p.x = worley(p.xz, 0.0, 2.5);
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
 
-  float m = p.x + p.y + p.z - dot(yRising, f);
+  float m = p.x + p.y + sin(motion * p.z) - dot(yRising, f);
   // p.x -= uTime + sin(p.x);
 
   // f = min(f, m);
@@ -372,7 +372,7 @@ float sdf(vec3 position) {
 
   vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
 
-  vec3 position3 = 1.0 + rotate(position, vec3(1.0), length(sin(-uTime * 0.1 * PI)));
+  vec3 position3 = -rotate(position1, vec3(1.0), sin(uTime * 0.8));
   // position3.xz *= rot2d(position.y * uTime);
   // position3.xz *= rot2d(position.y * uTime);
 
@@ -410,8 +410,9 @@ float sdf(vec3 position) {
   // torus = abs(torus) - 0.03;
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position1, octaGrowth);
+  float octahedron2 = sdOctahedron2(position3, octaGrowth);
   // octahedron = abs(octahedron) - 0.03;
+
   octahedron1 = mix(octahedron1, octahedron2, 0.5);
 
   float gyroid = sdGyroid(position, 13.89, 0.03, 0.03);

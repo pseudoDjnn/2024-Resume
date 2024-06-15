@@ -193,7 +193,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   // position.z += sin(x * 8.0 - y * 13.0) - cos(uTime) * 0.5 + 0.5;
   // position += worley(position.xz, 0.0, 1.0);
 
-  position.xz *= rot2d(sin(uTime * 0.3) * ceil(2.0 + floor(1.0)));
+  position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
   // position.z *= worley(position.yx, x, y);
   // position.zx *= smoothstep(-0.5, 0.03, rand(vec2(uAudioFrequency * 0.3)) / length(position) - scale);
   // position -= scale - smoothstep(-0.3, 0.3 * uTime, uAudioFrequency * 0.02);
@@ -222,8 +222,6 @@ float sdSphere(vec3 position, float radius) {
   Octahedron
 */
 float sdOctahedron(vec3 p, float s) {
-
-  float motion = fbm(p, -uAudioFrequency * 0.003 + s);
 
   // p += 0.5;
   // p.zx *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(uTime + PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) * uTime + p.y / s) * 2.0 + 1.0) * p.x)))));
@@ -261,7 +259,7 @@ float sdOctahedron(vec3 p, float s) {
 
   float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * fract(p.z)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
 
-  float x = atan(uTime + p.x, uTime + p.y);
+  float x = atan(uTime + p.x, p.y);
   x /= PI * 2.0;
   x += 0.5;
 
@@ -299,8 +297,9 @@ float sdOctahedron(vec3 p, float s) {
 
   // p.x = worley(p.xz, 0.0, 2.5);
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
+  // p.y -= motion;
 
-  float m = p.x + p.y + sin(motion * p.z) - dot(yRising, f);
+  float m = p.x + p.y + p.z - dot(yRising, f);
   // p.x -= uTime + sin(p.x);
 
   // f = min(f, m);
@@ -327,17 +326,19 @@ float sdOctahedron(vec3 p, float s) {
 }
 
 float sdOctahedron2(vec3 p, float s) {
+  float motion = fbm(p, -uAudioFrequency * 0.02 - s);
+
   p = abs(p);
   float m = p.x + p.y + p.z - dot(s, s);
   vec3 q;
-  if (3.0 * p.x < m)
+  if (3.0 * p.x < sin(uAudioFrequency * 0.3 + m))
     q = p.xyz;
-  else if (3.0 * p.y < m)
+  else if (3.0 * p.y < sin(uAudioFrequency * 0.2 + m))
     q = p.yzx;
-  else if (3.0 * p.z < m)
+  else if (3.0 * p.z < sin(uAudioFrequency * 0.1 + m))
     q = p.zxy;
   else
-    return m * 0.57735027;
+    return m * PI * 0.57735027 - sin(motion * 0.02);
 
   float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
   return length(vec3(q.x, q.y - s + k, q.z - k));
@@ -372,7 +373,7 @@ float sdf(vec3 position) {
 
   vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
 
-  vec3 position3 = -rotate(position1, vec3(1.0), sin(uTime * 0.8));
+  vec3 position3 = -rotate(position1, vec3(1.0), sin(uTime));
   // position3.xz *= rot2d(position.y * uTime);
   // position3.xz *= rot2d(position.y * uTime);
 
@@ -397,7 +398,7 @@ float sdf(vec3 position) {
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  vec3 twist = opTwist(position1 - sin(smoothstep(-0.1, 0.5, displacement)), sin(abs(uTime - fract(position1.z * position1.y * 0.8 + 0.1))) * ceil(3.144 * floor(1.144)));
+  vec3 twist = opTwist(position1 - sin(smoothstep(-0.1, 0.5, displacement)), sin(abs(uAudioFrequency * 0.03 - fract(position1.z * position1.y * 0.8 + 0.1))) * ceil(3.144 * floor(1.144)));
 
   float box = sdRoundBox(twist, vec3(0.89), 0.2);
   // box = abs(box) - 0.03;
@@ -413,9 +414,9 @@ float sdf(vec3 position) {
   float octahedron2 = sdOctahedron2(position3, octaGrowth);
   // octahedron = abs(octahedron) - 0.03;
 
-  octahedron1 = mix(octahedron1, octahedron2, 0.5);
+  octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
-  float gyroid = sdGyroid(position, 13.89, 0.03, 0.03);
+  float gyroid = sdGyroid(twist, 13.89, 0.03, 0.3);
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
   // ball = max(ball, gyroid);
@@ -425,7 +426,7 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
-  octahedron1 = max(octahedron1, gyroid - sin(motion * 0.2));
+  // octahedron1 = max(octahedron1, gyroid);
   // gyroid = max(gyroid, box);
 
   // for (int i = 1; i < 13; i++) {
@@ -691,7 +692,7 @@ void main() {
 
         position.z -= uTime * 0.2;
         color -= glitter(position.xy * 5.0, 0.01) * 8.0 * shadow;
-        color *= sin(uTime + 1.0) - -(shadow * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.02)));
+        // color *= sin(uTime + 1.0) - -(shadow * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.02)));
       }
     }
     // color = mix(1.0 - color, (1.0 - sphereColor + background * light * glow), fresnel);

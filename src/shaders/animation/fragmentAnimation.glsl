@@ -363,13 +363,13 @@ float sdf(vec3 position) {
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime) * 0.3);
   // position1 -= shapesPosition * sin(uTime);
   position1.xz *= rot2d(position.y * 0.3 + uTime * 0.3);
-  position1.yz *= rot2d(position.x * 0.5 + uTime * 0.5);
+  position1.yz *= rot2d(position.x * 0.5 * uTime * 0.5);
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
   float motion = fbm(position1, uAudioFrequency * 0.003);
 
-  float octaGrowth = sin(uAudioFrequency * 0.008 + 0.5);
+  float octaGrowth = sin(uAudioFrequency * 0.008 + 0.8);
 
   vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
 
@@ -393,7 +393,9 @@ float sdf(vec3 position) {
   // position.xz *= scale;
   // position.xz *= rot2d(smoothstep(0.0, 1.0, position.y));
 
-  float displacement = length(sin(position.z * fract(uAudioFrequency * 0.03))) * 0.2;
+  float scale = 13.0;
+
+  float displacement = length(sin(position * scale));
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
@@ -411,10 +413,11 @@ float sdf(vec3 position) {
   // torus = abs(torus) - 0.03;
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position3, octaGrowth);
+  float octahedron2 = sdOctahedron2(position, octaGrowth / displacement);
   // octahedron = abs(octahedron) - 0.03;
 
-  octahedron1 = mix(octahedron1, octahedron2, 1.0);
+  // octahedron1 = mix(octahedron1, octahedron2, 1.0);
+  octahedron1 = max(octahedron1, octahedron2);
 
   float gyroid = sdGyroid(twist, 13.89, 0.03, 0.3);
   // gyroid *= fbm(position, 1.0);
@@ -426,8 +429,11 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
-  // octahedron1 = max(octahedron1, gyroid);
+  octahedron2 = max(octahedron2, -gyroid);
   // gyroid = max(gyroid, box);
+
+  // position1.xz *= rot2d(uTime + position1.y * 0.3);
+  // position1.yz *= rot2d(uTime + position1.x * 0.5);
 
   // for (int i = 1; i < 13; i++) {
 

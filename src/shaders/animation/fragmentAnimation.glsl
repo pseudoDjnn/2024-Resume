@@ -328,14 +328,14 @@ float sdOctahedron(vec3 p, float s) {
 float sdOctahedron2(vec3 p, float s) {
   float motion = fbm(p, -uAudioFrequency * 0.02 - s);
 
-  p = abs(p);
+  p = abs(p - smoothstep(0.0, 1.0 * p.z, motion));
   float m = p.x + p.y + p.z - dot(s, s);
   vec3 q;
-  if (3.0 * p.x < sin(m) * motion)
+  if (2.0 * p.x < m)
     q = p.xyz;
-  else if (3.0 * p.y < sin(m) * motion)
+  else if (2.0 * p.y < m)
     q = p.yzx;
-  else if (3.0 * p.z < sin(m) * motion)
+  else if (3.0 * p.z < m)
     q = p.zxy;
   else
     return m * PI * 0.57735027;
@@ -362,14 +362,14 @@ float sdf(vec3 position) {
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime) * 0.3);
   // position1 -= shapesPosition * sin(uTime);
-  position1.xz *= rot2d(uTime + position.y * 0.3 + smoothstep(0.0, 0.8, sin(uAudioFrequency * 0.03)));
+  position1.xz *= rot2d(uTime + position.y * 0.3 + smoothstep(fract(-0.5), 0.8, sin(uAudioFrequency * 0.03)));
   position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
   float motion = fbm(position1, uAudioFrequency * 0.003);
 
-  float octaGrowth = sin(uAudioFrequency * 0.008 + 0.8);
+  float octaGrowth = sqrt(uAudioFrequency * 0.008 + 0.8) * 0.8 + 0.1;
 
   vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
 

@@ -331,14 +331,14 @@ float sdOctahedron2(vec3 p, float s) {
   p = abs(p);
   float m = p.x + p.y + p.z - dot(s, s);
   vec3 q;
-  if (3.0 * p.x < sin(uAudioFrequency * 0.3 + m))
+  if (3.0 * p.x < sin(m) * motion)
     q = p.xyz;
-  else if (3.0 * p.y < sin(uAudioFrequency * 0.2 + m))
+  else if (3.0 * p.y < sin(m) * motion)
     q = p.yzx;
-  else if (3.0 * p.z < sin(uAudioFrequency * 0.1 + m))
+  else if (3.0 * p.z < sin(m) * motion)
     q = p.zxy;
   else
-    return m * PI * 0.57735027 - sin(motion * 0.02);
+    return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
   return length(vec3(q.x, q.y - s + k, q.z - k));
@@ -362,8 +362,8 @@ float sdf(vec3 position) {
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime) * 0.3);
   // position1 -= shapesPosition * sin(uTime);
-  position1.xz *= rot2d(position.y * 0.3 + uTime * 0.3);
-  position1.yz *= rot2d(position.x * 0.5 * uTime * 0.5);
+  position1.xz *= rot2d(uTime + position.y * 0.3 + smoothstep(0.0, 0.8, sin(uAudioFrequency * 0.03)));
+  position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
@@ -413,7 +413,7 @@ float sdf(vec3 position) {
   // torus = abs(torus) - 0.03;
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position, octaGrowth / displacement);
+  float octahedron2 = sdOctahedron2(position, octaGrowth * displacement);
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);

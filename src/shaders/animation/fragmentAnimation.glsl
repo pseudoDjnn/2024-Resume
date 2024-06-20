@@ -259,7 +259,7 @@ float sdOctahedron(vec3 p, float s) {
 
   // float displacement = length(cos(p.x) * fract(p.y) * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.5 * p.y) * 0.2 + 0.1);
 
-  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * sqrt(p.z)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
+  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * fract(p.x * 21.0) * fract(p.y * 21.0) * fract(p.z * 13.0)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
 
   float x = atan(uTime + p.x, p.y);
   x /= PI * 2.0;
@@ -270,7 +270,7 @@ float sdOctahedron(vec3 p, float s) {
   y /= PI * 2.0;
   y += 0.5;
   y *= 21.0;
-  float yRising = -cos(uAudioFrequency / 89.0 + y - length(dot(digitalWave, s))) * 0.5 + 0.5;
+  float yRising = -cos(uAudioFrequency / 89.0 + y - length(dot(digitalWave, fract(s)))) * 0.5 + 0.5;
 
   // digitalWave = sin(radius);
   // y = sin(uTime + p.z);
@@ -331,12 +331,12 @@ float sdOctahedron2(vec3 p, float s) {
   // float motion = fbm(p, -uAudioFrequency * 0.02 / s);
 
   p = abs(p);
-  p.z -= sin(uTime) * (0.1 * 3.0);
+  p.z -= sin(uTime) * (0.1 * 13.0);
 
   // p.z = smoothstep(-0.5, 0.8, motion);
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
 
-  float m = p.x + p.y * p.z - dot(s, s);
+  float m = sqrt(p.x + p.y * p.z) - dot(s, s);
   vec3 q;
   if (2.0 * p.x < m)
     q = p.xyz;
@@ -403,7 +403,7 @@ float sdf(vec3 position) {
 
   float scale = 89.0;
 
-  float displacement = length(sin(position1 * scale));
+  float displacement = length(sin(position1.x / scale * 13.0) * sin(position1.y / scale) * sin(position1.z * 21.0));
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
@@ -426,7 +426,7 @@ float sdf(vec3 position) {
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
-  octahedron1 = max(octahedron1, octahedron2);
+  octahedron1 = max(octahedron1, -octahedron2);
 
   // float gyroid = sdGyroid(twist, 34.89, 0.03, 0.3);
   // gyroid *= fbm(position, 1.0);

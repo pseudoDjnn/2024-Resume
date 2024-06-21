@@ -261,7 +261,7 @@ float sdOctahedron(vec3 p, float s) {
 
   float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * fract(p.x * 21.0) * fract(p.y * 21.0) * fract(p.z * 13.0)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
 
-  float x = atan(uTime + p.x, p.y);
+  float x = atan(uTime + p.x, p.y * 13.0);
   x /= PI * 2.0;
   x += 0.5;
 
@@ -270,7 +270,7 @@ float sdOctahedron(vec3 p, float s) {
   y /= PI * 2.0;
   y += 0.5;
   y *= 21.0;
-  float yRising = -cos(uAudioFrequency / 89.0 + y - length(dot(digitalWave, fract(s)))) * 0.5 + 0.5;
+  float yRising = -cos(uAudioFrequency / 89.0 + y - length(dot(digitalWave, smoothstep(0.0, 1.0, (-uAudioFrequency + s * 89.0))))) * 0.5 + 0.5;
 
   // digitalWave = sin(radius);
   // y = sin(uTime + p.z);
@@ -313,7 +313,7 @@ float sdOctahedron(vec3 p, float s) {
   // q.xz *= rot2d(uTime * q.y * 0.3);
   // q.yz *= rot2d(uTime - q.x * 0.5);
   if (3.0 * p.x < m)
-    q = p.xyz * yRising;
+    q = p.xyz + yRising;
   else if (3.0 * p.y < m)
     q = p.yzx * yRising;
   else if (8.0 * p.z < m)

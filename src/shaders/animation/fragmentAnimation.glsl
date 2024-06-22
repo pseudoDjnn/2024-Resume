@@ -223,34 +223,21 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 */
 float sdOctahedron(vec3 p, float s) {
 
-  // p += 0.5;
-  // p.zx *= -(rot2d(sin(abs(uTime * 0.05 * ceil(floor(uTime + PI * fract(smoothstep(-0.8, 0.3, uAudioFrequency * 0.2 - p.z) * uTime + p.y / s) * 2.0 + 1.0) * p.x)))));
-  // p.zy *= rot2d(uTime * 0.5 - 0.5) / t;
-  // p *= rotate(p, p.zxy, 1.0);
-
-  // p.z = worley(p.yx, sin(s), sin(abs(smoothstep(-0.3, 0.3, uAudioFrequency * 0.1) * ceil(floor(PI * fract(s)) * 2.0 + 1.0))));
-  // p.y *= worley(sin(abs(uTime + PI * 3.0 * fract(p.xz)) * ceil(2.0) + floor(1.0)), s, t);
-  // p.z *= 0.8 - worley(abs(sin(fract(uAudioFrequency * 0.008 + PI * p.yz * 2.0 + 1.0))), s * 0.2, t);
-
-  // p.x -= worley(sin(ceil(floor(uTime + PI * abs(fract(p.zx)) * 2.0 + 1.0))) + ceil(p.xz), s * 0.5, t);
-  // p.z = abs(cos(uAudioFrequency * 2.5)) * 0.5 + 0.3;
-  // p -= fbm(p.xyz, 1.0);
+  p.y *= 0.5;
 
   p = abs(p);
-  // p.x -= sin(uTime * 0.3) * (0.1 * 8.0);
-  // p.z *= fract(uTime);
 
-  // for (int i = 1; i < 13; i++) {
-  //   p += 0.08;
+  for (int i = 1; i < 3; i++) {
+    p -= 0.08;
 
-  //   float len = length(vec3(p.x, p.y, p.z));
+    float len = length(vec3(p.x, p.y, p.z));
 
-  //   p.x = p.x - cos(p.y + sin(len)) + cos(uTime / 8.0);
-  //   p.y = p.y + sin(p.x + cos(len)) + sin(uTime / 13.0);
-  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+    p.x = 2.0 - p.x - cos(p.y * sin(len)) + cos(uTime / 8.0);
+    // p.y = p.y + sin(p.x + cos(len)) + sin(uTime);
+    // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
 
-  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
-  // }
+    // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
+  }
 
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(p.y) * ceil(2.0 + floor(1.0)))), p.z);
   // float xRising = cos(uTime + TAU * x) * sin(uAudioFrequency) * 0.8 + 0.1;

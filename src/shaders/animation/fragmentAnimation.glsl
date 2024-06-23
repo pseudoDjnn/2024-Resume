@@ -228,13 +228,14 @@ float sdOctahedron(vec3 p, float s) {
   p = abs(p);
 
   for (int i = 1; i < 3; i++) {
-    p -= 0.08;
+    p -= 0.03;
 
-    float len = length(vec3(p.x, p.y, p.z));
+    float len = length(vec3(p.x, fract(p.y), p.z));
 
-    p.x = 2.0 - p.x - cos(p.y * sin(len)) + cos(uTime / 8.0);
-    // p.y = p.y + sin(p.x + cos(len)) + sin(uTime);
+    // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
+    // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
     // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+    p.y = sin(abs(uTime + PI * fract(len)) + ceil(2.0 * floor(1.0)));
 
     // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
   }

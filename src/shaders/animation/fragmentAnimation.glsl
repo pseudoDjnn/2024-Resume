@@ -230,7 +230,7 @@ float sdOctahedron(vec3 p, float s) {
   for (int i = 1; i < 3; i++) {
     p -= 0.08;
 
-    float len = length(vec3(p.x, p.y, p.z));
+    float len = length(vec3(p.x, length(fract(p.y)), sin(uAudioFrequency * 0.08 - sin(uTime + p.z))));
 
     // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
     // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
@@ -248,7 +248,7 @@ float sdOctahedron(vec3 p, float s) {
 
   // float displacement = length(cos(p.x) * fract(p.y) * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.5 * p.y) * 0.2 + 0.1);
 
-  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * fract(p.x * 21.0) * fract(p.y * 21.0) * fract(p.z * 13.0)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
+  float digitalWave = 0.5 - sin(abs(-uAudioFrequency * 0.005 + TAU * tan(p.x * 21.0) * tan(p.y * 21.0) * tan(p.z * 13.0)) + ceil(2.144 * floor(1.08))) * 0.2 + 0.5;
 
   float x = atan(uTime + p.x, fract(p.z * 13.0));
   x /= PI * 2.0;
@@ -307,7 +307,7 @@ float sdOctahedron(vec3 p, float s) {
     q = p.yzx * yRising;
   else if (8.0 * p.z < m)
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
-    q = p.zxy * yRising;
+    q = p.zxy * fract(yRising);
   else
     return m * TAU * 0.57735027 * fract(yRising * 0.03);
 
@@ -561,7 +561,7 @@ void main() {
   // Background
   float dist = length(vUv - vec2(0.5));
   vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
-  vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.02 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
+  // vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.02 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
 
   // vec2 uv0 = vUv * 4.0;
   // vec2 uv1 = uv0;

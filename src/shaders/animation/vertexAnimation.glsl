@@ -1,4 +1,4 @@
-#define PI 3.1415926535897932384626433832795
+// #define PI 3.1415926535897932384626433832795
 
 // uniform vec2 uFrequency;
 // uniform vec2 uResolution;
@@ -23,70 +23,70 @@ varying vec2 vUv;
 #include ../includes/effects/terrainGeneration.glsl
 // #include ../includes/effects/boxFrame.glsl
 
-float quarticPolynomial(float x) {
-  return x * x * (2.0 - x * x);
-}
+// float quarticPolynomial(float x) {
+//   return x * x * (2.0 - x * x);
+// }
 
-float quadraticRational(float x) {
-  return x * x / (2.0 * x * x - uAudioFrequency * 0.05 * x + 1.0);
-}
+// float quadraticRational(float x) {
+//   return x * x / (2.0 * x * x - uAudioFrequency * 0.05 * x + 1.0);
+// }
 
-float trigonmetric(float x) {
-  return 0.5 - 0.5 * cos(PI * x);
-}
+// float trigonmetric(float x) {
+//   return 0.5 - 0.5 * cos(PI * x);
+// }
 
-// quadratic polynomial
-float quadraticPolynomial(float a, float b, float k) {
-  k *= 4.0;
-  float h = max(k - abs(a - b), 0.0) / k;
-  return min(a, b) - h * h * k * (1.0 / 4.0);
-}
+// // quadratic polynomial
+// float quadraticPolynomial(float a, float b, float k) {
+//   k *= 4.0;
+//   float h = max(k - abs(a - b), 0.0) / k;
+//   return min(a, b) - h * h * k * (1.0 / 4.0);
+// }
 
-float pcurve(float x, float a, float b) {
-  float k = pow(a + b, a + b) / (pow(a, a) * pow(b, b));
-  return k * pow(x, a) * pow(1.0 - x, b);
-}
+// float pcurve(float x, float a, float b) {
+//   float k = pow(a + b, a + b) / (pow(a, a) * pow(b, b));
+//   return k * pow(x, a) * pow(1.0 - x, b);
+// }
 
-float cubicPulse(float c, float w, float x) {
-  x = abs(x - c);
-  if (x > w)
-    return 0.0;
-  x /= w;
-  return 1.0 - x * x * (3.0 - 2.0 * x);
-}
+// float cubicPulse(float c, float w, float x) {
+//   x = abs(x - c);
+//   if (x > w)
+//     return 0.0;
+//   x /= w;
+//   return 1.0 - x * x * (3.0 - 2.0 * x);
+// }
 
-float expStep(float x, float n) {
-  return exp2(-exp2(n) * pow(x, n));
-}
+// float expStep(float x, float n) {
+//   return exp2(-exp2(n) * pow(x, n));
+// }
 
-mat2 rotate(float axis) {
-  return mat2(cos(axis), -sin(axis), sin(axis), cos(axis));
-}
+// mat2 rotate(float axis) {
+//   return mat2(cos(axis), -sin(axis), sin(axis), cos(axis));
+// }
 
-float smin(float a, float b, float k) {
-  k *= 1.0 / (1.0 - sqrt(0.5));
-  return max(k, min(a, b)) -
-    length(max(k - vec2(a, b), 0.0));
-}
+// float smin(float a, float b, float k) {
+//   k *= 1.0 / (1.0 - sqrt(0.5));
+//   return max(k, min(a, b)) -
+//     length(max(k - vec2(a, b), 0.0));
+// }
 
-float doubleCubicSeat(float x, float a, float b) {
+// // float doubleCubicSeat(float x, float a, float b) {
 
-  float epsilon = 0.00001;
-  float min_param_a = 0.0 + epsilon;
-  float max_param_a = 1.0 - epsilon;
-  float min_param_b = 0.0;
-  float max_param_b = 1.0;
-  a = min(max_param_a, max(min_param_a, a));
-  b = min(max_param_b, max(min_param_b, b));
+// //   float epsilon = 0.00001;
+// //   float min_param_a = 0.0 + epsilon;
+// //   float max_param_a = 1.0 - epsilon;
+// //   float min_param_b = 0.0;
+// //   float max_param_b = 1.0;
+// //   a = min(max_param_a, max(min_param_a, a));
+// //   b = min(max_param_b, max(min_param_b, b));
 
-  float y = 0.0;
-  if (x <= a) {
-    y = b - b * pow(1.0 - x / a, 3.0);
-  } else {
-    y = b + (1.0 - b) * pow((x - a) / (1.0 - a), 3.0);
-  }
-  return y;
-}
+// //   float y = 0.0;
+// //   if (x <= a) {
+// //     y = b - b * pow(1.0 - x / a, 3.0);
+// //   } else {
+// //     y = b + (1.0 - b) * pow((x - a) / (1.0 - a), 3.0);
+// //   }
+// //   return y;
+// // }
 
 void main() {
   // Base Postion

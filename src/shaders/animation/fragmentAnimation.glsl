@@ -225,6 +225,12 @@ float sdOctahedron(vec3 p, float s) {
   //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
   // }
 
+  float minor = abs(fract(length(p) / s + 0.5) - 0.5) * 1.0;
+  float major = abs(fract(length(p) / (s * 0.21) + 0.5) - 0.5) * 1.0;
+
+  minor = smoothstep(0.5 - s, 0.5 + s, major);
+  major = smoothstep(0.5 - s, 0.5 + s, minor);
+
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(p.y) * ceil(2.0 + floor(1.0)))), p.z);
   // float xRising = cos(uTime + TAU * x) * sin(uAudioFrequency) * 0.8 + 0.1;
 
@@ -232,7 +238,8 @@ float sdOctahedron(vec3 p, float s) {
 
   // float displacement = length(cos(p.x) * fract(p.y) * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.5 * p.y) * 0.2 + 0.1);
 
-  float digitalWave = sin(abs(ceil(-uAudioFrequency * 0.005 + PI * length(uTime * 0.3 - fract(p) * 5.0)) + floor(2.144 * 1.08)));
+  float digitalWave = sin(abs(ceil(-uAudioFrequency * 0.005 + PI * fract(major * minor) * 5.0) + floor(2.144 * 1.08)));
+  // p.z -= fract(digitalWave);
 
   // float x = atan(uTime + p.x, fract(p.z * 13.0));
   // x /= PI * 2.0;
@@ -275,7 +282,7 @@ float sdOctahedron(vec3 p, float s) {
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
   // p.y -= motion;
 
-  float m = p.x + p.y + p.z - digitalWave;
+  float m = p.x + (p.y - digitalWave) + p.z - s;
   // p.x -= uTime + sin(p.x);
 
   // f = min(f, m);
@@ -286,13 +293,13 @@ float sdOctahedron(vec3 p, float s) {
   vec3 q;
   // q.xz *= rot2d(uTime * q.y * 0.3);
   // q.yz *= rot2d(uTime - q.x * 0.5);
-  if (3.0 * p.x < m * digitalWave)
-    q = fract(uAudioFrequency * 0.3 + p.xyz);
-  else if (3.0 * p.y < m * digitalWave)
-    q = cos(uAudioFrequency * 0.3 + p.yzx);
-  else if (8.0 * p.z < m * digitalWave)
+  if (3.0 * p.x < m)
+    q = p.xyz - digitalWave;
+  else if (3.0 * p.y < m)
+    q = p.yzx - digitalWave;
+  else if (3.0 * p.z < m)
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
-    q = sin(uAudioFrequency * 0.3 + p.zxy);
+    q = p.zxy - digitalWave;
   else
     return m * TAU * 0.57735027;
 
@@ -394,7 +401,7 @@ float sdf(vec3 position) {
   // float torus = sdTorus(position, vec2(0.01, 0.03));
   // torus = abs(torus) - 0.03;
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth + motion);
+  float octahedron1 = sdOctahedron(position1, octaGrowth);
   // float octahedron2 = sdOctahedron2(position, octaGrowth * displacement);
   // octahedron = abs(octahedron) - 0.03;
 

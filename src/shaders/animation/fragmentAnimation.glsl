@@ -88,32 +88,6 @@ float fbm(in vec3 x, in float H) {
   return t;
 }
 
-// vec3 hash3(vec2 p) {
-//   vec3 q = vec3(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)), dot(p, vec2(419.2, 371.9)));
-//   return fract(sin(q) * 43758.5453);
-// }
-
-// float worley(in vec2 x, float u, float v) {
-//   vec2 p = floor(x);
-//   vec2 f = fract(x);
-
-//   float k = 1.0 + 63.0 * pow(1.0 - v, 4.0);
-
-//   float va = 0.0;
-//   float wt = 0.0;
-//   for (int j = -2; j <= 2; j++) for (int i = -2; i <= 2; i++) {
-//       vec2 g = vec2(float(i), float(j));
-//       vec3 o = hash3(p + g) * vec3(u, u, 1.0);
-//       vec2 r = g - f + o.xy;
-//       float d = dot(r, r);
-//       float ww = pow(1.0 - smoothstep(0.0, 1.414, sqrt(d)), k);
-//       va += o.z * ww;
-//       wt += ww;
-//     }
-
-//   return va / wt;
-// }
-
 float glitter(vec2 position) {
 
   position *= 13.0;
@@ -294,9 +268,9 @@ float sdOctahedron(vec3 p, float s) {
   // q.xz *= rot2d(uTime * q.y * 0.3);
   // q.yz *= rot2d(uTime - q.x * 0.5);
   if (3.0 * p.x < m)
-    q = p.xyz / digitalWave * sin(uTime + displacement);
+    q = p.xyz / digitalWave * sin(uTime - displacement);
   else if (3.0 * p.y < m)
-    q = p.yzx / digitalWave * cos(uTime + displacement);
+    q = p.yzx / digitalWave * cos(uTime - displacement);
   else if (3.0 * p.z < m)
     // q *= sin(abs((uTime * 0.1) * ceil(floor(PI * 2.0 * fract(p.zyz / uAudioFrequency))) * 2.0 + 1.0));
     q = p.zxy / digitalWave * fract(displacement);
@@ -312,7 +286,7 @@ float sdOctahedron2(vec3 p, float s) {
   // float motion = fbm(p, -uAudioFrequency * 0.02 / s);
 
   p = abs(p);
-  p.z -= sin(uTime) * (0.1 * 13.0);
+  // p.z -= sin(uTime) * (0.1 * 13.0);
 
   float minor = abs(fract(length(p) / s + 0.5) - 0.5) * 1.0;
   float major = abs(fract(length(p) / (s * 0.21) + 0.5) - 0.5) * 1.0;
@@ -323,7 +297,7 @@ float sdOctahedron2(vec3 p, float s) {
   // p.z = smoothstep(-0.5, 0.8, motion);
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
 
-  float m = sqrt(p.x + p.y * p.z) - dot(s, s) / minor * major;
+  float m = fract(p.x + p.y * p.z) - dot(s, s);
   vec3 q;
   if (2.0 * p.x < m)
     q = p.xyz;
@@ -334,7 +308,7 @@ float sdOctahedron2(vec3 p, float s) {
   else
     return m * PI * 0.57735027;
 
-  float k = clamp(0.5 * (q.z - q.y + s), -0.5, s);
+  float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
   return length(vec3(q.x, q.y - s + k, q.z - k));
 }
 
@@ -388,9 +362,9 @@ float sdf(vec3 position) {
   // position.xz *= scale;
   // position.xz *= rot2d(smoothstep(0.0, 1.0, position.y));
 
-  float scale = 89.0;
+  // float scale = 89.0;
 
-  float displacement = length(sin(position1.x / scale * 13.0) * sin(position1.y / scale) * sin(position1.z * 21.0));
+  // float displacement = length(sin(position1.x / scale * 13.0) * sin(position1.y / scale) * sin(position1.z * 21.0));
   // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
@@ -408,14 +382,14 @@ float sdf(vec3 position) {
   // torus = abs(torus) - 0.03;
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position, octaGrowth);
+  float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
-  octahedron1 = max(octahedron1, -octahedron2 - motion);
+  octahedron1 = max(octahedron1, octahedron2);
 
-  // float gyroid = sdGyroid(twist, 34.89, 0.03, 0.3);
+  float gyroid = sdGyroid(position, 8.89, 0.03, 0.3 * motion);
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
   // ball = max(ball, gyroid);
@@ -425,7 +399,7 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
-  // octahedron1 = max(octahedron1, -gyroid);
+  octahedron1 = max(octahedron1, -gyroid);
   // gyroid = max(gyroid, box);
 
   // position1.xz *= rot2d(uTime + position1.y * 0.3);
@@ -508,17 +482,24 @@ float sdf(vec3 position) {
 
   // return polynomialSMin(ground, min(mix(ball, assembledGyroid, sin((uAudioFrequency * 0.05) + 0.5)), uAudioFrequency * PI * ball), 0.5);
 
-  return polynomialSMin(0.1, octahedron1, 0.5);
-}
-
-float ground(vec3 position) {
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 3.0;
-  position.y += 1.0 - length(position.z) * 0.5 + 0.5;
+  position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  return ground += groundWave;
+  ground += groundWave;
+
+  return polynomialSMin(ground, octahedron1, 0.5);
 }
+
+// float ground(vec3 position) {
+//   float ground = position.y + .55;
+//   position.z -= uTime * 0.2;
+//   position *= 3.0;
+//   position.y += 1.0 - length(position.z) * 0.5 + 0.5;
+//   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
+//   return ground += groundWave;
+// }
 
 vec3 calcNormal(in vec3 position) {
   const float epsilon = 0.00001;
@@ -526,11 +507,11 @@ vec3 calcNormal(in vec3 position) {
   return normalize(vec3(sdf(position + h.xyy) - sdf(position - h.xyy), sdf(position + h.yxy) - sdf(position - h.yxy), sdf(position + h.yyx) - sdf(position - h.yyx)));
 }
 
-vec3 calcNormalGround(in vec3 position) {
-  const float epsilon = 0.00001;
-  const vec2 h = vec2(epsilon, 0);
-  return normalize(vec3(ground(position + h.xyy) - ground(position - h.xyy), ground(position + h.yxy) - ground(position - h.yxy), ground(position + h.yyx) - ground(position - h.yyx)));
-}
+// vec3 calcNormalGround(in vec3 position) {
+//   const float epsilon = 0.00001;
+//   const vec2 h = vec2(epsilon, 0);
+//   return normalize(vec3(ground(position + h.xyy) - ground(position - h.xyy), ground(position + h.yxy) - ground(position - h.yxy), ground(position + h.yyx) - ground(position - h.yyx)));
+// }
 
 void main() {
 
@@ -602,7 +583,7 @@ void main() {
   // Distance travelled
   float t = 0.0;
   float tMed = 2.0;
-  float tMax = 3.0;
+  float tMax = 2.8;
 
   // vec2 m = (uMouse.xy * 2. - uResolution.xy) / uResolution.y;
 
@@ -625,14 +606,14 @@ void main() {
 
     // The Current distance to the scene
     float h = sdf(position);
-    float g = ground(position);
-    float finalSDF = min(h, g);
+    // float g = ground(position);
+    // float finalSDF = min(h, g);
 
     // The "march" of the ray
-    t += finalSDF;
+    t += h;
     // t += g;
     // h = -(length(vec2(length(position.xz) - 1.0, position.y)) - 0.89);
-    if (abs(finalSDF) < 0.0001 || t > tMax)
+    if (abs(h) < 0.0001 || t > tMax)
       break;
 
     // if (abs(g) < 0.0001 || t > tMax)
@@ -653,23 +634,23 @@ void main() {
     // position.x += sin(t * (uMouse.x - 0.5) * 0.5) * 0.89;
     // color = vec3(1.0);
     vec3 normal = calcNormal(position);
-    vec3 normalGround = calcNormalGround(position);
+    // vec3 normalGround = calcNormalGround(position);
 
     // normal = max(normal, normalGround);
 
-    vec3 rayReflect = reflect(ray, normal);
+    // vec3 rayReflect = reflect(ray, normal);
     vec3 lightDir = -normalize(position);
 
     float diff = dot(normal, lightDir) * 0.5 + 0.5;
-    float diffGround = dot(normalGround, lightDir) * 0.5 + 0.5;
+    // float diffGround = dot(normalGround, lightDir) * 0.5 + 0.5;
     float centerDist = length(position);
     color = vec3(diff);
-    color = vec3(diffGround);
+    // color = vec3(diffGround);
 
     float fresnel = pow(1.5 + dot(ray, normal), 3.0);
-    float fresnelGround = pow(1.5 + dot(ray, normalGround), 3.0);
+    // float fresnelGround = pow(1.5 + dot(ray, normalGround), 3.0);
     color = vec3(fresnel);
-    color = vec3(fresnelGround);
+    // color = vec3(fresnelGround);
 
     color = vec3(float(i) / 235.0);
 

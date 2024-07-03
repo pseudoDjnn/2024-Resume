@@ -236,7 +236,7 @@ float sdOctahedron(vec3 p, float s) {
 
   // p.z *= sin(abs(uAudioFrequency * 0.005 * PI + fract(p.z)) * ceil(2.0 + floor(1.0)));
   // p.x = p.x * sin(abs(cos(uAudioFrequency * 0.1) * 2.0 + 1.0 * ceil(fract(uAudioFrequency * 0.01))));
-  // p.xy *= rot2d(sin(uTime) * 0.8 + 0.1);
+  // p.zx *= rot2d(cos(uTime) * 0.8 + 0.1);
   // p.y = sin(p.y);
   // p.z = fract(p.z * uTime);
 
@@ -297,7 +297,7 @@ float sdOctahedron2(vec3 p, float s) {
   // p.z = smoothstep(-0.5, 0.8, motion);
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
 
-  float m = fract(p.x + p.y * p.z) - dot(s, s);
+  float m = length(fract(p.x + p.y * p.z)) - dot(s, s);
   vec3 q;
   if (2.0 * p.x < m)
     q = p.xyz;
@@ -306,7 +306,7 @@ float sdOctahedron2(vec3 p, float s) {
   else if (3.0 * p.z < m)
     q = p.zxy;
   else
-    return m * PI * 0.57735027;
+    return m * TAU * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
   return length(vec3(q.x, q.y - s + k, q.z - k));
@@ -338,7 +338,7 @@ float sdf(vec3 position) {
   float motion = fbm(uTime * 0.3 - position1, uAudioFrequency * 0.0003);
 
   float octaGrowth = sqrt(uAudioFrequency * 0.008 + 0.8) * 0.8 + 0.1;
-  position.z += sin(uTime) * (0.1 * octaGrowth);
+  // position1.y += sin(uTime) * (0.1 * octaGrowth);
 
   // vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
 
@@ -382,14 +382,15 @@ float sdf(vec3 position) {
   // torus = abs(torus) - 0.03;
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position1, octaGrowth);
+  float octahedron2 = sdOctahedron2(position1 - position.z, octaGrowth);
+  // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
   octahedron1 = max(octahedron1, octahedron2);
 
-  float gyroid = sdGyroid(position, 8.89, 0.03, 0.3 * motion);
+  float gyroid = sdGyroid(-position1, 13.89 - motion, 0.03, 0.3 * motion);
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
   // ball = max(ball, gyroid);

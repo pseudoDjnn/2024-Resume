@@ -289,7 +289,7 @@ float sdOctahedron2(vec3 p, float s) {
   // p.z -= sin(uTime) * (0.1 * 13.0);
 
   float minor = abs(fract(length(p) / s + 0.5) - 0.5) * 1.0;
-  float major = abs(fract(length(p) / (s * 0.21) + 0.5) - 0.5) * 1.0;
+  float major = abs(fract(length(p) / (s * 0.21) + 0.5) - 0.5) * 2.0;
 
   minor = smoothstep(0.5 - s, 0.5 + s, major);
   major = smoothstep(0.5 - s, 0.5 + s, minor);
@@ -297,14 +297,14 @@ float sdOctahedron2(vec3 p, float s) {
   // p.z = smoothstep(-0.5, 0.8, motion);
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
 
-  float m = length(fract(p.x + p.y * p.z)) - dot(s, s);
+  float m = p.x + p.y * p.z - dot(s, s);
   vec3 q;
   if (2.0 * p.x < m)
-    q = p.xyz;
+    q = p.xyz - minor * major;
   else if (2.0 * p.y < m)
-    q = p.yzx;
+    q = p.yzx - minor * major;
   else if (3.0 * p.z < m)
-    q = p.zxy;
+    q = p.zxy - minor * major;
   else
     return m * TAU * 0.57735027;
 

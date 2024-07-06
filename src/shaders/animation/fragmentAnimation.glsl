@@ -651,16 +651,16 @@ void main() {
 
         position.z -= uTime * 0.2;
         color -= glitter(position.xy * 5.0) * 8.0 * shadow;
-        // color *= sin(uTime + 1.0) - -(shadow * getColor(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.02)));
+        // TODO: this line is where you stopped
+        color *= sin(uTime + 1.0) - -(shadow * palette(centerDist * smoothstep(-0.3, 0.8, uAudioFrequency * 0.01)));
       }
     }
-    // color = mix(1.0 - color, (1.0 - sphereColor + background * light * glow), fresnel);
     float centralLight = dot(newUv - 1.0, newUv);
     centralLight *= camPos.z - 1.0;
 
     float light = 0.03 / centralLight;
     vec3 lightColor = vec3(1.0, 0.8, 0.5);
-    color += light * smoothstep(0.0 * uAudioFrequency, 0.5, camPos - 2.0) * lightColor;
+    color += light * smoothstep(0.0, 0.5, camPos - 2.0) * lightColor;
 
     float glow = sdGyroid(normalize(camPos), 0.3, 0.03, 1.0);
     color += light * smoothstep(0.0, 0.03 * uAudioFrequency, glow) * lightColor;
@@ -676,8 +676,6 @@ void main() {
   color *= smoothstep(-1.0, 0.3, vUv.y);
 
   // color = pow(color, vec3(1.0 / 2.2));
-
-  // color *= a;
 
   gl_FragColor = vec4(color, 1.0);
     #include <tonemapping_fragment>

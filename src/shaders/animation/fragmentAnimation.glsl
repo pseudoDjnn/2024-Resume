@@ -179,6 +179,24 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 //   return length(q * sin(uTime * 0.02)) - t.y * 0.8;
 // }
 
+float IterateMandelbrot(in vec3 c) {
+  const float B = 256.0;
+
+  float n = 0.0;
+  vec3 z = vec3(0.0);
+  for (int i = 0; i < 200; i++) {
+    z = vec3(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y, z) + c; // z = z² + c
+    if (dot(z, z) > (B * B))
+      break;
+    n += 1.0;
+  }
+
+  // float sn = n - log(log(length(z)) / log(B)) / log(2.0); // smooth iteration count
+  float sn = n - log2(log2(dot(z, z))) + 4.0;  // equivalent optimized smooth iteration count
+
+  return sn;
+}
+
 /*
   Octahedron
 */
@@ -386,7 +404,9 @@ float sdf(vec3 position) {
   // float torus = sdTorus(position, vec2(0.01, 0.03));
   // torus = abs(torus) - 0.03;
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth);
+  float mandel = IterateMandelbrot(position);
+
+  float octahedron1 = sdOctahedron(position1, octaGrowth - mandel);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
@@ -394,6 +414,7 @@ float sdf(vec3 position) {
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
   float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
+
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
   // ball = max(ball, gyroid);

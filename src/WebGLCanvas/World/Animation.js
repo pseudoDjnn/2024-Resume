@@ -18,7 +18,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
+    this.geometry = new THREE.PlaneGeometry(5, 5, 1, 1)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
     this.geometry.deleteAttribute('normal')
@@ -37,8 +37,8 @@ export default class Animation {
       uMouse: new THREE.Uniform(new THREE.Vector3(0, 0, 0)),
       // uFrequency: new THREE.Uniform(new THREE.Vector2(13, 8)),
       uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
-      uShadowRepetitions: new THREE.Uniform(13),
-      uLightRepetitions: new THREE.Uniform(55),
+      // uShadowRepetitions: new THREE.Uniform(13),
+      // uLightRepetitions: new THREE.Uniform(55),
       uTimeAnimation: new THREE.Uniform(0),
       uTime: new THREE.Uniform(0),
     }

@@ -33,11 +33,6 @@ vec3 palette(float tone) {
   return a + b * cos(uTime + 6.28318 * (c + tone + d));
 }
 
-// vec3 getColor(float amount) {
-//   vec3 color = 1.0 * cos(6.2831 * (sin(vec3(0.0, 0.1, 0.2)) * sign(amount) * cos(vec3(1.0, 1.0, 1.0))));
-//   return color * palette(amount);
-// }
-
 mat4 rotationMatrix(vec3 axis, float angle) {
   axis = normalize(axis);
   float s = sin(angle);
@@ -93,7 +88,6 @@ float fbm(in vec3 x, in float H) {
 float glitter(vec2 position) {
 
   position *= 13.0;
-  // position.y /= rand(vec2(uTime * 0.0001));
   vec2 id = floor(position);
 
   position = fract(position) - 0.5;
@@ -114,70 +108,22 @@ float polynomialSMin(float a, float b, float k) {
 }
 
 /*
-  Box
-*/
-// float sdRoundBox(vec3 p, vec3 b, float r) {
-//   vec3 q = abs(p) - b + r;
-//   return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
-// }
-
-/*
   Gyroid
 */
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   position *= scale;
 
-  // position *= sin(uAudioFrequency) * 0.1 + 0.1
-  // bias *= floor(vUv.x * uAudioFrequency) / uAudioFrequency;
-  // bias *= floor(vUv.y * uAudioFrequency) / uAudioFrequency;
-  // bias = abs(distance(vUv,vec2(uAudioFrequency)));
   float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
-  // angle /= PI * 3.0;
-  // angle += 0.5;
+
   float circle = angle;
 
   float random = step(0.8 * circle, rand(position.zxy * 3.0) * 21.0);
-
-  // position *= step(0.8, mod(uTime + position.x * 8.0, 1.0));
-  // position *= step(0.8, mod(uTime + position.y * 13.0, 1.0));
-
-  // TODO: SAVE
-  // for (int i = 1; i < 13; i++) {
-  //   position += 0.08;
-
-  //   float len = length(vec3(position.x, position.y, position.z));
-
-  //   position.x = position.x - cos(position.y + sin(len)) + cos(uTime / 8.0);
-  //   position.y = position.y + sin(position.x + cos(len)) + sin(uAudioFrequency / 13.0);
-  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
-
-  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
-  // }
-
-  // position.x += sin(uTime) * PI * 2.0;
 
   position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
 
   return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
 }
-
-/*
-  Sphere
-*/
-// float sdSphere(vec3 position, float radius) {
-//   return length(position) - radius;
-// }
-
-/*
-  Torus
-*/
-// float sdTorus(vec3 p, vec2 t) {
-//   // p.xz *= rot2d(sin(abs(ceil(uTime + PI * fract(p.x)))) * floor(2.0 + 1.0));
-
-//   vec2 q = vec2(length(p.xz) - t.x, p.y);
-//   return length(q * sin(uTime * 0.02)) - t.y * 0.8;
-// }
 
 float IterateMandelbrot(in vec3 c) {
   const float B = 256.0;
@@ -188,6 +134,19 @@ float IterateMandelbrot(in vec3 c) {
     z = vec3(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y, z) + c; // z = z² + c
     if (dot(z, z) > (B * B))
       break;
+      // for (int i = 1; i < 3; i++) {
+  //   p -= 0.08;
+
+  //   float len = length(vec3(length(cos(p.x)), length(tan(p.y)), 1.0 - sin(abs(p.z))));
+
+  //   // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
+  //   // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
+  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+  //   p += sin(abs(ceil(-uAudioFrequency * 0.03 + PI * fract(len)) * floor(2.0 + 1.0)));
+  //   // p.z = length(sin(len));
+
+  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
+  // }
     n += 1.0;
   }
 
@@ -202,24 +161,9 @@ float IterateMandelbrot(in vec3 c) {
 */
 float sdOctahedron(vec3 p, float s) {
 
-  // p.y *= 0.8;
+  p.y *= 0.8;
 
   p = abs(p);
-  // p *= fbm(p, 1.0);
-
-  // for (int i = 1; i < 3; i++) {
-  //   p -= 0.08;
-
-  //   float len = length(vec3(length(cos(p.x)), length(tan(p.y)), 1.0 - sin(abs(p.z))));
-
-  //   // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
-  //   // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
-  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
-  //   p += sin(abs(ceil(-uAudioFrequency * 0.03 + PI * fract(len)) * floor(2.0 + 1.0)));
-  //   // p.z = length(sin(len));
-
-  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
-  // }
 
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(p.y) * ceil(2.0 + floor(1.0)))), p.z);
   // float xRising = cos(uTime + TAU * x) * sin(uAudioFrequency) * 0.8 + 0.1;
@@ -227,8 +171,6 @@ float sdOctahedron(vec3 p, float s) {
   // float radius = 0.3 + length(p * p * p) * (1.0 + uTime * 0.3 + sin(p.x * 13.0 + p.y * 21.0) * 0.1);
 
   // float displacement = length(sin(p.x) * -cos(p.y) * sin(p.z * uAudioFrequency * 0.01 + uTime * 0.5 * p.y) * 0.2 + 0.1);
-
-  // p.z /= digitalWave;
 
   // float x = atan(uTime + p.x, fract(p.z * 13.0));
   // x /= PI * 2.0;
@@ -270,7 +212,6 @@ float sdOctahedron(vec3 p, float s) {
   // p.x = worley(p.xz, 0.0, 2.5);
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
   // p.y -= motion;
-  float mandel = IterateMandelbrot(p);
 
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.5) + PI * (sin(uTime + p.x / 0.5) + fract(p.z) * 2.0)) + floor(2.144 * 1.08) * 0.2));
 
@@ -298,9 +239,6 @@ float sdOctahedron(vec3 p, float s) {
 }
 
 float sdOctahedron2(vec3 p, float s) {
-  // float motion = fbm(p, -uAudioFrequency * 0.02 / s);
-
-  // p *= fbm(p, 1.0);
   // p.z -= sin(uTime) * (0.1 * 13.0);
 
   float scale = 55.0;
@@ -319,19 +257,20 @@ float sdOctahedron2(vec3 p, float s) {
   float median = length(minor * major);
 
   p = abs(p);
+  float mandel = IterateMandelbrot(p - median);
 
   // p.y = smoothstep(0.05, 0.0, abs((abs(p.x) - smoothstep(0.0, 0.5, p.y))));
   float m = p.x + p.y + p.z - s;
 
-  p *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - p.x)) - smoothstep(sin(median / 0.5) + fract(m) * TAU, 0.0, p.y) - displacement * 0.3)));
+  p *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - p.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, p.y) - displacement * 0.3)));
 
   vec3 q;
   if (2.0 * p.x < m)
-    q = p.xyz;
+    q = p.xyz - mandel * 8.0;
   else if (2.0 * p.y < m)
-    q = p.yzx;
+    q = p.yzx - mandel * 21.0;
   else if (3.0 * p.z < m)
-    q = p.zxy;
+    q = p.zxy - mandel * 13.0;
   else
     return m * PI * 0.57735027;
 

@@ -213,6 +213,10 @@ float sdOctahedron(vec3 p, float s) {
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
   // p.y -= motion;
 
+  float alpha = sin(floor(p.x * 13.0) + uTime * 5.0) + 1.0 / 2.0;
+  float beta = sin(floor(p.y * 8.0) + uTime * 3.0) + 1.0 / 2.0;
+  float charlie = cos(floor(p.z * 5.0) + uTime) + 0.5 / 2.0;
+
   float m = p.x + p.y + p.z - s;
   // p.x *= digitalWave * 0.008;
   // p.y *= digitalWave * 0.8;
@@ -225,12 +229,12 @@ float sdOctahedron(vec3 p, float s) {
   // m = cos(a * 0.8);
 
   vec3 q;
-  if (2.0 * p.x < m)
-    q = p.xyz;
-  else if (2.5 * p.y < m)
-    q = p.yzx;
+  if (2.0 * p.x < m - alpha)
+    q = p.xyz - beta * 0.3;
+  else if (2.5 * p.y < m - beta)
+    q = p.yzx - alpha * 0.01;
   else if (3.0 * p.z < m)
-    q = p.zxy;
+    q = p.zxy - charlie;
   else
     return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.1) * 0.3, -0.3, 0.5);
 
@@ -267,11 +271,11 @@ float sdOctahedron2(vec3 p, float s) {
 
   vec3 q;
   if (2.0 * p.x < m)
-    q = p.xyz - mandel * 8.0;
+    q = p.xyz;
   else if (2.0 * p.y < m)
-    q = p.yzx - mandel * 21.0;
+    q = p.yzx;
   else if (3.0 * p.z < m)
-    q = p.zxy - mandel * 13.0;
+    q = p.zxy;
   else
     return m * PI * 0.57735027;
 
@@ -345,16 +349,17 @@ float sdf(vec3 position) {
 
   // float torus = sdTorus(position, vec2(0.01, 0.03));
   // torus = abs(torus) - 0.03;
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.5) + PI * (sin(uAudioFrequency * 0.03 + position.y / 0.5) + (sin(uAudioFrequency * 0.3) + cos(uTime)) + fract(position.y))) + floor(2.144 * 1.08) * 0.2));
+
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.5) + PI * (sin(uAudioFrequency * 0.03 + position.y) + (sin(uAudioFrequency * 0.3) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
 
   float octahedron1 = sdOctahedron(position1, octaGrowth - digitalWave * 0.3);
-  // float octahedron2 = sdOctahedron2(position2, octaGrowth);
+  // float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
-  float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
+  // float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
 
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);

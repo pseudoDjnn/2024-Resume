@@ -213,7 +213,7 @@ float sdOctahedron(vec3 p, float s) {
   // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
   // p.y -= motion;
 
-  float alpha = sin(floor(p.x * 13.0) + uTime * 5.0) + 1.0 / 2.0;
+  float alpha = sin(floor(p.x * 13.0) + uTime * 1.0) + 1.0 / 2.0;
   float beta = sin(floor(p.y * 8.0) + uTime * 3.0) + 1.0 / 2.0;
   float charlie = cos(floor(p.z * 5.0) + uTime) + 0.5 / 2.0;
 
@@ -350,7 +350,7 @@ float sdf(vec3 position) {
   // float torus = sdTorus(position, vec2(0.01, 0.03));
   // torus = abs(torus) - 0.03;
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.5) + PI * (sin(uAudioFrequency * 0.03 + position.y) + (sin(uAudioFrequency * 0.3) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.y) + (sin(uAudioFrequency * 0.1) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
 
   float octahedron1 = sdOctahedron(position1, octaGrowth - digitalWave * 0.3);
   // float octahedron2 = sdOctahedron2(position1, octaGrowth);

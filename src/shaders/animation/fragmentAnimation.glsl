@@ -74,11 +74,11 @@ float noise(vec3 p) {
 
 float fbm(in vec3 x, in float H) {
   float G = exp2(-H);
-  float f = 1.0;
-  float a = 1.0;
+  float f = 2.0;
+  float a = 0.5;
   float t = 0.0;
   for (int i = 0; i < NUM_OCTAVES; i++) {
-    t += a * noise(f * x);
+    t += a * noise(f * x + uTime * 1.0);
     f *= 2.0;
     a *= G;
   }
@@ -209,10 +209,6 @@ float sdOctahedron(vec3 p, float s) {
   // f = abs(distance(vUv, vec2(0.5)) - 0.25) ;
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
 
-  // p.x = worley(p.xz, 0.0, 2.5);
-  // p.z = sdGyroid(p, 13.13, 0.03, 0.1);
-  // p.y -= motion;
-
   float alpha = sin(floor(p.x * 13.0) + uTime * 1.0) + 1.0 / 2.0;
   float beta = sin(floor(p.y * 8.0) + uTime * 3.0) + 1.0 / 2.0;
   float charlie = cos(floor(p.z * 5.0) + uTime) + 0.5 / 2.0;
@@ -338,28 +334,16 @@ float sdf(vec3 position) {
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  // vec3 twist = opTwist(position1 - sin(smoothstep(-0.1, 0.5, displacement)), sin(abs(uAudioFrequency * 0.03 - fract(position1.z * position1.y * 0.8 + 0.1))) * ceil(3.144 * floor(1.144)));
-
-  // float box = sdRoundBox(twist, vec3(0.89), 0.2);
-  // box = abs(box) - 0.03;
-
-  // float ball = sdSphere(position1, 0.4);
-  // ball = abs(ball) - 0.03;
-  // ball = max(ball, box);
-
-  // float torus = sdTorus(position, vec2(0.01, 0.03));
-  // torus = abs(torus) - 0.03;
-
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.y) + (sin(uAudioFrequency * 0.1) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
 
   float octahedron1 = sdOctahedron(position1, octaGrowth - digitalWave * 0.3);
-  // float octahedron2 = sdOctahedron2(position1, octaGrowth);
+  float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
 
-  // float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
+  float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
 
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
@@ -369,8 +353,9 @@ float sdf(vec3 position) {
   // torus = max(torus, gyroid);
 
 // TODO: Use this
-  // octahedron1 = max(octahedron1, octahedron2);
-  // octahedron1 = max(octahedron1, -gyroid);
+  octahedron1 = min(octahedron1, octahedron2);
+  octahedron1 = max(octahedron1, -octahedron2);
+  octahedron1 = max(octahedron1, -gyroid);
 
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
   // gyroid = max(gyroid, box);

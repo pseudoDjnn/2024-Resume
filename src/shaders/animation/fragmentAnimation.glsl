@@ -72,13 +72,34 @@ float noise(vec3 p) {
   return res * res;
 }
 
+/*
+  Gyroid
+*/
+float sdGyroid(vec3 position, float scale, float thickness, float bias) {
+
+  position *= scale;
+
+  float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
+
+  float circle = angle;
+
+  float random = step(0.8 * circle, rand(position.zxy * 3.0) * 21.0);
+
+  position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
+
+  return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
+}
+
 float fbm(in vec3 x, in float H) {
+  float gyroid = sdGyroid(x.zyx, 2.89, 0.03, 0.3);
+  gyroid = abs(gyroid);
+
   float G = exp2(-H);
   float f = 2.0;
   float a = 0.5;
   float t = 0.0;
   for (int i = 0; i < NUM_OCTAVES; i++) {
-    t += a * noise(f * x + uTime * 1.0);
+    t += a * noise(f * x + uTime * 1.0) - gyroid;
     f *= 2.0;
     a *= G;
   }
@@ -107,54 +128,36 @@ float polynomialSMin(float a, float b, float k) {
   return mix(b, a, h) - k * h * (1.0 - h);
 }
 
-/*
-  Gyroid
-*/
-float sdGyroid(vec3 position, float scale, float thickness, float bias) {
+// float IterateMandelbrot(in vec3 c) {
+//   const float B = 256.0;
 
-  position *= scale;
+//   float n = 0.0;
+//   vec3 z = vec3(0.0);
+//   for (int i = 0; i < 200; i++) {
+//     z = vec3(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y, z) + c; // z = z² + c
+//     if (dot(z, z) > (B * B))
+//       break;
+//       // for (int i = 1; i < 3; i++) {
+//   //   p -= 0.08;
 
-  float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
+//   //   float len = length(vec3(length(cos(p.x)), length(tan(p.y)), 1.0 - sin(abs(p.z))));
 
-  float circle = angle;
+//   //   // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
+//   //   // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
+//   //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
+//   //   p += sin(abs(ceil(-uAudioFrequency * 0.03 + PI * fract(len)) * floor(2.0 + 1.0)));
+//   //   // p.z = length(sin(len));
 
-  float random = step(0.8 * circle, rand(position.zxy * 3.0) * 21.0);
+//   //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
+//   // }
+//     n += 1.0;
+//   }
 
-  position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
+//   // float sn = n - log(log(length(z)) / log(B)) / log(2.0); // smooth iteration count
+//   float sn = uAudioFrequency + n - log2(log2(dot(z, z))) + 4.0;  // equivalent optimized smooth iteration count
 
-  return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
-}
-
-float IterateMandelbrot(in vec3 c) {
-  const float B = 256.0;
-
-  float n = 0.0;
-  vec3 z = vec3(0.0);
-  for (int i = 0; i < 200; i++) {
-    z = vec3(z.x * z.x - z.y * z.y, 2.0 * z.x * z.y, z) + c; // z = z² + c
-    if (dot(z, z) > (B * B))
-      break;
-      // for (int i = 1; i < 3; i++) {
-  //   p -= 0.08;
-
-  //   float len = length(vec3(length(cos(p.x)), length(tan(p.y)), 1.0 - sin(abs(p.z))));
-
-  //   // p.x = 2.0 - p.x / cos(p.y * sin(len)) + cos(uAudioFrequency / 8.0);
-  //   // p.y = 3.0 - fract(p.y) - sin(p.x - cos(len)) - sin(uTime);
-  //   // p.y = sin(p.z + cos(len)) + sin(uTime / 3.0);
-  //   p += sin(abs(ceil(-uAudioFrequency * 0.03 + PI * fract(len)) * floor(2.0 + 1.0)));
-  //   // p.z = length(sin(len));
-
-  //   // p *= vec3(0.8 / i * sin(i * p.z - uTime * 0.3 * i));
-  // }
-    n += 1.0;
-  }
-
-  // float sn = n - log(log(length(z)) / log(B)) / log(2.0); // smooth iteration count
-  float sn = uAudioFrequency + n - log2(log2(dot(z, z))) + 4.0;  // equivalent optimized smooth iteration count
-
-  return sn;
-}
+//   return sn;
+// }
 
 /*
   Octahedron
@@ -210,7 +213,7 @@ float sdOctahedron(vec3 p, float s) {
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
 
   float alpha = sin(floor(p.x * 13.0) + uTime * 1.0) + 1.0 / 2.0;
-  float beta = sin(floor(p.y * 8.0) + uTime * 3.0) + 1.0 / 2.0;
+  float beta = sin(floor(p.y * 8.0) - uTime * 3.0) + 1.0 / 2.0;
   float charlie = cos(floor(p.z * 5.0) + uTime) + 0.5 / 2.0;
 
   float m = p.x + p.y + p.z - s;
@@ -241,6 +244,7 @@ float sdOctahedron(vec3 p, float s) {
 
 float sdOctahedron2(vec3 p, float s) {
   // p.z -= sin(uTime) * (0.1 * 13.0);
+  // float gyroid = sdGyroid(p.zyx, 13.89, 0.03, 0.3);
 
   float scale = 55.0;
 
@@ -258,12 +262,12 @@ float sdOctahedron2(vec3 p, float s) {
   float median = length(minor * major);
 
   p = abs(p);
-  float mandel = IterateMandelbrot(p - median);
+  // float mandel = IterateMandelbrot(p - median);
 
   // p.y = smoothstep(0.05, 0.0, abs((abs(p.x) - smoothstep(0.0, 0.5, p.y))));
   float m = p.x + p.y + p.z - s;
 
-  p *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - p.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, p.y) - displacement * 0.3)));
+  // p *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - p.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, p.y) - displacement * 0.3)));
 
   vec3 q;
   if (2.0 * p.x < m)
@@ -334,7 +338,7 @@ float sdf(vec3 position) {
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.y) + (sin(uAudioFrequency * 0.1) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3) + fbm(position1, 1.0 - sin(uTime) * 0.8 + 0.1))) + floor(2.144 * 1.08) * 0.2));
 
   float octahedron1 = sdOctahedron(position1, octaGrowth - digitalWave * 0.3);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
@@ -342,8 +346,6 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
   // octahedron1 = mix(octahedron1, octahedron2, 1.0);
-
-  float gyroid = sdGyroid(position1, 13.89, 0.03, 0.3);
 
   // gyroid *= fbm(position, 1.0);
   // ball = min(ball, gyroid);
@@ -355,7 +357,7 @@ float sdf(vec3 position) {
 // TODO: Use this
   octahedron1 = min(octahedron1, octahedron2);
   octahedron1 = max(octahedron1, -octahedron2);
-  octahedron1 = max(octahedron1, -gyroid);
+  // octahedron1 = max(octahedron1, -gyroid);
 
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
   // gyroid = max(gyroid, box);

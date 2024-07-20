@@ -21,7 +21,6 @@ varying vec2 vUv;
 // #include ../includes/effects/perlin.glsl
 // #include ../includes/effects/random2D.glsl
 #include ../includes/effects/terrainGeneration.glsl
-// #include ../includes/effects/boxFrame.glsl
 
 void main() {
   // Base Postion

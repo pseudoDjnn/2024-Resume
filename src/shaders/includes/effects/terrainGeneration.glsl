@@ -2,12 +2,6 @@
 #include ../effects/random2D.glsl
 #include ../effects/voronoi.glsl
 
-float lerp(float t) {
-  float v1 = t * t;
-  float v2 = 1.0 - (1.0 - t) * (1.0 - t);
-  return smoothstep(v1, v2, smoothstep(-1.0, 0.5, t));
-}
-
 float terrainGeneration(in vec3 position) {
 
   // Elevation
@@ -22,7 +16,7 @@ float terrainGeneration(in vec3 position) {
   warpedPosition += simplexNoise3d(warpedPosition * uPositionFrequency * uWarpFrequency) * uWarpStrength;
 
   float elevation = 0.0;
-  elevation = 0.02 * lerp(uAudioFrequency);
+  // elevation = 0.02 * lerp(uAudioFrequency);
   // elevation *= fnoise(uWarpFrequency, uWarpFrequency);
   elevation += voroNoise(warpedPosition * uPositionFrequency, uWarpFrequency, uPositionFrequency) / 2.0;
   elevation += voroNoise(warpedPosition * uPositionFrequency * 2.0, uWarpFrequency, uPositionFrequency) / 5.0;

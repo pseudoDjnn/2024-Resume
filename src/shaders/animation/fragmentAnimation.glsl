@@ -2,7 +2,7 @@
 #define TAU  6.28318530718
 #define NUM_OCTAVES 5
 
-uniform vec3 uMouse;
+uniform vec2 uMouse;
 uniform vec2 uResolution;
 
 uniform float uAudioFrequency;
@@ -602,6 +602,6 @@ void main() {
   // color = pow(color, vec3(1.0 / 2.2));
 
   gl_FragColor = vec4(color, 1.0);
-    #include <tonemapping_fragment>
-    #include <colorspace_fragment>
+    // #include <tonemapping_fragment>
+    // #include <colorspace_fragment>
 }

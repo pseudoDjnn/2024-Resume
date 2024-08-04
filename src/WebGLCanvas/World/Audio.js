@@ -18,7 +18,7 @@ export default class Audio {
     // console.log(this.sound)
 
     this.audioLoader = new THREE.AudioLoader()
-    this.audioLoader.load('/sound/LFO_uKno.mp3', (bufnr) => {
+    this.audioLoader.load('/sound/July21st2024.mp3', (bufnr) => {
       this.sound.setBuffer(bufnr)
       window.addEventListener('click', () => {
         this.sound.setVolume(0.3)
@@ -26,7 +26,7 @@ export default class Audio {
       })
     })
 
-    this.analyser = new THREE.AudioAnalyser(this.sound, 1024)
+    this.analyser = new THREE.AudioAnalyser(this.sound, 32)
 
   }
 }

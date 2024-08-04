@@ -1,9 +1,3 @@
-// #define PI 3.1415926535897932384626433832795
-
-// uniform vec2 uFrequency;
-// uniform vec2 uResolution;
-// uniform vec2 uWaveFrequency;
-
 uniform float uAudioFrequency;
 uniform float uTimeAnimation;
 uniform float uTime;
@@ -18,8 +12,6 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 
-// #include ../includes/effects/perlin.glsl
-// #include ../includes/effects/random2D.glsl
 #include ../includes/effects/terrainGeneration.glsl
 
 void main() {
@@ -51,10 +43,6 @@ void main() {
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;
   gl_Position = projectedPosition;
-
-  // Point size
-  // gl_PointSize = 0.13 * uResolution.y;
-  // gl_PointSize *= (1.0 / -viewPosition.z);
 
   // Varyings
   // vRandom = aRandom;

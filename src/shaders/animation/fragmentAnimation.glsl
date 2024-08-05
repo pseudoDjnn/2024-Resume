@@ -225,20 +225,8 @@ float sdOctahedron2(vec3 p, float s) {
   // p.z -= sin(uTime) * (0.1 * 13.0);
   // float gyroid = sdGyroid(p.zyx, 13.89, 0.03, 0.3);
 
-  float scale = 89.0;
-
-  float displacement = length(sin(p * scale));
-
-  float minor = abs(fract(length(p) / displacement + 0.5) - 0.5) * 1.0;
-  float major = abs(fract(length(p) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
-
-  minor = positionEase(0.5 - s * 0.5 + s, major);
-  major = positionEase(0.5 - s * 0.5 + s, minor);
-
   // p.z = smoothstep(-0.5, 0.8, motion);
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
-
-  float median = length(minor * major);
 
   // p = abs(p) - sin(uTime * 1.0 - median);
   float gyroid = sdGyroid(p, 8.89, 0.03, 0.3);
@@ -288,7 +276,7 @@ float sdf(vec3 position) {
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
-  float octaGrowth = sin(uAudioFrequency * 0.008 + 0.8) / 0.8 + 0.1;
+  float octaGrowth = sin(uAudioFrequency * 0.005 + 0.5) / 0.8 + 0.1;
   // position1.y += sin(uTime) * (0.1 * octaGrowth);
 
   // vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
@@ -318,10 +306,22 @@ float sdf(vec3 position) {
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
+  float scale = 55.0;
+
+  float displacement = length(sin(position * scale));
+
+  float minor = abs(fract(length(position) / displacement + 0.5) - 0.5) * 1.0;
+  float major = abs(fract(length(position) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
+
+  minor = positionEase(0.5 * 0.5, major);
+  major = positionEase(0.5 * 0.5, minor);
+
+  float median = length(minor * major) - sin(uTime * 0.3);
+
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth - digitalWave * 0.8);
-  float octahedron2 = sdOctahedron2(position1, octaGrowth);
+  float octahedron1 = sdOctahedron(position1, octaGrowth);
+  float octahedron2 = sdOctahedron2(position1, octaGrowth) * 0.8;
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
@@ -335,8 +335,8 @@ float sdf(vec3 position) {
   // torus = max(torus, gyroid);
 
 // TODO: Use this
-  octahedron1 = min(octahedron1, octahedron2);
-  octahedron1 = max(octahedron1, -octahedron2);
+  octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.03);
+  octahedron1 = max(octahedron1, -octahedron2 * median);
   // octahedron1 = max(octahedron1, -gyroid);
 
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
@@ -479,7 +479,7 @@ void main() {
   vec2 newUv = (vUv - vec2(0.5)) + vec2(0.5);
   // vec2 newUv = (gl_FragCoord - 0.5 * uResolution.xy) / uResolution.y;
   // Create position of camera
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.02)));
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.01)));
   // Cast ray form camera to sphere
   vec3 ray = normalize(vec3((newUv - vec2(0.5)), -1));
   // Color creation
@@ -555,13 +555,7 @@ void main() {
 
     color = vec3(float(i) / 235.0);
 
-    // color += glitter(vUv);
-
-    // color = 1.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
-
-    // color = 1.0 - getColor(color.y);
-
-    // color *= finalColor;
+    // color = 2.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
 
     // color = pow(color, vec3(.4545));
     if (t < tMed) {
@@ -602,6 +596,6 @@ void main() {
   // color = pow(color, vec3(1.0 / 2.2));
 
   gl_FragColor = vec4(color, 1.0);
-    // #include <tonemapping_fragment>
-    // #include <colorspace_fragment>
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
 }

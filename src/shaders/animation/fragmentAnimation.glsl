@@ -276,7 +276,7 @@ float sdf(vec3 position) {
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
-  float octaGrowth = sin(uAudioFrequency * 0.005 + 0.5) / 0.8 + 0.1;
+  float octaGrowth = sin(uAudioFrequency * 0.005 + 0.5) / 1.0 + 0.1;
   // position1.y += sin(uTime) * (0.1 * octaGrowth);
 
   // vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
@@ -308,20 +308,20 @@ float sdf(vec3 position) {
 
   float scale = 55.0;
 
-  float displacement = length(sin(position * scale));
+  float displacement = length(sin(position1 * scale));
 
-  float minor = abs(fract(length(position) / displacement + 0.5) - 0.5) * 1.0;
-  float major = abs(fract(length(position) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
+  float minor = abs(fract(length(position1) / displacement + 0.5) - 0.5) * 1.0;
+  float major = abs(fract(length(position1) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
 
   minor = positionEase(0.5 * 0.5, major);
   major = positionEase(0.5 * 0.5, minor);
 
-  float median = length(minor * major) - sin(uTime * 0.3);
+  float median = length(minor * major) - sin(uTime * 0.8);
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency * 0.03 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
   float octahedron1 = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position1, octaGrowth) * 0.8;
+  float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 

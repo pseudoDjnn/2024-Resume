@@ -229,7 +229,7 @@ float sdOctahedron2(vec3 p, float s) {
   // p.x = sin(abs(uTime * TAU * fract(p.z)) * ceil(2.0 + floor(1.0)));
 
   // p = abs(p) - sin(uTime * 1.0 - median);
-  float gyroid = sdGyroid(p, 8.89, 0.03, 0.3);
+  float gyroid = sdGyroid(p, 5.89, 0.03, 0.1);
   p = abs(p - gyroid);
 
   // p.y = smoothstep(0.05, 0.0, abs((abs(p.x) - smoothstep(0.0, 0.5, p.y))));
@@ -308,7 +308,7 @@ float sdf(vec3 position) {
 
   float scale = 55.0;
 
-  float displacement = length(sin(position1 * scale));
+  float displacement = length(sin(position1 * scale) - sin(uTime * 0.8));
 
   float minor = abs(fract(length(position1) / displacement + 0.5) - 0.5) * 1.0;
   float major = abs(fract(length(position1) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
@@ -316,11 +316,13 @@ float sdf(vec3 position) {
   minor = positionEase(0.5 * 0.5, major);
   major = positionEase(0.5 * 0.5, minor);
 
-  float median = length(minor * major) - sin(uTime * 0.8);
+  float median = length(minor * major);
 
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth);
+  float gyroid = sdGyroid(position1, 13.89, 0.3, 0.3);
+
+  float octahedron1 = sdOctahedron(position1, octaGrowth - gyroid);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
@@ -336,7 +338,7 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.03);
-  octahedron1 = max(octahedron1, -octahedron2 * median);
+  octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
 
   // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);

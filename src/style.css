@@ -95,7 +95,7 @@ body {
     background-image: var(--gradient);
     background-size: 987%;
     background-position: left;
-    transition: background-position 3s;
+    transition: background-position 3s cubic-bezier(.87, -1.38, .03, 1.54);
 }
 
 .logo:hover,

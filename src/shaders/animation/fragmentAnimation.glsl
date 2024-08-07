@@ -53,9 +53,16 @@ mat2 rot2d(float angle) {
   return mat2(c, -s, s, c);
 }
 
+// float hash21(vec2 position) {
+//   position = fract(position * vec2(144.34, 277.55));
+//   position += dot(position, position + 21.5);
+//   return fract(position.x * position.y);
+// }
+
 float hash21(vec2 position) {
   position = fract(position * vec2(144.34, 277.55));
-  position += dot(position, position + 21.5);
+  float d = dot(position, position + 21.5);
+  position += d; // Reuse d instead of recalculating dot product
   return fract(position.x * position.y);
 }
 
@@ -63,12 +70,26 @@ float rand(vec3 position) {
   return fract(sin(dot(position, vec3(12.9898, 4.1414, 1.0))) * 43758.5453);
 }
 
+// float noise(vec3 position) {
+//   vec3 ip = floor(position);
+//   vec3 u = fract(position);
+//   u = u * u * (3.0 - 2.0 * u);
+
+//   float res = mix(mix(rand(ip), rand(ip + vec3(1.0, 0.0, 0.0)), u.x), mix(rand(ip + vec3(0.0, 1.0, 0.0)), rand(ip + vec3(1.0, 1.0, 1.0)), u.x), u.y);
+//   return res * res;
+// }
+
 float noise(vec3 position) {
   vec3 ip = floor(position);
   vec3 u = fract(position);
   u = u * u * (3.0 - 2.0 * u);
 
-  float res = mix(mix(rand(ip), rand(ip + vec3(1.0, 0.0, 0.0)), u.x), mix(rand(ip + vec3(0.0, 1.0, 0.0)), rand(ip + vec3(1.0, 1.0, 1.0)), u.x), u.y);
+  float rand_ip = rand(ip);
+  float rand_ip_x = rand(ip + vec3(1.0, 0.0, 0.0));
+  float rand_ip_y = rand(ip + vec3(0.0, 1.0, 0.0));
+  float rand_ip_xy = rand(ip + vec3(1.0, 1.0, 1.0));
+
+  float res = mix(mix(rand_ip, rand_ip_x, u.x), mix(rand_ip_y, rand_ip_xy, u.x), u.y);
   return res * res;
 }
 
@@ -81,11 +102,15 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
 
-  float circle = angle;
+  // float circle = angle;
 
-  float random = step(0.8 * circle, rand(position.zxy * 3.0) * 21.0);
+  float random = step(0.8 * angle, rand(position.zxy * 3.0) * 21.0);
 
-  position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
+  float rot_angle = sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0));
+
+  // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
+
+  position.xz *= mat2(cos(rot_angle), -sin(rot_angle), sin(rot_angle), cos(rot_angle));
 
   return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
 }
@@ -98,8 +123,10 @@ float fbm(in vec3 position, in float H) {
   float f = 2.0;
   float a = 2.0;
   float t = 0.0;
+  vec3 timeOffset = vec3(uTime * 1.0);
+
   for (int i = 0; i < NUM_OCTAVES; i++) {
-    t += a * noise(f * position + uTime * 1.0);
+    t += a * noise(f * position + timeOffset);
     f *= 2.0;
     a *= G;
   }

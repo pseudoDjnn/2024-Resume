@@ -110,7 +110,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
 
-  position.xz *= mat2(cos(rot_angle), -sin(rot_angle), sin(rot_angle), cos(rot_angle));
+  position.xz *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
 }
@@ -165,11 +165,13 @@ float positionEase(float t, in float T) {
 /*
   Octahedron
 */
-float sdOctahedron(vec3 position, float s) {
+float sdOctahedron(vec3 position, float size) {
 
   // position.z -= fbm(position, 1.0 - sin(uTime * 0.3) * 0.1) * 0.3;
   position.y *= 0.8;
 
+  // vec3 pos = abs(position);
+  // float sum = pos.x + pos.y + pos.z;
   position = abs(position);
 
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(position.y) * ceil(2.0 + floor(1.0)))), position.z);
@@ -220,7 +222,9 @@ float sdOctahedron(vec3 position, float s) {
   float beta = sin(floor(position.y * 8.0) - uTime * 1.0) + 1.0 / 2.5;
   float charlie = cos(floor(position.z * 5.0) * uTime * 3.0) + 0.5 / 2.0;
 
-  float m = position.x + position.y + position.z - s;
+  // position = abs(position);
+
+  float m = position.x + position.y + position.z - size;
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -233,18 +237,18 @@ float sdOctahedron(vec3 position, float s) {
   // m = cos(a * 0.8);
 
   vec3 q;
-  if (2.0 * position.x < m)
-    q = position.xyz - beta * 0.3;
-  else if (2.5 * position.y < m)
-    q = position.yzx - alpha * 0.01;
+  if (3.0 * position.x < m)
+    q = position - vec3(beta * 0.3, 0.0, 0.0);
+  else if (3.0 * position.y < m)
+    q = position.yzx - vec3(alpha * 0.01, 0.0, 0.0);
   else if (3.0 * position.z < m)
-    q = position.zxy - charlie * 0.5;
+    q = position.zxy - vec3(charlie * 0.5, 0.0, 0.0);
   else
     return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.1) * 0.3, -0.3, 0.5);
 
-  float k = clamp(0.5 * (q.z - q.y + s), 0.0, s);
+  float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
-  return length(vec3(q.x, q.y - s + k, q.z - k));
+  return length(vec3(q.x, q.y - size + k, q.z - k));
 }
 
 float sdOctahedron2(vec3 position, float s) {
@@ -255,7 +259,7 @@ float sdOctahedron2(vec3 position, float s) {
   // position.z = smoothstep(-0.5, 0.8, motion);
   // position.x = sin(abs(uTime * TAU * fract(position.z)) * ceil(2.0 + floor(1.0)));
 
-  // position = abs(position) - sin(uTime * 1.0 - median);
+  // position = abs(position);
   float gyroid = sdGyroid(position, 5.89, 0.03, 0.1);
   position = abs(position - gyroid);
 
@@ -349,7 +353,7 @@ float sdf(vec3 position) {
 
   float gyroid = sdGyroid(position1, 13.89, 0.3, 0.3);
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth - gyroid);
+  float octahedron1 = sdOctahedron(position1, octaGrowth - -gyroid);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;

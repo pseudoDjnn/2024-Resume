@@ -351,6 +351,7 @@ float sdf(vec3 position) {
 
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
+// Shapes used 
   float gyroid = sdGyroid(position1, 13.89, 0.3, 0.3);
 
   float octahedron1 = sdOctahedron(position1, octaGrowth - -gyroid);
@@ -358,54 +359,10 @@ float sdf(vec3 position) {
   // octahedron1 = max(octahedron1, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
-  // octahedron1 = mix(octahedron1, octahedron2, 1.0);
-
-  // gyroid *= fbm(position, 1.0);
-  // ball = min(ball, gyroid);
-  // ball = max(ball, gyroid);
-  // octahedron *= worley(vec2(position1), ball, gyroid);
-  // float gyroid1 = sdGyroid(position1 - sin(twist) * 0.5 + 0.5, 13.5, 0.00001, 0.3);
-  // torus = max(torus, gyroid);
-
 // TODO: Use this
   octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.03);
   octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
-
-  // octahedron = mix(octahedron - ball * 0.02, gyroid, 0.2);
-  // gyroid = max(gyroid, box);
-
-  // position1.xz *= rot2d(uTime + position1.y * 0.3);
-  // position1.yz *= rot2d(uTime + position1.x * 0.5);
-
-  // octahedron = clamp(octahedron, 0.0, 0.5);
-
-  // float gyroid2 = sdGyroid(copyPosition, 13.55, 0.03, 0.3);
-  // float gyroid3 = sdGyroid(position3, 21.34, 0.03, 0.3);
-  // float gyroid4 = sdGyroid(copyPosition, 34.21, 0.5, 8.3);
-  // gyroid = abs(gyroid) * 0.3;
-
-  // gyroid += gyroid1 * 0.08;
-  // gyroid += gyroid2 * 0.03;
-  // gyroid *= gyroid3 * 0.3;
-  // gyroid += gyroid4 * 0.01;
-  // gyroid += assembledGyroid * uAudioFrequency * 0.02;
-  // gyroid *= 0.003 - displacement + sin(assembledGyroid + smoothstep(-0.8, 0.03, fract(uAudioFrequency * 0.1))) * 0.8;
-
-// Shapes used 
-
-  // float finalIdea = max(shapeIdea, firstShape - assembledGyroid);
-  // finalIdea = abs(finalIdea) - 0.01;
-
-  // float morphedShaped = polynomialSMin(box, octahedron, polynomialSMin(sdSphere(position1, 0.5), 2.5 * sdGyroid(abs(sin(position1 + vec3(2.0))) * 34.5 * uTime, 5.2, 0.03, 0.08) / -34.5, -0.2));
-
-  // float morphedShaped2 = polynomialSMin(torus, sdOctahedron(position2, smoothstep(-1.0, 3.0, 0.8)), sdSphere(abs(position2), 0.5));
-
-  // float finalShape = mix(firstShape, morphedShaped, gyroid);
-  // finalShape = normalize(finalShape);
-  // finalIdea = mix(morphedShaped, morphedShaped2, sin(uTime) * 0.5 + 0.5);
-
-  // return sdSphere(position, 0.5);
 
   // int i;
   // for (i = 0; i < 10; i++) {
@@ -481,32 +438,6 @@ void main() {
   float dist = length(vUv - vec2(0.5));
   vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
   // vec3 sphereColor = 0.5 + 0.5 * cos(uAudioFrequency * 0.02 + uTime * 0.2 + vUv.xyx + vec3(0, 2, 4));
-
-  // vec2 uv0 = vUv * 4.0;
-  // vec2 uv1 = uv0;
-  // vec3 finalColor = vec3(0.0);
-  // float radius = 2.5;
-
-  // float minimumDistance = 1.0;
-
-  // for (float i = 0.0; i < 5.0; i++) {
-  //   uv0 = fract(uv0 * 1.5) - 0.5;
-
-  //   float distanceToCenter = length(uv0) * exp(-length(uv1));
-
-  //   vec3 colorLoop = getColor(length(uv1) + i * 0.5 * uAudioFrequency * 0.5);
-
-  //   // minimumDistance = min(minimumDistance, distanceToCenter);
-
-  //   distanceToCenter = sin(distanceToCenter * 8.0 + max(uAudioFrequency * 0.001, uTime)) / 8.0;
-  //   distanceToCenter = abs(distanceToCenter);
-
-  //   distanceToCenter = pow(0.01 / distanceToCenter, 0.5);
-
-  //   // distanceToCenter = smoothstep(0.2, 0.5, distanceToCenter);
-
-  //   finalColor += colorLoop * distanceToCenter;
-  // }
 
   // Use new UV
   vec2 newUv = (vUv - vec2(0.5)) + vec2(0.5);
@@ -625,8 +556,6 @@ void main() {
   color *= smoothstep(-1.0, 0.3, vUv.x);
   color *= smoothstep(-0.8, 0.3, vUv.y);
   color *= smoothstep(-1.0, 0.3, vUv.y);
-
-  // color = pow(color, vec3(1.0 / 2.2));
 
   gl_FragColor = vec4(color, 1.0);
     #include <tonemapping_fragment>

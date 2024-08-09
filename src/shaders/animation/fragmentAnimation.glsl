@@ -326,15 +326,6 @@ float sdf(vec3 position) {
   // copyPosition.xy = sin(fract(copyPositionRotation.xy * uAudioFrequency) - 0.5);
   // copyPosition.z = mod(position.z, 0.21) - 0.144;
 
-  // float strength = smoothstep(0.0, 1.0, vUv.x);
-  // float scale = mix(1.0, 3.0, smoothstep(-1.0, 1.0, position.y));
-
-  // position.xz *= scale;
-  // position.xz *= rot2d(smoothstep(0.0, 1.0, position.y));
-
-  // float displacement = length(sin(position1.x / scale * 13.0) * sin(position1.y / scale) * sin(position1.z * 21.0));
-  // float displacement = sin(position.x * 8.0 + uTime * 3.0) * 0.5;
-
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
   float scale = 55.0;
@@ -363,21 +354,6 @@ float sdf(vec3 position) {
   octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.03);
   octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
-
-  // int i;
-  // for (i = 0; i < 10; i++) {
-  //   float random = random2D(vec2(i, 0.0));
-  //   random = fract(random * 13.0);
-  //   // float randomV = voroNoise(position, 0.1, 1.0);
-  //   float progress = 1.0 - fract(uTime / 5.0 + random * 5.0);
-  //   vec3 positionLoop = vec3(sin(random * 2.0 * PI), cos(random * 2.0 * PI), atan(random * 2.0 * PI));
-
-  //   float goToCenter = sdSphere(copyPosition - positionLoop * progress, 0.02);
-  //   // float morphLoop = sdBoxFrame();
-  //   // goToCenter = opOnion(finalShape, morphedShaped);
-
-  //   test = polynomialSMin(test, goToCenter, 0.2);
-  // 
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
@@ -411,28 +387,6 @@ vec3 calcNormal(in vec3 position) {
 // }
 
 void main() {
-
-  // vec3 viewDirection = normalize(vPosition + cameraPosition);
-  //   // vec3 color = uColor;
-  // vec3 normal = normalize(vNormal);
-  // if (!gl_FrontFacing)
-  //   normal *= -1.0;
-
-  //   // Strips
-  // float stripes = mod((vPosition.y - uTime) * 21.0, 1.0);
-  // stripes = pow(stripes, 3.0);
-
-  // // Fresnel
-  // float fresnel = dot(viewDirection, normal) + 1.0;
-  // fresnel = pow(fresnel, 2.0);
-
-  // // Falloff
-  // float falloff = smoothstep(0.8, 0.0, fresnel);
-
-  // // Holographic
-  // float holographic = stripes * fresnel;
-  // holographic += fresnel * 1.21;
-  // holographic *= falloff;
 
   // Background
   float dist = length(vUv - vec2(0.5));

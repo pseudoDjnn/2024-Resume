@@ -168,7 +168,9 @@ float positionEase(float t, in float T) {
 float sdOctahedron(vec3 position, float size) {
 
   // position.z -= fbm(position, 1.0 - sin(uTime * 0.3) * 0.1) * 0.3;
-  position.y *= 0.8;
+  // position + 0.2 * sin(position.y * 5.0 + uTime) * vec3(1.0, 0.0, 1.0);
+  // position += distortion * 0.2;
+  // position.y *= 0.8;
 
   // vec3 pos = abs(position);
   // float sum = pos.x + pos.y + pos.z;
@@ -249,6 +251,7 @@ float sdOctahedron(vec3 position, float size) {
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
   return length(vec3(q.x, q.y - size + k, q.z - k));
+  // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
 }
 
 float sdOctahedron2(vec3 position, float s) {
@@ -329,6 +332,7 @@ float sdf(vec3 position) {
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
   float scale = 55.0;
+  float distorted = fbm(position * 2.0, 1.0);
 
   float displacement = length(sin(position1 * scale) - sin(uTime * 0.8));
 
@@ -336,7 +340,7 @@ float sdf(vec3 position) {
   float major = abs(fract(length(position1) / (displacement * 0.21) + 0.5) - 0.5) * 2.0;
 
   minor = positionEase(0.5 * 0.5, major);
-  major = positionEase(0.5 * 0.5, minor);
+  major = positionEase(0.5 * 0.5, minor) - distorted;
 
   float median = length(minor * major);
 
@@ -351,7 +355,7 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.03);
+  octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.08);
   octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
 
@@ -409,12 +413,6 @@ void main() {
   float t = 0.0;
   float tMed = 2.0;
   float tMax = 5.8;
-
-  // vec2 m = (uMouse.xy * 2. - uResolution.xy) / uResolution.y;
-
-  // if (uMouse.z < 0.0) {
-  //   m = vec2(cos(uTime * 0.2), sin(uTime * 0.2));
-  // }
 
   int i;
   for (i = 0; i < 100; i++) {

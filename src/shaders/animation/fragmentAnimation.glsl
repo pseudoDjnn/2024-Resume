@@ -361,8 +361,6 @@ float sdf(vec3 position) {
   octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
 
-  float intensity = uFrequencyData[int(mod(uAudioFrequency - sin(gl_FragCoord.z + gl_FragCoord.y), 256.0))];
-
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 3.0;
@@ -383,7 +381,7 @@ float sdf(vec3 position) {
 // }
 
 vec3 calcNormal(in vec3 position) {
-  const float epsilon = 0.00001;
+  const float epsilon = 0.001;
   const vec2 h = vec2(epsilon, 0);
   return normalize(vec3(sdf(position + h.xyy) - sdf(position - h.xyy), sdf(position + h.yxy) - sdf(position - h.yxy), sdf(position + h.yyx) - sdf(position - h.yyx)));
 }
@@ -392,6 +390,11 @@ vec3 calcNormal(in vec3 position) {
 //   const float epsilon = 0.00001;
 //   const vec2 h = vec2(epsilon, 0);
 //   return normalize(vec3(ground(position + h.xyy) - ground(position - h.xyy), ground(position + h.yxy) - ground(position - h.yxy), ground(position + h.yyx) - ground(position - h.yyx)));
+// }
+
+// vec3 getNormal(vec3 position) {
+//   const float epsilon = 0.001; // Small offset for normal calculation
+//   return normalize(vec3(map(position + vec3(epsilon, 0.0, 0.0)) - map(position - vec3(epsilon, 0.0, 0.0)), map(position + vec3(0.0, epsilon, 0.0)) - map(position - vec3(0.0, epsilon, 0.0)), map(position + vec3(0.0, 0.0, epsilon)) - map(position - vec3(0.0, 0.0, epsilon))));
 // }
 
 void main() {
@@ -415,45 +418,45 @@ void main() {
   // Start the march
   vec3 raypos = camPos;
   // Distance travelled
-  float t = 0.0;
-  float tMed = 2.0;
-  float tMax = 5.8;
+  float startDist = 0.0;
+  float MiddleDist = 2.0;
+  float endDist = 5.8;
 
   int i;
   for (i = 0; i < 100; i++) {
     // The position along the ray
-    vec3 position = raypos + t * ray;
+    vec3 position = raypos + startDist * ray;
 
-    // float voroPosition = voroNoise(position, t,tMax);
+    // float voroPosition = voroNoise(position, startDist,endDist);
     // pos.xy *= rotate(pos.xy, vec3(1.0), uTime);
 
     // Image movement with mouse (not actual rotation of plane)
-    position.xy *= rot2d(t * 0.2 * uMouse.x);
+    position.xy *= rot2d(startDist * 0.2 * uMouse.x);
     position.y = max(-0.9, position.y);
-    position.y += sin(t * (uMouse.y - 0.5) * 0.02) * 0.21;
+    position.y += sin(startDist * (uMouse.y - 0.5) * 0.02) * 0.21;
 
     // The Current distance to the scene
-    float h = sdf(position);
+    float distanceToSurface = sdf(position);
     // float g = ground(position);
-    // float finalSDF = min(h, g);
+    // float finalSDF = min(distanceToSurface, g);
 
     // The "march" of the ray
-    t += h;
-    // t += g;
-    // h = -(length(vec2(length(position.xz) - 1.0, position.y)) - 0.89);
-    if (abs(h) < 0.0001 || t > tMax)
+    startDist += distanceToSurface;
+    // startDist += g;
+    // distanceToSurface = -(length(vec2(length(position.xz) - 1.0, position.y)) - 0.89);
+    if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
       break;
 
-    // if (abs(g) < 0.0001 || t > tMax)
+    // if (abs(g) < 0.0001 || startDist > endDist)
     //   break;
 
-    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(tMax) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(t))) * floor(2.0 + 1.0)) - uAudioFrequency * 0.002) + 1.0 / 2.0;
+    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) - uAudioFrequency * 0.002) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
   }
 
-  if (t < tMax) {
-    vec3 position = camPos + t * ray;
-    // position.x += sin(t * (uMouse.x - 0.5) * 0.5) * 0.89;
+  if (startDist < endDist) {
+    vec3 position = camPos + startDist * ray;
+    // position.x += sin(startDist * (uMouse.x - 0.5) * 0.5) * 0.89;
     // color = vec3(1.0);
     vec3 normal = calcNormal(position);
     // vec3 normalGround = calcNormalGround(position);
@@ -478,10 +481,10 @@ void main() {
 
     // color = vec3(intensity, 0.0, 1.0 - intensity);
 
-    // color = 2.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
+    // color = 2.0 - palette(abs(sin(cos(uTime * 0.01 + startDist) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
 
     // color = pow(color, vec3(.4545));
-    if (t < tMed) {
+    if (startDist < MiddleDist) {
 
       if (centerDist > .001) {
       // color *= vec3(0, 1, 0);
@@ -508,7 +511,7 @@ void main() {
 
     color *= 2.0 - centralLight * 0.8;
     color *= 1.5 - -(sin(abs(ceil(uTime * 0.2 + PI * fract(uAudioFrequency * 0.3)) * ceil(2.0 + floor(1.0)))));
-    color *= (1.0 - vec3(t / tMax));
+    color *= (1.0 - vec3(startDist / endDist));
   }
 
   color *= smoothstep(-0.8, 0.3, vUv.x);

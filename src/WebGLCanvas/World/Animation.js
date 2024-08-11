@@ -25,6 +25,7 @@ export default class Animation {
 
     this.uniforms = {
       uAudioFrequency: new THREE.Uniform(0),
+      uFrequencyData: new THREE.Uniform(0),
       uMouse: new THREE.Uniform(new THREE.Vector3(0, 0, 0)),
       uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uTimeAnimation: new THREE.Uniform(0),
@@ -69,6 +70,7 @@ export default class Animation {
     this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
     this.material.uniforms.uTime.value = this.time.elapsed * 0.001
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
+    this.material.uniforms.uFrequencyData.value = this.audio.analyser.getFrequencyData()
 
     if (this.mouse) {
       this.material.uniforms.uMouse.value = this.mouse

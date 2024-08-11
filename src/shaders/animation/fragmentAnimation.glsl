@@ -6,6 +6,7 @@ uniform vec2 uMouse;
 uniform vec2 uResolution;
 
 uniform float uAudioFrequency;
+uniform float uFrequencyData[256];
 
 uniform float uTime;
 
@@ -246,7 +247,7 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy - vec3(charlie * 0.5, 0.0, 0.0);
   else
-    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.1) * 0.3, -0.3, 0.5);
+    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5);
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
@@ -332,6 +333,7 @@ float sdf(vec3 position) {
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
   float scale = 55.0;
+
   float distorted = fbm(position * 2.0, 1.0);
 
   float displacement = length(sin(position1 * scale) - sin(uTime * 0.8));
@@ -358,6 +360,8 @@ float sdf(vec3 position) {
   octahedron1 = min(octahedron1, octahedron2 - digitalWave * 0.08);
   octahedron1 = max(octahedron1, -octahedron2 - median);
   // octahedron1 = max(octahedron1, -gyroid);
+
+  float intensity = uFrequencyData[int(mod(uAudioFrequency - sin(gl_FragCoord.z + gl_FragCoord.y), 256.0))];
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
@@ -404,6 +408,7 @@ void main() {
   vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.01)));
   // Cast ray form camera to sphere
   vec3 ray = normalize(vec3((newUv - vec2(0.5)), -1));
+
   // Color creation
   vec3 color = background;
 
@@ -469,7 +474,9 @@ void main() {
     color = vec3(fresnel);
     // color = vec3(fresnelGround);
 
-    color = vec3(float(i) / 235.0);
+    color = vec3(float(i) / 256.0);
+
+    // color = vec3(intensity, 0.0, 1.0 - intensity);
 
     // color = 2.0 - palette(abs(sin(cos(uTime * 0.01 + t) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
 

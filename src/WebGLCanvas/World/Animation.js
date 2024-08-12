@@ -18,7 +18,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.PlaneGeometry(8, 8, 13, 13)
+    this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
     // this.geometry.deleteAttribute('normal')
@@ -44,7 +44,7 @@ export default class Animation {
     })
 
     this.mesh = new THREE.Mesh(this.geometry, this.material)
-    this.mesh.rotation.x = -0.01
+    // this.mesh.rotation.x = -0.0001
     // this.mesh.scale.set(5, 5, 5)
     // this.mesh.position.set(-3, 0, 0)
     // this.mesh.rotation.set(0, 0, 0)

@@ -163,6 +163,13 @@ float positionEase(float t, in float T) {
   return f * f * f * (T - t * 0.5);
 }
 
+float sdMobius(vec3 p, float r, float w) {
+  float theta = atan(p.y, p.x) * 0.5;
+  float phi = atan(p.z, length(p.xy) - r);
+  vec3 q = vec3(cos(phi) * cos(theta), cos(phi) * sin(theta), sin(phi));
+  return length(p - r * q) - w;
+}
+
 /*
   Octahedron
 */
@@ -265,7 +272,8 @@ float sdOctahedron2(vec3 position, float size) {
   // position.x = sin(abs(uTime * TAU * fract(position.z)) * ceil(2.0 + floor(1.0)));
 
   // position = abs(position);
-  float gyroid = sdGyroid(position, 5.89, 0.03, 0.1);
+  float gyroid = sdGyroid(position, 5.89, 0.03, 0.3);
+
   position = abs(position);
 
   float scale = 55.0;
@@ -296,7 +304,7 @@ float sdOctahedron2(vec3 position, float size) {
     return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y - median + k, q.z - k));
+  return length(vec3(q.x, q.y - (median * 2.0) + k, q.z - k));
 }
 
 // vec3 opTwist(vec3 p, float amount) {
@@ -310,24 +318,24 @@ float sdOctahedron2(vec3 position, float size) {
 
 float sdf(vec3 position) {
 
-  float distorted = fbm(position * 2.0, 1.0);
+  float distorted = fbm(position * 2.0, 1.0) / 5.0;
 
   // float intensity = uFrequencyData[int(distorted * 255.0)]
 
-  float intensity = uFrequencyData[int(mod(uTime - fract(cos(uTime + gl_FragCoord.x) * sin(uTime + gl_FragCoord.y)), 256.0))];
+  float intensity = uFrequencyData[int(mod(distorted - fract(cos(uTime + gl_FragCoord.x) * sin(uTime + gl_FragCoord.y)), 256.0))];
 
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
   position1.xz *= rot2d(uTime * 0.3 - position.x * 0.8 + positionEase((sin(0.5) * fract(-0.3)), 0.5 - sin(uAudioFrequency * 0.03)));
 
-  position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
+  // position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
 
-  // vec3 position2 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
+  vec3 position2 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
 
-  // position2.xz *= rot2d(uTime * 0.5 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, intensity));
+  position2.xz *= rot2d(uTime * 0.1 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, uAudioFrequency * 0.1));
 
-  // position2.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.8));
+  position2.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) - intensity * 0.003);
 
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
@@ -355,31 +363,33 @@ float sdf(vec3 position) {
 
   // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -intensity * 0.3) + PI * (sin(intensity * 0.3 + position.z) + (sin(intensity * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
-// Shapes used 
-  float gyroid = sdGyroid(0.5 - position1 * intensity * 0.03, 13.89 * 0.3, 0.3 - digitalWave * 0.01, 0.3);
+// Shapes used
+  float mobius = sdMobius(position2, 1.0, 0.8);
+  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.1, 0.3);
 
-  float octahedron1 = sdOctahedron(position1, octaGrowth - -gyroid);
+  float octahedron = sdOctahedron(position1, octaGrowth - -gyroid);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
-  // octahedron1 = max(octahedron1, -position.x - uTime);
+
+  // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron1 = min(octahedron1, octahedron2);
-  octahedron1 = max(octahedron1, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
-  // octahedron2 = min(octahedron2, octahedron1);
-  // octahedron1 = max(octahedron1, -gyroid);
+  // octahedron2 = min(octahedron2, octahedron);
+  // octahedron = max(octahedron, -gyroid);
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 3.0;
   position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  ground += groundWave;
+  ground += groundWave / mobius;
 
-  return polynomialSMin(ground, octahedron1, 0.1);
+  return polynomialSMin(ground, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

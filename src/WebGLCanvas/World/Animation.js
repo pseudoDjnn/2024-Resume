@@ -21,12 +21,12 @@ export default class Animation {
     this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
-    // this.geometry.deleteAttribute('normal')
+    this.geometry.deleteAttribute('normal')
 
     this.uniforms = {
       uAudioFrequency: new THREE.Uniform(0),
       uFrequencyData: new THREE.Uniform(0),
-      uMouse: new THREE.Uniform(new THREE.Vector3(0, 0, 0)),
+      uMouse: new THREE.Uniform(new THREE.Vector2(0, 0)),
       uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uTimeAnimation: new THREE.Uniform(0),
       uTime: new THREE.Uniform(0),
@@ -68,7 +68,7 @@ export default class Animation {
     // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
 
     this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
-    this.material.uniforms.uTime.value = this.time.elapsed * 0.001
+    this.material.uniforms.uTime.value = this.time.elapsed * 0.0008
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
     this.material.uniforms.uFrequencyData.value = this.audio.analyser.getFrequencyData()
 

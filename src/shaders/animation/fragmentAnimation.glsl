@@ -164,10 +164,21 @@ float positionEase(float t, in float T) {
 }
 
 float sdMobius(vec3 p, float r, float w) {
-  float theta = atan(p.y, p.x) * 0.5;
-  float phi = atan(p.z, length(p.xy) - r);
-  vec3 q = vec3(cos(phi) * cos(theta), cos(phi) * sin(theta), sin(phi));
+  float theta = atan(p.x, p.z) * 0.5;
+  float phi = atan(p.z, length(p.xz) - r);
+  vec3 q = vec3(cos(phi) * cos(uTime - PI * theta), cos(phi) * sin(theta), sin(phi));
   return length(p - r * q) - w;
+}
+
+float sdSuperquadric(vec3 p, float n, float a) {
+  return pow(pow(abs(p.x), n) + pow(abs(p.y), n), 1.0 / n) + pow(abs(p.z), a) - 1.0;
+}
+
+float sdEnneper(vec3 p, float scale) {
+  vec3 q = p / scale;
+  float a = q.x * q.x - 3.0 * q.y * q.y - 6.0 * q.z * q.z;
+  float b = 3.0 * q.x * q.x * q.z + 3.0 * q.y * q.y * q.z - 2.0 * q.z * q.z * q.z;
+  return length(q) - 0.5 * length(vec2(a, b));
 }
 
 /*
@@ -304,7 +315,7 @@ float sdOctahedron2(vec3 position, float size) {
     return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y - (median * 2.0) + k, q.z - k));
+  return length(vec3(q.x, q.y + k, q.z - k));
 }
 
 // vec3 opTwist(vec3 p, float amount) {
@@ -322,7 +333,7 @@ float sdf(vec3 position) {
 
   // float intensity = uFrequencyData[int(distorted * 255.0)]
 
-  float intensity = uFrequencyData[int(mod(distorted - fract(cos(uTime + gl_FragCoord.x) * sin(uTime + gl_FragCoord.y)), 256.0))];
+  float intensity = uFrequencyData[int(mod(distorted * fract(cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
 
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
@@ -367,6 +378,11 @@ float sdf(vec3 position) {
 
 // Shapes used
   float mobius = sdMobius(position2, 1.0, 0.8);
+
+  float superQuadric = sdSuperquadric(position1, 1.0, 0.3 - sin(uTime));
+
+  float enneper = sdEnneper(position1, 1.0);
+
   float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.1, 0.3);
 
   float octahedron = sdOctahedron(position1, octaGrowth - -gyroid);

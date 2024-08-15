@@ -54,6 +54,13 @@ mat2 rot2d(float angle) {
   return mat2(c, -s, s, c);
 }
 
+vec3 rotateAroundAxis(vec3 position, vec3 axis, float angle) {
+  float c = cos(angle);
+  float s = sin(uTime - angle);
+  float dot = dot(axis, position);
+  return position - c + cross(axis, position) - s + axis * dot - (1.0 - c);
+}
+
 // float hash21(vec2 position) {
 //   position = fract(position * vec2(144.34, 277.55));
 //   position += dot(position, position + 21.5);
@@ -199,6 +206,8 @@ float sdOctahedron(vec3 position, float size) {
   // float sum = pos.x + pos.y + pos.z;
   position = abs(position);
 
+  // position.yz *= mat2(fract(uTime), -sin(uTime), sin(uTime), fract(uTime));
+
   // float x = atan(sin(abs(uTime * 0.3 + PI * fract(position.y) * ceil(2.0 + floor(1.0)))), position.z);
   // float xRising = cos(uTime + TAU * x) * sin(uAudioFrequency) * 0.8 + 0.1;
 
@@ -245,13 +254,13 @@ float sdOctahedron(vec3 position, float size) {
 
   float alpha = sin(floor(position.x * 13.0) + uTime * 2.0) + 1.0 / 2.0;
   float beta = sin(floor(position.y * 8.0) - uTime * 1.0) + 1.0 / 2.5;
-  float charlie = cos(floor(position.z * 5.0) * uTime * 3.0) + 0.5 / 2.0;
+  float charlie = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
 
   // position = abs(position);
 
-  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.8 - position.x * 2.5) * sin(uTime - PI * position.y * 3.0) * cos(intensity * 0.003 - position.z * 3.0);
 
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.8 - position.x * 2.5) * sin(uTime - position.y * 3.0) * cos(intensity * 0.03 - position.z * 5.0);
+  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size * alpha);
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -265,13 +274,13 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - vec3(beta * 0.3, 0.0, 0.0);
+    q = position;
   else if (3.0 * position.y < m)
-    q = position.yzx - vec3(alpha * 0.01, 0.0, 0.0);
+    q = position.yzx;
   else if (3.0 * position.z < m)
-    q = position.zxy - vec3(charlie * 0.5, 0.0, 0.0);
+    q = position.zxy;
   else
-    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5) - harmonics;
+    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5) / harmonics;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
@@ -308,7 +317,7 @@ float sdOctahedron2(vec3 position, float size) {
   // float m = position.x + position.y + position.z - size;
   float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
 
-  float twist = 0.3 * cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
+  float twist = cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -320,10 +329,10 @@ float sdOctahedron2(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * PI * 0.57735027 + twist;
+    return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k));
+  return length(vec3(q.x, q.y + k, q.z - k)) / twist;
 }
 
 // vec3 opTwist(vec3 p, float amount) {
@@ -356,6 +365,8 @@ float sdf(vec3 position) {
 
   position2.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) - intensity * 0.003);
 
+  position2 *= rotateAroundAxis(position1, position1, 1.0);
+
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
@@ -385,15 +396,15 @@ float sdf(vec3 position) {
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
-  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.1, 0.3);
+  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.08, 0.3);
 
-  float mobius = sdMobius(position2 - -gyroid, 1.0, 0.8);
+  float mobius = sdMobius(position1, 1.0, 1.0);
 
   float superQuadric = sdSuperquadric(position1, 1.0, 0.3 - sin(uTime));
 
   float enneper = sdEnneper(position2, -13.0);
 
-  float octahedron = sdOctahedron(position1, octaGrowth);
+  float octahedron = sdOctahedron(position2, octaGrowth);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
@@ -401,7 +412,7 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2);
+  octahedron = max(octahedron, -octahedron2 - enneper);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
@@ -413,7 +424,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave / mobius * 0.08;
 
-  return polynomialSMin(ground, octahedron, 0.1);
+  return polynomialSMin(ground, octahedron, 0.8);
 }
 
 // float ground(vec3 position) {
@@ -427,8 +438,8 @@ float sdf(vec3 position) {
 
 vec3 calcNormal(in vec3 position) {
   const float epsilon = 0.001;
-  const vec2 h = vec2(epsilon, 0);
-  return normalize(vec3(sdf(position + h.xyy) - sdf(position - h.xyy), sdf(position + h.yxy) - sdf(position - h.yxy), sdf(position + h.yyx) - sdf(position - h.yyx)));
+  const vec2 normalPosition = vec2(epsilon, 0);
+  return normalize(vec3(sdf(position + normalPosition.xyy) - sdf(position - normalPosition.xyy), sdf(position + normalPosition.yxy) - sdf(position - normalPosition.yxy), sdf(position + normalPosition.yyx) - sdf(position - normalPosition.yyx)));
 }
 
 // vec3 calcNormalGround(in vec3 position) {
@@ -524,8 +535,6 @@ void main() {
     // color = vec3(fresnelGround);
 
     color = vec3(float(i) / 256.0);
-
-    // color = vec3(intensity, 0.0, 1.0 - intensity);
 
     // color = 2.0 - palette(abs(sin(cos(uTime * 0.01 + startDist) * 0.5 + uAudioFrequency * 0.2) * vUv.x + uTime * 0.01));
 

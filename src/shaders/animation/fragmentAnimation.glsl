@@ -186,6 +186,10 @@ float sdEnneper(vec3 p, float scale) {
 */
 float sdOctahedron(vec3 position, float size) {
 
+  float distorted = fbm(position * 2.0, 1.0);
+
+  float intensity = uFrequencyData[int(mod(distorted + mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
+
   // position.z -= fbm(position, 1.0 - sin(uTime * 0.3) * 0.1) * 0.3;
   // position + 0.2 * sin(position.y * 5.0 + uTime) * vec3(1.0, 0.0, 1.0);
   // position += distortion * 0.2;
@@ -245,7 +249,9 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position);
 
-  float m = position.x + position.y + position.z - size;
+  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
+
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.8 - position.x * 2.5) * sin(uTime - position.y * 3.0) * cos(intensity * 0.03 - position.z * 5.0);
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -265,7 +271,7 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy - vec3(charlie * 0.5, 0.0, 0.0);
   else
-    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5);
+    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5) - harmonics;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
@@ -283,7 +289,6 @@ float sdOctahedron2(vec3 position, float size) {
   // position.x = sin(abs(uTime * TAU * fract(position.z)) * ceil(2.0 + floor(1.0)));
 
   // position = abs(position);
-  float gyroid = sdGyroid(position, 5.89, 0.03, 0.3);
 
   position = abs(position);
 
@@ -300,7 +305,10 @@ float sdOctahedron2(vec3 position, float size) {
   float median = length(minor * major);
 
   // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
-  float m = position.x + position.y + position.z - size;
+  // float m = position.x + position.y + position.z - size;
+  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
+
+  float twist = 0.3 * cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -312,7 +320,7 @@ float sdOctahedron2(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * PI * 0.57735027;
+    return m * PI * 0.57735027 + twist;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   return length(vec3(q.x, q.y + k, q.z - k));
@@ -333,7 +341,7 @@ float sdf(vec3 position) {
 
   // float intensity = uFrequencyData[int(distorted * 255.0)]
 
-  float intensity = uFrequencyData[int(mod(distorted * fract(cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
+  float intensity = uFrequencyData[int(mod(fract(cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
 
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
@@ -377,15 +385,15 @@ float sdf(vec3 position) {
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
-  float mobius = sdMobius(position2, 1.0, 0.8);
+  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.1, 0.3);
+
+  float mobius = sdMobius(position2 - -gyroid, 1.0, 0.8);
 
   float superQuadric = sdSuperquadric(position1, 1.0, 0.3 - sin(uTime));
 
-  float enneper = sdEnneper(position1, 1.0);
+  float enneper = sdEnneper(position2, -13.0);
 
-  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.1, 0.3);
-
-  float octahedron = sdOctahedron(position1, octaGrowth - -gyroid);
+  float octahedron = sdOctahedron(position1, octaGrowth);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
@@ -403,7 +411,7 @@ float sdf(vec3 position) {
   position *= 3.0;
   position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  ground += groundWave / mobius;
+  ground += groundWave / mobius * 0.08;
 
   return polynomialSMin(ground, octahedron, 0.1);
 }
@@ -445,7 +453,8 @@ void main() {
   vec2 newUv = (vUv - vec2(0.5)) + vec2(0.5);
   // vec2 newUv = (gl_FragCoord - 0.5 * uResolution.xy) / uResolution.y;
   // Create position of camera
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.01)));
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  // vec3 camPos = vec3(0.0, 0.0, uFrequencyData[int(mod(uTime, 256.0))] / 8.0);
   // Cast ray form camera to sphere
   vec3 ray = normalize(vec3((newUv - vec2(0.5)), -1));
 

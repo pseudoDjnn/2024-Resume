@@ -1,3 +1,5 @@
+precision mediump float;
+
 uniform float uAudioFrequency;
 uniform float uTimeAnimation;
 uniform float uTime;

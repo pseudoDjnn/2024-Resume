@@ -2,6 +2,8 @@
 #define TAU  6.28318530718
 #define NUM_OCTAVES 5
 
+precision mediump float;
+
 uniform vec2 uMouse;
 uniform vec2 uResolution;
 
@@ -195,7 +197,7 @@ float sdOctahedron(vec3 position, float size) {
 
   float distorted = fbm(position * 2.0, 1.0);
 
-  float intensity = uFrequencyData[int(mod(distorted + mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
+  float intensity = uFrequencyData[int(mod(distorted * mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
 
   // position.z -= fbm(position, 1.0 - sin(uTime * 0.3) * 0.1) * 0.3;
   // position + 0.2 * sin(position.y * 5.0 + uTime) * vec3(1.0, 0.0, 1.0);
@@ -258,9 +260,9 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position);
 
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.8 - position.x * 2.5) * sin(uTime - PI * position.y * 3.0) * cos(intensity * 0.003 - position.z * 3.0);
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.5) * sin(uTime * 0.3 - PI * position.y * 2.0) * cos(position.z * 3.0);
 
-  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size * alpha);
+  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size - harmonics);
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -280,7 +282,7 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5) / harmonics;
+    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5);
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   // m *= max(m, rip * uTime * x * y);
@@ -311,13 +313,12 @@ float sdOctahedron2(vec3 position, float size) {
   minor = positionEase(0.5 * 0.5, major);
   major = positionEase(0.5 * 0.5, minor);
 
-  float median = length(minor * major);
-
-  // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
-  // float m = position.x + position.y + position.z - size;
-  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
+  float median = sin(uTime - length(minor * major));
 
   float twist = cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
+  // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
+  // float m = position.x + position.y + position.z - size;
+  float m = (abs(position.x - twist) + abs(position.y) + abs(position.z) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -331,8 +332,8 @@ float sdOctahedron2(vec3 position, float size) {
   else
     return m * PI * 0.57735027;
 
-  float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k)) / twist;
+  float k = clamp(0.5 * (q.z - q.y + size), median, size);
+  return length(vec3(q.x, q.y + k, q.z - k));
 }
 
 // vec3 opTwist(vec3 p, float amount) {
@@ -363,7 +364,7 @@ float sdf(vec3 position) {
 
   position2.xz *= rot2d(uTime * 0.1 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, uAudioFrequency * 0.1));
 
-  position2.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) - intensity * 0.003);
+  position2.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) * intensity * 0.8);
 
   position2 *= rotateAroundAxis(position1, position1, 1.0);
 
@@ -404,15 +405,15 @@ float sdf(vec3 position) {
 
   float enneper = sdEnneper(position2, -13.0);
 
-  float octahedron = sdOctahedron(position2, octaGrowth);
+  float octahedron = sdOctahedron(position1, octaGrowth);
   float octahedron2 = sdOctahedron2(position1, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2 - enneper);
+  // octahedron = min(octahedron, octahedron2);
+  // octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
@@ -424,7 +425,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave / mobius * 0.08;
 
-  return polynomialSMin(ground, octahedron, 0.8);
+  return polynomialSMin(0.1, octahedron2, 0.8);
 }
 
 // float ground(vec3 position) {

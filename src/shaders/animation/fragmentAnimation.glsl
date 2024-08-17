@@ -63,12 +63,6 @@ vec3 rotateAroundAxis(vec3 position, vec3 axis, float angle) {
   return position - c + cross(axis, position) - s + axis * dot - (1.0 - c);
 }
 
-// float hash21(vec2 position) {
-//   position = fract(position * vec2(144.34, 277.55));
-//   position += dot(position, position + 21.5);
-//   return fract(position.x * position.y);
-// }
-
 float hash21(vec2 position) {
   position = fract(position * vec2(144.34, 277.55));
   float d = dot(position, position + 21.5);
@@ -195,9 +189,16 @@ float sdEnneper(vec3 p, float scale) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  float distorted = fbm(position * 2.0, 1.0);
+  float distorted = fbm(position * 2.0, 1.0) / 2.0;
 
-  float intensity = uFrequencyData[int(mod(distorted * mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
+  // float intensity = uFrequencyData[int(mod(distorted * mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
+
+  // float intensity = uFrequencyData[int(mod(gl_FragCoord.z * distorted + sin(uAudioFrequency), 256.0))];
+
+  // float intensity = uFrequencyData[int(mod(length(position) * 100.0 + uTime * 50.0, 256.0))];
+
+  float harmonicFactor = cos(position.x) * sin(uTime - position.y) * cos(uTime - distorted * position.z * 5.0);
+  float intensity = uFrequencyData[int(mod(harmonicFactor * 144.0 + uTime * 55.0, 256.0))];
 
   // position.z -= fbm(position, 1.0 - sin(uTime * 0.3) * 0.1) * 0.3;
   // position + 0.2 * sin(position.y * 5.0 + uTime) * vec3(1.0, 0.0, 1.0);
@@ -260,7 +261,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position);
 
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.5) * sin(uTime * 0.3 - PI * position.y * 2.0) * cos(position.z * 3.0);
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(intensity * 0.8 * position.z * 2.0);
 
   float m = (abs(position.x) + abs(position.y) + abs(position.z) - size - harmonics);
 
@@ -316,19 +317,21 @@ float sdOctahedron2(vec3 position, float size) {
   float median = sin(uTime - length(minor * major));
 
   float twist = cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
+  float twistDistance = length(twist);
+  float intensity = uFrequencyData[int(mod(twistDistance * 100.0, 256.0))];
   // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
   // float m = position.x + position.y + position.z - size;
-  float m = (abs(position.x - twist) + abs(position.y) + abs(position.z) - size);
+  float m = (abs(position.x - twist) + abs(position.y - twist) + abs(intensity - position.z) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
   vec3 q;
   if (2.0 * position.x < m)
-    q = position;
+    q = position / median;
   else if (2.0 * position.y < m)
-    q = position.yzx;
+    q = position.yzx / median;
   else if (3.0 * position.z < m)
-    q = position.zxy;
+    q = position.zxy / median;
   else
     return m * PI * 0.57735027;
 

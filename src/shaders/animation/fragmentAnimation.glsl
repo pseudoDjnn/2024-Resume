@@ -351,7 +351,7 @@ float sdf(vec3 position) {
 
   // float intensity = uFrequencyData[int(distorted * 255.0)]
 
-  float intensity = uFrequencyData[int(mod(fract(cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
+  float intensity = uFrequencyData[int(mod(fract(distorted * cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
 
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
@@ -412,8 +412,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
@@ -425,7 +425,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave / mobius * 0.08;
 
-  return polynomialSMin(0.1, octahedron2, 0.8);
+  return polynomialSMin(ground, octahedron, 0.8);
 }
 
 // float ground(vec3 position) {

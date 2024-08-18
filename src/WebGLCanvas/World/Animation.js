@@ -21,12 +21,12 @@ export default class Animation {
     this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
-    this.geometry.deleteAttribute('normal')
+    // this.geometry.deleteAttribute('normal')
 
     this.uniforms = {
       uAudioFrequency: new THREE.Uniform(0),
       uFrequencyData: new THREE.Uniform(0),
-      uMouse: new THREE.Uniform(new THREE.Vector2(0, 0)),
+      // uMouse: new THREE.Uniform(new THREE.Vector2(0, 0)),
       uResolution: new THREE.Uniform(new THREE.Vector4(this.width * this.pixelRatio, this.height * this.pixelRatio)),
       uTimeAnimation: new THREE.Uniform(0),
       uTime: new THREE.Uniform(0),
@@ -76,5 +76,8 @@ export default class Animation {
     //   this.material.uniforms.uMouse.value = this.mouse
     //   // console.log(this.mouse)
     // }
+
+    // Reset any potential rotation (commented out to ensure no rotation)
+    this.mesh.rotation.set(0, 0, 0);
   }
 }

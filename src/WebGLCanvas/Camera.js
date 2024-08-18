@@ -11,7 +11,7 @@ export default class Camera {
     this.canvas = this.webglCanvas.canvas
 
     this.setInstance()
-    this.setOrbitControl()
+    // this.setOrbitControl()
     this.setMouseMovement()
     // console.log('my camera', this)
   }
@@ -25,10 +25,11 @@ export default class Camera {
     this.scene.add(this.instance)
   }
 
-  setOrbitControl() {
-    this.controls = new OrbitControls(this.instance, this.canvas)
-    this.controls.enableDamping = true
-  }
+  // setOrbitControl() {
+  //   this.controls = new OrbitControls(this.instance, this.canvas)
+  //   this.controls.enableDamping = true
+  //   this.controls.dampingFactor = 0.2
+  // }
 
   setMouseMovement() {
     this.mouseX = 0
@@ -53,10 +54,10 @@ export default class Camera {
   }
 
   update() {
-    this.controls.update()
+    // this.controls.update()
 
-    this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.000001
-    this.instance.position.y += (-this.mouseY - this.instance.position.y) * 0.000001
+    // this.instance.position.x += (this.mouseX - this.instance.position.x) * 0.000001
+    // this.instance.position.y += (-this.mouseY - this.instance.position.y) * 0.000001
 
     this.instance.lookAt(this.scene.position)
   }

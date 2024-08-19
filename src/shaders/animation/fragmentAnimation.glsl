@@ -14,7 +14,7 @@ uniform float uTime;
 
 varying vec2 vUv;
 
-#include ../includes/effects/random2D.glsl
+// #include ../includes/effects/random2D.glsl
 
 // float lerp(float t) {
 //   float v1 = t * t;
@@ -33,7 +33,7 @@ vec3 palette(float tone) {
   vec3 c = -sin(vec3(1.0, 0.7, 0.4));
   vec3 d = cos(vec3(0.00, 0.15, 0.20));
 
-  return a + b * cos(uTime + 6.28318 * (c + tone + d));
+  return a + b * cos(uTime + 5.28318 * (c + tone + d));
 }
 
 mat4 rotationMatrix(vec3 position, float angle) {
@@ -73,15 +73,6 @@ float hash21(vec2 position) {
 float rand(vec3 position) {
   return fract(sin(dot(position, vec3(12.9898, 4.1414, 1.0))) * 43758.5453);
 }
-
-// float noise(vec3 position) {
-//   vec3 ip = floor(position);
-//   vec3 u = fract(position);
-//   u = u * u * (3.0 - 2.0 * u);
-
-//   float res = mix(mix(rand(ip), rand(ip + vec3(1.0, 0.0, 0.0)), u.x), mix(rand(ip + vec3(0.0, 1.0, 0.0)), rand(ip + vec3(1.0, 1.0, 1.0)), u.x), u.y);
-//   return res * res;
-// }
 
 float noise(vec3 position) {
   vec3 ip = floor(position);
@@ -137,21 +128,21 @@ float fbm(in vec3 position, in float H) {
   return t;
 }
 
-float glitter(vec2 position) {
+// float glitter(vec2 position) {
 
-  position *= 13.0;
-  vec2 id = floor(position);
+//   position *= 13.0;
+//   vec2 id = floor(position);
 
-  position = fract(position) - 0.5;
-  float noise = hash21(id);
+//   position = fract(position) - 0.5;
+//   float noise = hash21(id);
 
-  float disc = length(position);
-  float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
+//   float disc = length(position);
+//   float manageDisc = smoothstep(0.2 * noise, 0.0, disc);
 
-  manageDisc *= pow(sin(uTime + noise * TAU) * 0.5 + 0.5, 55.0);
+//   manageDisc *= pow(sin(uTime + noise * TAU) * 0.5 + 0.5, 55.0);
 
-  return manageDisc;
-}
+//   return manageDisc;
+// }
 
 float polynomialSMin(float a, float b, float k) {
   k = 0.5;
@@ -254,16 +245,18 @@ float sdOctahedron(vec3 position, float size) {
 
   // f = abs(distance(vUv, vec2(0.5)) - 0.25) ;
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
-
-  float alpha = sin(floor(position.x * 13.0) + uTime * 2.0) + 1.0 / 2.0;
-  float beta = sin(floor(position.y * 8.0) - uTime * 1.0) + 1.0 / 2.5;
-  float charlie = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
-
-  // position = abs(position);
-
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(intensity * 0.8 * position.z * 2.0);
 
-  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size - harmonics);
+  float test = uTime - intensity;
+
+  float alpha = sin(floor(position.x * 3.0) + uTime * 2.0) * 1.0 / 2.0;
+  float beta = sin(floor(position.y * 8.0) - uTime * 2.0) * 1.0 / 2.5;
+  float charlie = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
+  float delta = sin(uTime * 2.0 + position.x * 3.0 + position.y * 2.0) * 0.5 + 0.5;
+
+  float echo = alpha - beta / 2.0 - delta * 0.8;
+
+  float m = (abs(position.x + position.y) + abs(position.z) - size);
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -286,9 +279,12 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * 0.57735027 - clamp(sin(-uAudioFrequency * 0.3) * 0.3, -0.3, 0.5);
+    return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.3) + 0.2, -0.8, 0.1 - echo);
 
-  float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
+  float timeFactor = sin(uTime * 0.5 + delta * 2.0);
+  float delayEffect = clamp(timeFactor * (1.0 - harmonics), 0.0, 1.0);
+
+  float k = clamp(0.5 * (q.z - q.y + size) * delayEffect, 0.0, size);
   // m *= max(m, rip * uTime * x * y);
   return length(vec3(q.x, q.y - size + k, q.z - k));
   // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
@@ -321,24 +317,24 @@ float sdOctahedron2(vec3 position, float size) {
 
   float twist = cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
   float twistDistance = length(twist);
-  float intensity = uFrequencyData[int(mod(twistDistance * 100.0, 256.0))];
+  float intensity = uFrequencyData[int(median - mod(twistDistance * 100.0, 256.0))];
   // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
   // float m = position.x + position.y + position.z - size;
-  float m = (abs(position.x - twist) + abs(position.y - twist) + abs(intensity - position.z) - size);
+  float m = (abs(position.x - intensity) + abs(position.y - intensity) + abs(position.z) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
   vec3 q;
   if (2.0 * position.x < m)
-    q = position / median;
+    q = position;
   else if (2.0 * position.y < m)
-    q = position.yzx / median;
+    q = position.yzx;
   else if (3.0 * position.z < m)
-    q = position.zxy / median;
+    q = position.zxy;
   else
-    return m * PI * 0.57735027;
+    return m * PI * 0.57735027 - twist;
 
-  float k = clamp(0.5 * (q.z - q.y + size), median, size);
+  float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   return length(vec3(q.x, q.y + k, q.z - k));
 }
 
@@ -405,7 +401,7 @@ float sdf(vec3 position) {
 // Shapes used
   float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.08, 0.3);
 
-  float mobius = sdMobius(position1, 1.0, 1.0);
+  float mobius = sdMobius(position1, sin(uTime - 1.0), 2.0);
 
   float superQuadric = sdSuperquadric(position1, 1.0, 0.3 - sin(uTime));
 
@@ -429,6 +425,7 @@ float sdf(vec3 position) {
   position *= 3.0;
   position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
+  // ground += groundWave / mobius * 0.08;
   ground += groundWave / mobius * 0.08;
 
   return polynomialSMin(0.1, octahedron, 0.8);
@@ -447,6 +444,93 @@ vec3 calcNormal(in vec3 position) {
   const float epsilon = 0.001;
   const vec2 normalPosition = vec2(epsilon, 0);
   return normalize(vec3(sdf(position + normalPosition.xyy) - sdf(position - normalPosition.xyy), sdf(position + normalPosition.yxy) - sdf(position - normalPosition.yxy), sdf(position + normalPosition.yyx) - sdf(position - normalPosition.yyx)));
+}
+
+// Helper function to calculate the ray direction
+vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
+  vec2 centeredUV = (uv - vec2(0.5)) + vec2(0.5);
+  return normalize(vec3(centeredUV - vec2(0.5), -1.0));
+}
+
+// Function to compute the light and shadow effects
+vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
+  float diff = dot(normal, lightDir) * 0.5 + 0.5;
+  float fresnel = pow(0.3 - dot(normalize(position - camPos), normal), 5.0);
+  return vec3(diff) * fresnel;
+}
+
+// Function to apply shadow and glow effects
+vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camPos) {
+  float light = 0.03 / centralLight;
+  vec3 lightColor = vec3(1.0, 0.8, 0.3) / palette(light);
+  float glow = sdGyroid(normalize(camPos), 0.2, 0.03, 1.0);
+  color += sin(uAudioFrequency * 0.05 * cos(0.5 - centralLight)) * smoothstep(0.0, 0.03, glow) * lightColor;
+  // color *= 0.001 - centralLight * 0.8;
+  // color *= 1.5 - -(sin(abs(ceil(uTime * 0.2 + PI * cos(uAudioFrequency * 0.03)) * ceil(2.0 + floor(1.0)))));
+  return color;
+}
+
+// Main raymarching loop
+vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
+  vec3 color = vec3(0.0);
+  for (int i = 0; i < 100; i++) {
+    vec3 position = raypos + startDist * ray;
+    // position.xy *= rot2d(startDist * 0.2 * uMouse.x);
+    // position.y = max(-0.9, position.y);
+    // position.y += sin(startDist * (uMouse.y - 0.5) * 0.02) * 0.21;
+
+    float distanceToSurface = sdf(position);
+    startDist += distanceToSurface;
+    if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
+      break;
+
+    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
+    color = smoothstep(-1.0, 1.0, color);
+  }
+  return color;
+}
+
+// Main function
+void main() {
+    // Background color based on distance from center
+  float dist = length(vUv - vec2(0.5));
+  vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
+
+    // Camera and ray setup
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  vec3 ray = calculateRayDirection(vUv, camPos);
+
+    // Raymarching
+  float startDist = 0.0;
+  float endDist = 5.8;
+  vec3 color = raymarch(camPos, ray, endDist, startDist);
+
+    // Lighting and shading
+  if (startDist < endDist) {
+    vec3 position = camPos + startDist * ray;
+    vec3 normal = calcNormal(position);
+    vec3 lightDir = -normalize(position);
+
+        // Calculate center distance for lighting
+    float centerDist = length(position);
+    float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
+
+        // Compute lighting and shadow effects
+    color = computeLighting(position, normal, camPos, lightDir);
+    color = applyShadowAndGlow(color, position, centralLight, camPos);
+    color *= (1.0 - vec3(startDist / endDist));
+  }
+
+    // Edge fading
+  color *= smoothstep(-0.8, 0.3, vUv.x);
+  color *= smoothstep(-1.0, 0.3, vUv.x);
+  color *= smoothstep(-0.8, 0.3, vUv.y);
+  color *= smoothstep(-1.0, 0.3, vUv.y);
+
+    // Final color output
+  gl_FragColor = vec4(color, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
 }
 
 // vec3 calcNormalGround(in vec3 position) {
@@ -585,90 +669,3 @@ vec3 calcNormal(in vec3 position) {
 //     #include <tonemapping_fragment>
 //     #include <colorspace_fragment>
 // }
-
-// Helper function to calculate the ray direction
-vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
-  vec2 centeredUV = (uv - vec2(0.5)) + vec2(0.5);
-  return normalize(vec3(centeredUV - vec2(0.5), -1.0));
-}
-
-// Function to compute the light and shadow effects
-vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
-  float diff = dot(normal, lightDir) * 0.5 + 0.5;
-  float fresnel = pow(0.3 - dot(normalize(position - camPos), normal), 5.0);
-  return vec3(diff) * fresnel;
-}
-
-// Function to apply shadow and glow effects
-vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camPos) {
-  float light = 0.03 / centralLight;
-  vec3 lightColor = vec3(1.0, 0.8, 0.3);
-  float glow = sdGyroid(normalize(camPos), 0.2, 0.03, 1.0);
-  color += sin(uAudioFrequency * 0.05 * cos(0.5 - centralLight)) * smoothstep(0.0, 0.03, glow) * lightColor;
-  // color *= 0.001 - centralLight * 0.8;
-  // color *= 1.5 - -(sin(abs(ceil(uTime * 0.2 + PI * cos(uAudioFrequency * 0.03)) * ceil(2.0 + floor(1.0)))));
-  return color;
-}
-
-// Main raymarching loop
-vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
-  vec3 color = vec3(0.0);
-  for (int i = 0; i < 100; i++) {
-    vec3 position = raypos + startDist * ray;
-    // position.xy *= rot2d(startDist * 0.2 * uMouse.x);
-    // position.y = max(-0.9, position.y);
-    // position.y += sin(startDist * (uMouse.y - 0.5) * 0.02) * 0.21;
-
-    float distanceToSurface = sdf(position);
-    startDist += distanceToSurface;
-    if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
-      break;
-
-    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
-    color = smoothstep(-1.0, 1.0, color);
-  }
-  return color;
-}
-
-// Main function
-void main() {
-    // Background color based on distance from center
-  float dist = length(vUv - vec2(0.5));
-  vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
-
-    // Camera and ray setup
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
-  vec3 ray = calculateRayDirection(vUv, camPos);
-
-    // Raymarching
-  float startDist = 0.0;
-  float endDist = 5.8;
-  vec3 color = raymarch(camPos, ray, endDist, startDist);
-
-    // Lighting and shading
-  if (startDist < endDist) {
-    vec3 position = camPos + startDist * ray;
-    vec3 normal = calcNormal(position);
-    vec3 lightDir = -normalize(position);
-
-        // Calculate center distance for lighting
-    float centerDist = length(position);
-    float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
-
-        // Compute lighting and shadow effects
-    color = computeLighting(position, normal, camPos, lightDir);
-    color = applyShadowAndGlow(color, position, centralLight, camPos);
-    color *= (1.0 - vec3(startDist / endDist));
-  }
-
-    // Edge fading
-  color *= smoothstep(-0.8, 0.3, vUv.x);
-  color *= smoothstep(-1.0, 0.3, vUv.x);
-  color *= smoothstep(-0.8, 0.3, vUv.y);
-  color *= smoothstep(-1.0, 0.3, vUv.y);
-
-    // Final color output
-  gl_FragColor = vec4(color, 1.0);
-    #include <tonemapping_fragment>
-    #include <colorspace_fragment>
-}

@@ -254,7 +254,7 @@ float sdOctahedron(vec3 position, float size) {
   float charlie = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
   float delta = sin(uTime * 2.0 + position.x * 3.0 + position.y * 2.0) * 0.5 + 0.5;
 
-  float echo = alpha - beta / 2.0 - delta * 0.8;
+  float echo = alpha - beta / 2.0 - delta * 0.5;
 
   float m = (abs(position.x + position.y) + abs(position.z) - size);
 
@@ -279,10 +279,10 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.3) + 0.2, -0.8, 0.1 - echo);
+    return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.3) + 0.2, -0.8, 0.1 / echo);
 
   float timeFactor = sin(uTime * 0.5 + delta * 2.0);
-  float delayEffect = clamp(timeFactor * (1.0 - harmonics), 0.0, 1.0);
+  float delayEffect = clamp(timeFactor * (2.0 - harmonics), 0.0, 1.0);
 
   float k = clamp(0.5 * (q.z - q.y + size) * delayEffect, 0.0, size);
   // m *= max(m, rip * uTime * x * y);
@@ -414,8 +414,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);

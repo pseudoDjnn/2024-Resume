@@ -180,7 +180,7 @@ float sdEnneper(vec3 p, float scale) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  float distorted = fbm(position * 2.0, 1.0) / 2.0;
+  float distorted = fbm(position * 2.0, 1.0);
 
   // float intensity = uFrequencyData[int(mod(distorted * mod(cos(uTime + gl_FragCoord.z), sin(uTime + gl_FragCoord.y)), 256.0))];
 
@@ -245,16 +245,16 @@ float sdOctahedron(vec3 position, float size) {
 
   // f = abs(distance(vUv, vec2(0.5)) - 0.25) ;
   // f = abs(cos(uAudioFrequency + a * 13.0) * sin(a * 3.0)) * 0.8 + 0.1;
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(intensity * 0.8 * position.z * 2.0);
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
 
-  float test = uTime - intensity;
+  float time = uTime - intensity;
 
-  float alpha = sin(floor(position.x * 3.0) + uTime * 2.0) * 1.0 / 2.0;
+  float alpha = sin(floor(position.x * 3.0) + cos(time * 0.3) * 3.0) * 1.0 / 2.0;
   float beta = sin(floor(position.y * 8.0) - uTime * 2.0) * 1.0 / 2.5;
-  float charlie = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
-  float delta = sin(uTime * 2.0 + position.x * 3.0 + position.y * 2.0) * 0.5 + 0.5;
+  float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
+  float delta = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
 
-  float echo = alpha - beta / 2.0 - delta * 0.5;
+  float echo = alpha - beta / 2.0 - charlie * 0.3;
 
   float m = (abs(position.x + position.y) + abs(position.z) - size);
 
@@ -281,8 +281,8 @@ float sdOctahedron(vec3 position, float size) {
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.3) + 0.2, -0.8, 0.1 / echo);
 
-  float timeFactor = sin(uTime * 0.5 + delta * 2.0);
-  float delayEffect = clamp(timeFactor * (2.0 - harmonics), 0.0, 1.0);
+  float timeFactor = sin(uTime * 0.03 + charlie * 13.0);
+  float delayEffect = clamp(timeFactor * (2.0 - harmonics), -0.3, 0.5);
 
   float k = clamp(0.5 * (q.z - q.y + size) * delayEffect, 0.0, size);
   // m *= max(m, rip * uTime * x * y);

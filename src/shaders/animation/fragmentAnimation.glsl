@@ -254,7 +254,7 @@ float sdOctahedron(vec3 position, float size) {
   float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
   float delta = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
 
-  float echo = alpha - beta / 2.0 - charlie * 0.3;
+  float echo = alpha - (beta / 2.0) - charlie * 0.3;
 
   float m = (abs(position.x + position.y) + abs(position.z) - size);
 
@@ -279,12 +279,12 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.3) + 0.2, -0.8, 0.1 / echo);
+    return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2, -0.8, 0.1 / echo);
 
   float timeFactor = sin(uTime * 0.03 + charlie * 13.0);
   float delayEffect = clamp(timeFactor * (2.0 - harmonics), -0.3, 0.5);
 
-  float k = clamp(0.5 * (q.z - q.y + size) * delayEffect, 0.0, size);
+  float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size) * delayEffect);
   // m *= max(m, rip * uTime * x * y);
   return length(vec3(q.x, q.y - size + k, q.z - k));
   // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
@@ -364,7 +364,7 @@ float sdf(vec3 position) {
 
   vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
-  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 + positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uAudioFrequency * 0.05)));
+  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uAudioFrequency * 0.05)));
 
   vec3 position3 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
 
@@ -518,11 +518,20 @@ void main() {
         // Calculate center distance for lighting
     float centerDist = length(position);
     float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
+    // centerDist = uTime * centralLight;
+
+    // Interaction with uFrequencyData
+  //   float frequencyIndex = mod(centerDist * 50.0 + uTime * 10.0, 256.0); // Adjust the scaling and offset for the effect
+  //   float frequencyValue = uFrequencyData[int(frequencyIndex)];
+
+  // // Apply the frequency data to modify the color
+  //   vec3 frequencyColor = vec3(frequencyValue / 256.0) * vec3(0.5, 0.8, 1.0); // Base color influenced by frequency
+  //   color = mix(color, frequencyColor, smoothstep(0.0, 1.0, frequencyValue * centralLight));
 
         // Compute lighting and shadow effects
     color = computeLighting(position, normal, camPos, lightDir);
     color = applyShadowAndGlow(color, position, centralLight, camPos);
-    color *= (1.0 - vec3(startDist / endDist));
+    color *= (1.0 - vec3(startDist / endDist / centerDist));
   }
 
     // Edge fading

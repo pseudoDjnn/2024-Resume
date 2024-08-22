@@ -175,6 +175,20 @@ float sdEnneper(vec3 p, float scale) {
   return length(q) - 0.5 * length(vec2(a, b));
 }
 
+vec3 mirrorEffect(vec3 position, float time) {
+    // Reflect the position across multiple planes
+  position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 10.0 + time)));
+
+    // Morphing factor based on time
+  float morphFactor = 0.5 + 0.5 * sin(time);
+
+    // Combine with a twisting transformation for morphing
+  float twist = morphFactor * sin(time * length(position) * 5.0);
+  position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+
+  return position;
+}
+
 /*
   Octahedron
 */
@@ -198,7 +212,10 @@ float sdOctahedron(vec3 position, float size) {
 
   // vec3 pos = abs(position);
   // float sum = pos.x + pos.y + pos.z;
-  position = abs(position);
+  // position = abs(position);
+
+  // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
+  position = mirrorEffect(position, 0.1);
 
   // position.yz *= mat2(fract(uTime), -sin(uTime), sin(uTime), fract(uTime));
 
@@ -249,14 +266,14 @@ float sdOctahedron(vec3 position, float size) {
 
   float time = uTime - intensity;
 
-  float alpha = sin(floor(position.x * 3.0) + cos(time * 0.3) * 3.0) * 1.0 / 2.0;
+  float alpha = cos(round(position.x * 3.0) + cos(time * 0.3) * 3.0) * 1.0 / 2.0;
   float beta = sin(floor(position.y * 8.0) - uTime * 2.0) * 1.0 / 2.5;
   float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
   float delta = cos(floor(position.z * 5.0) * uAudioFrequency * 3.0) + 0.5 / 2.0;
 
   float echo = alpha - (beta / 2.0) - charlie * 0.3;
 
-  float m = (abs(position.x + position.y) + abs(position.z) - size);
+  float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
 
   // position.x *= digitalWave * 0.008;
   // position.y *= digitalWave * 0.8;
@@ -515,7 +532,7 @@ void main() {
     vec3 normal = calcNormal(position);
     vec3 lightDir = -normalize(position);
 
-        // Calculate center distance for lighting
+      // Calculate center distance for lighting
     float centerDist = length(position);
     float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
     // centerDist = uTime * centralLight;
@@ -528,7 +545,7 @@ void main() {
   //   vec3 frequencyColor = vec3(frequencyValue / 256.0) * vec3(0.5, 0.8, 1.0); // Base color influenced by frequency
   //   color = mix(color, frequencyColor, smoothstep(0.0, 1.0, frequencyValue * centralLight));
 
-        // Compute lighting and shadow effects
+    // Compute lighting and shadow effects
     color = computeLighting(position, normal, camPos, lightDir);
     color = applyShadowAndGlow(color, position, centralLight, camPos);
     color *= (1.0 - vec3(startDist / endDist / centerDist));

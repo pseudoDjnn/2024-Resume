@@ -320,7 +320,7 @@ float sdOctahedron2(vec3 position, float size) {
   float intensity = uFrequencyData[int(median - mod(twistDistance * 100.0, 256.0))];
   // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
   // float m = position.x + position.y + position.z - size;
-  float m = (abs(position.x - intensity) + abs(position.y - intensity) + abs(position.z) - size);
+  float m = (sign(position.x - intensity) + abs(position.y - intensity) + abs(position.z) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -358,17 +358,21 @@ float sdf(vec3 position) {
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
-  position1.xz *= rot2d(uTime * 0.3 - position.x * 0.8 + positionEase((sin(0.5) * fract(-0.3)), 0.5 - sin(uAudioFrequency * 0.03)));
+  position1.xz *= rot2d(uTime * 0.3 - position.x * 0.8 + positionEase((sin(0.3) * fract(-0.3)), 0.5 - sin(uAudioFrequency * 0.05)));
 
   // position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
 
-  vec3 position2 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
+  vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
-  position2.xz *= rot2d(uTime * 0.1 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, uAudioFrequency * 0.1));
+  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 + positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uAudioFrequency * 0.05)));
 
-  position2.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) * intensity * 0.8);
+  vec3 position3 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
 
-  position2 *= rotateAroundAxis(position1, position1, 1.0);
+  position3.xz *= rot2d(uTime * 0.1 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, uAudioFrequency * 0.1));
+
+  position3.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) * intensity * 0.003);
+
+  position3 *= rotateAroundAxis(position1, position1, 1.0);
 
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
@@ -408,7 +412,7 @@ float sdf(vec3 position) {
   float enneper = sdEnneper(position2, -13.0);
 
   float octahedron = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position1, octaGrowth);
+  float octahedron2 = sdOctahedron2(position2, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
@@ -426,7 +430,7 @@ float sdf(vec3 position) {
   position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   // ground += groundWave / mobius * 0.08;
-  ground += groundWave / mobius * 0.08;
+  ground += groundWave;
 
   return polynomialSMin(0.1, octahedron, 0.8);
 }

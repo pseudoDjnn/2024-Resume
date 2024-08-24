@@ -167,7 +167,7 @@ float sdMobius(vec3 p, float r, float w) {
 vec3 mirrorEffect(vec3 position, float time) {
 
     // Reflect the position across multiple planes
-  position = abs(position - mod(position, vec3(sin(time * 0.8), fract(time * 0.1), 0.5)) * sign(sin(position * 8.0 + uTime)));
+  position = abs(position - mod(position, vec3(1.5, 0.1, 0.5)) * sign(sin(position * 8.0 + uTime)));
 
     // Morphing factor based on time
   float morphFactor = 0.5 + 0.5 * sin(time * 1.5);

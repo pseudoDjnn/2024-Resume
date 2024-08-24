@@ -167,10 +167,10 @@ float sdMobius(vec3 p, float r, float w) {
 vec3 mirrorEffect(vec3 position, float time) {
 
     // Reflect the position across multiple planes
-  position = abs(position - mod(position, vec3(0.8)) * sign(sin(position * 10.0 + time)));
+  position = abs(position - mod(position, vec3(sin(time * 0.8), fract(time * 0.1), 0.5)) * sign(sin(position * 8.0 + uTime)));
 
     // Morphing factor based on time
-  float morphFactor = 0.5 + 0.5 * sin(time);
+  float morphFactor = 0.5 + 0.5 * sin(time * 1.5);
 
     // Combine with a twisting transformation for morphing
   float twist = morphFactor * sin(time * length(position) * 5.0);
@@ -263,6 +263,9 @@ float sdOctahedron(vec3 position, float size) {
 
   float echo = alpha - (beta / 2.0) - charlie * 0.3;
 
+  float timeFactor = sin(uTime * 0.03 + charlie * 13.0);
+  float delayEffect = clamp(timeFactor * (2.0 - harmonics), -0.3, 0.5);
+
   float m = (abs(position.x) + abs(position.y) + abs(position.z) - size);
 
   // position.x *= digitalWave * 0.008;
@@ -288,12 +291,11 @@ float sdOctahedron(vec3 position, float size) {
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2 / echo, -0.8, 0.1);
 
-  float timeFactor = sin(uTime * 0.03 + charlie * 13.0);
-  float delayEffect = clamp(timeFactor * (2.0 - harmonics), -0.3, 0.5);
-
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size) * delayEffect);
+
+  float morphIntensity = 0.5 + 0.5 * sin(uTime + m * 0.3) + 0.3;
   // m *= max(m, rip * uTime * x * y);
-  return length(vec3(q.x, q.y - size + k, q.z - k));
+  return length(vec3(q.x, q.y - size + k, q.z - k) - morphIntensity);
   // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
 }
 

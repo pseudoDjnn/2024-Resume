@@ -471,11 +471,27 @@ vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
 // Function to apply shadow and glow effects
 vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camPos) {
   float light = 0.03 / centralLight;
-  vec3 lightColor = vec3(1.0, 0.8, 0.3) / palette(light);
-  float glow = sdGyroid(normalize(camPos), 0.2, 0.03, 1.0);
-  color += sin(uAudioFrequency * 0.05 * cos(0.5 - centralLight)) * smoothstep(0.0, 0.03, glow) * lightColor;
-  // color *= 0.001 - centralLight * 0.8;
-  // color *= 1.5 - -(sin(abs(ceil(uTime * 0.2 + PI * cos(uAudioFrequency * 0.03)) * ceil(2.0 + floor(1.0)))));
+
+    // Reduce the intensity of the light color for a softer glow
+  vec3 lightColor = vec3(1.0, 0.8, 0.3) / (palette(light) + 1.5); // Tone down the brightness
+
+    // Apply a glow effect with a reduced intensity
+  float glow = sdGyroid(normalize(camPos), 0.2, 0.03, 0.3);
+
+    // Add tone by blending with a neutral color (like grey) and adjusting the color intensity
+  vec3 neutralColor = vec3(0.5, 0.5, 0.5); // Soft grey color
+  // vec3 tonedColor = mix(color, neutralColor, 0.5); // Blend original color with grey
+
+    // Apply desaturation to further soften the colors
+  float desaturationFactor = 0.3;
+  // vec3 desaturatedColor = mix(vec3(dot(tonedColor, vec3(0.358))), tonedColor, desaturationFactor);
+
+    // Apply the light and glow effect to the desaturated color
+  // color = desaturatedColor - sin(uAudioFrequency * 0.05 * cos(0.8 - centralLight)) * smoothstep(0.0, 0.03, glow) * lightColor;
+
+    // Optionally, reduce the overall brightness
+  // color *= 0.8 - centralLight * 0.5;
+
   return color;
 }
 

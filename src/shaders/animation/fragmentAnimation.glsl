@@ -148,30 +148,21 @@ float sdMobius(vec3 p, float r, float w) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  // float time = uTime - intensity;
-
   float alpha = cos(round(position.x * 3.0) + cos(uTime * 0.3) * 3.0) * 1.0 / 2.0;
   float beta = sin(floor(position.y * 8.0) - uTime * 2.0) * 1.0 / 2.5;
   float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
-
   float delta = (alpha - (beta / 2.0) - charlie * 0.3) * 0.2;
 
-  // float distorted = fbm(position * 2.0, 1.0);
-
-  // float harmonicFactor = cos(position.x - alpha) * sin(uTime - position.y) * cos(uTime - position.z * 5.0);
-
-  // float intensity = delta * uFrequencyData[int(mod(harmonicFactor * 144.0 + uTime * 55.0, 256.0))];
-
-    // Reflect the position across multiple planes
-  position = abs(position - mod(position, vec3(1.5, 0.1, 0.5)) * sign(sin(position * 13.0 + uTime)) * sign(cos(position.x * 5.0 - uTime * 0.3)));
-
+  for (int i = 0; i < 5; i++) {
+    position = abs(position - mod(position, vec3(1.3, 0.1, 0.5)) * sign(sin(position * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
+  }
     // Morphing factor based on time
   float morphFactor = sin(stutter * 1.5) * 0.5 + 0.5;
 
     // Combine with a twisting transformation for morphing
-  float twist = sin(stutter - length(position) * 5.0);
+  float twist = sin(stutter - length(position) * 5.0) / morphFactor;
 
-  // position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+  position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
 
   return position;
 }
@@ -181,16 +172,16 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  position = abs(position);
+  // position = abs(position);
 
   // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
 
-  // position = mirrorEffect(position, 0.5);
+  position = mirrorEffect(position, uTime * 0.08);
 
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
 
-  float timeFactor = sin(uTime * 0.03 + uAudioFrequency * 3.0);
-  float delayEffect = clamp(timeFactor * (2.0 - harmonics), -0.3, 0.3);
+  float timeFactor = sin(uTime * 0.03 + uAudioFrequency * 0.05);
+  float delayEffect = clamp(timeFactor * 0.5 * (3.0 - harmonics), -0.3, 0.3);
 
   float m = (abs(position.x - delayEffect) + abs(position.y / delayEffect) + abs(position.z) - size);
 
@@ -327,8 +318,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);

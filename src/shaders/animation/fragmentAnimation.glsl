@@ -88,28 +88,6 @@ float noise(vec3 position) {
   return res * res;
 }
 
-/*
-  Gyroid
-*/
-float sdGyroid(vec3 position, float scale, float thickness, float bias) {
-
-  position *= scale;
-
-  float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
-
-  // float circle = angle;
-
-  float random = step(0.8 * angle, rand(position.zxy * 3.0) * 21.0);
-
-  float rot_angle = sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0));
-
-  // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
-
-  position.xz *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
-
-  return abs(0.8 * dot(sin(uTime + position), cos(uTime + position.zxy)) / scale) - thickness * bias;
-}
-
 float fbm(in vec3 position, in float H) {
 
   float G = exp2(-H);
@@ -154,7 +132,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float delta = (alpha - (beta / 2.0) - charlie * 0.3) * 0.2;
 
   for (int i = 0; i < 5; i++) {
-    position = abs(position - mod(position, vec3(1.3, 0.1, 0.5)) * sign(sin(position * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
+    position = abs(position - mod(position, vec3(1.0, 0.1, 0.5)) * sign(sin(position * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
   }
     // Morphing factor based on time
   float morphFactor = sin(stutter * 1.5) * 0.5 + 0.5;
@@ -168,6 +146,28 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 }
 
 /*
+  Gyroid
+*/
+float sdGyroid(vec3 position, float scale, float thickness, float bias) {
+
+  position *= scale;
+
+  float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
+
+  // float circle = angle;
+
+  float random = step(0.8 * angle, rand(position.zxy * 3.0) * 21.0);
+
+  float rot_angle = sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0));
+
+  // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
+
+  position.xz *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
+
+  return abs(0.8 * dot(sin(uTime - position), cos(uTime - position.zxy)) / scale) - thickness * bias;
+}
+
+/*
   Octahedron
 */
 float sdOctahedron(vec3 position, float size) {
@@ -176,7 +176,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
 
-  position = mirrorEffect(position, uTime * 0.08);
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, fract(uTime)));
 
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
 
@@ -307,12 +307,12 @@ float sdf(vec3 position) {
   float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
-  float gyroid = sdGyroid(0.5 - position1 * smoothstep(-0.3, uTime * 0.03, 1.0), 13.89 * 0.3, 0.3 - digitalWave * 0.08, 0.3);
+  float gyroid = sdGyroid(position1, 3.89, 0.3, 0.3);
 
   float mobius = sdMobius(position1, sin(uTime - 1.0), 2.0);
 
   float octahedron = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position2, octaGrowth);
+  float octahedron2 = sdOctahedron2(position2, octaGrowth * gyroid);
 
   // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;

@@ -150,6 +150,8 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 */
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
+  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+
   position *= scale;
 
   float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
@@ -164,7 +166,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   position.xz *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
-  return abs(0.8 * dot(sin(uTime - position), cos(uTime - position.zxy)) / scale) - thickness * bias;
+  return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
 }
 
 /*
@@ -304,10 +306,8 @@ float sdf(vec3 position) {
 
   // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
-
 // Shapes used
-  float gyroid = sdGyroid(position1, 3.89, 0.3, 0.3);
+  float gyroid = sdGyroid(position1, 3.89, 0.8, 0.03) * 5.0;
 
   float mobius = sdMobius(position1, sin(uTime - 1.0), 2.0);
 

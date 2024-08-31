@@ -174,6 +174,8 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 */
 float sdOctahedron(vec3 position, float size) {
 
+  float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
+
   // position = abs(position);
 
   // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
@@ -190,7 +192,7 @@ float sdOctahedron(vec3 position, float size) {
   vec3 q;
   if (3.0 * position.x < m)
     q = position;
-  else if (3.0 * position.y < m)
+  else if (3.0 * position.y < m * gyroid)
     q = position.yzx;
   else if (3.0 * position.z < m)
     q = position.zxy;
@@ -218,7 +220,7 @@ float sdOctahedron2(vec3 position, float size) {
 
   position = abs(position);
 
-  float scale = 55.0;
+  float scale = 89.0;
 
   float displacement = length(sin(position * scale) - sin(uTime * 0.8));
 
@@ -307,12 +309,11 @@ float sdf(vec3 position) {
   // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
-  float gyroid = sdGyroid(position1, 3.89, 0.8, 0.03) * 5.0;
 
   float mobius = sdMobius(position1, sin(uTime - 1.0), 2.0);
 
   float octahedron = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position2, octaGrowth * gyroid);
+  float octahedron2 = sdOctahedron2(position2, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;

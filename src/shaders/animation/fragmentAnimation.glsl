@@ -174,7 +174,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
+  float gyroid = sdGyroid(position, 8.89, 0.8, 0.03) * 3.0;
 
   // position = abs(position);
 
@@ -192,10 +192,10 @@ float sdOctahedron(vec3 position, float size) {
   vec3 q;
   if (3.0 * position.x < m)
     q = position;
-  else if (3.0 * position.y < m * gyroid)
-    q = position.yzx;
+  else if (3.0 * position.y < m)
+    q = position.yzx * gyroid;
   else if (3.0 * position.z < m)
-    q = position.zxy;
+    q = position.zxy * gyroid;
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2, -0.8, 0.1);
 

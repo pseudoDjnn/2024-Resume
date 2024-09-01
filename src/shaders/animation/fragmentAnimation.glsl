@@ -232,11 +232,14 @@ float sdOctahedron2(vec3 position, float size) {
 
   float median = sin(uTime - length(minor * major));
 
-  float twist = cos(uTime - position.x * 5.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 5.0);
+  // float mobius = sdMobius(position, sin(uTime - 1.0), 2.0);
+
+  float twist = cos(uTime - position.x * 3.0) * sin(uTime - position.y * 5.0) * cos(uTime - position.z * 34.0);
   float twistDistance = length(twist);
-  float intensity = uFrequencyData[int(median - mod(twistDistance * 100.0, 256.0))];
+  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0, 256.0))];
   // position.y = smoothstep(0.05, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y))));
   // float m = position.x + position.y + position.z - size;
+
   float m = (sign(position.x - intensity) + abs(position.y - intensity) + abs(position.z) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
@@ -249,7 +252,7 @@ float sdOctahedron2(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * PI * 0.57735027 - twist;
+    return m * PI * 0.57735027 - median;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   return length(vec3(q.x, q.y + k, q.z - k));
@@ -309,8 +312,6 @@ float sdf(vec3 position) {
   // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
-
-  float mobius = sdMobius(position1, sin(uTime - 1.0), 2.0);
 
   float octahedron = sdOctahedron(position1, octaGrowth);
   float octahedron2 = sdOctahedron2(position2, octaGrowth);

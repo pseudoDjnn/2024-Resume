@@ -400,6 +400,9 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
       break;
 
+    float harmonic = sin(uTime * 0.5 + TAU * 2.0) * uFrequencyData[128] * 0.5;
+    color *= harmonic + palette(sin(uTime * 2.0 + fract(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 2.0;
+
     color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
   }
@@ -414,7 +417,7 @@ void main() {
 
     // Camera and ray setup
   vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
-  vec3 ray = calculateRayDirection(vUv, camPos);
+  vec3 ray = calculateRayDirection(1.0 - vUv, camPos);
 
     // Raymarching
   float startDist = 0.0;

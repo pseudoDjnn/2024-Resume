@@ -401,7 +401,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
       break;
 
     float harmonic = sin(uTime * 0.5 + TAU * 2.0) * uFrequencyData[128] * 0.5;
-    color *= harmonic + palette(sin(uTime * 2.0 + fract(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 2.0;
+    color /= harmonic + palette(cos(uTime * 2.0 + fract(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 2.0;
 
     color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);

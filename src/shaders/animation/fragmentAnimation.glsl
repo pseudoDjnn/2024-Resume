@@ -378,7 +378,13 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   float timeFactor = uTime * 0.5;
 
     // Distort camPos to create a dynamic, shape-changing effect
-  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 3.0) * 0.1, cos(timeFactor + camPos.y * 2.0) * 0.1, sin(uAudioFrequency * camPos.z * 5.0) * 0.5);
+  // vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 3.0) * 0.1, cos(timeFactor + camPos.y * 2.0) * 0.1, sin(uAudioFrequency * camPos.z * 5.0) * 0.5);
+
+    // Introduce noise for more organic distortion
+  float noiseFactor = noise(position * 0.5 + uTime * 0.3);
+
+  // Smoothly distort camPos for more natural, evolving glow
+  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 * noiseFactor) * 0.12, cos(timeFactor + camPos.y * 1.8 * noiseFactor) * 0.15, sin(uAudioFrequency * camPos.z * 4.0 * noiseFactor) * 0.6);
 
     // Calculate glow using the distorted camPos
   float glow = sdGyroid(distortedCamPos, 0.2, 0.03, 1.0);
@@ -407,10 +413,10 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
       break;
 
-    float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128] * 0.5;
-    color *= harmonic + palette(cos(uTime * 3.0 + fract(endDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 3.0;
+    float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
+    color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 3.0;
 
-    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + floor(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
+    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
   }
   return color;

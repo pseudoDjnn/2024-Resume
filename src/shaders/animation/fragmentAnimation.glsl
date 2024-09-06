@@ -384,7 +384,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   float noiseFactor = noise(position * 0.5 + uTime * 0.3);
 
   // Smoothly distort camPos for more natural, evolving glow
-  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 * noiseFactor) * 0.12, cos(timeFactor + camPos.y * 1.8 * noiseFactor) * 0.15, sin(uAudioFrequency * camPos.z * 4.0 * noiseFactor) * 0.6);
+  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 * noiseFactor) * 0.13, cos(timeFactor + camPos.y * 1.8 * noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
 
     // Calculate glow using the distorted camPos
   float glow = sdGyroid(distortedCamPos, 0.2, 0.03, 1.0);

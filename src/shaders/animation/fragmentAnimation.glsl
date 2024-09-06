@@ -376,25 +376,35 @@ vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
 vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camPos) {
     // Apply a shape-changing transformation to camPos for the glow effect
   float timeFactor = uTime * 0.5;
-
-    // Distort camPos to create a dynamic, shape-changing effect
-  // vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 3.0) * 0.1, cos(timeFactor + camPos.y * 2.0) * 0.1, sin(uAudioFrequency * camPos.z * 5.0) * 0.5);
+  float audioFactor = uAudioFrequency * 0.1;
 
     // Introduce noise for more organic distortion
   float noiseFactor = noise(position * 0.5 + uTime * 0.3);
+  float fbmNoise = fbm(position * 0.8, audioFactor);
 
-  // Smoothly distort camPos for more natural, evolving glow
-  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 * noiseFactor) * 0.13, cos(timeFactor + camPos.y * 1.8 * noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
+  // Distort camPos to create a dynamic, shape-changing effect and 
+  // smoothly distort camPos for more natural, evolving glow
+  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 - fbmNoise) * 0.13, cos(timeFactor + camPos.y * 1.8 - noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
 
     // Calculate glow using the distorted camPos
   float glow = sdGyroid(distortedCamPos, 0.2, 0.03, 1.0);
 
     // Adjust light calculations to soften and tone down the brightness
-  float light = 0.03 / (centralLight + 0.1);
-  vec3 lightColor = vec3(0.8, 0.7, 0.5) / palette(light); // Softer, more muted colors
+  float light = 0.03 / (centralLight + 0.13 + noiseFactor * 0.1);
+  // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
+  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), fbmNoise) / palette(light - fbmNoise); // Muted yet dynamic light colors
 
     // Apply glow effect to the color, modulating by audio frequency
-  color += sin(uAudioFrequency * 0.05 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor;
+  // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
+
+   // Apply the glow effect to the color with more organic modulation using frequency and noise
+  color += smoothstep(-0.21, 0.05, glow) * lightColor * sin(uAudioFrequency * 0.34 * cos(0.5 - centralLight + fbmNoise)) * 1.8;
+
+  // Additional subtle frequency-based modulation for organic blending
+  color -= 0.5 * sin(audioFactor + fbmNoise * 0.3) + 0.5;
+
+  // Final smooth transition for more of a natural feel and color effect
+  color = smoothstep(-0.3, 1.0, color);
 
   return color;
 }

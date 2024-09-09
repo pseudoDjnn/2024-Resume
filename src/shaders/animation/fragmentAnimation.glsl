@@ -126,13 +126,10 @@ float sdMobius(vec3 p, float r, float w) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float alpha = cos(round(position.x * 3.0) + cos(uTime * 0.3) * 3.0) * 1.0 / 2.0;
-  float beta = sin(floor(position.y * 8.0) - uTime * 2.0) * 1.0 / 2.5;
-  float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
-  float delta = fbm(position, alpha - (beta / 2.0) - charlie * 0.3) * 0.2;
+  float echo = fbm(position, uTime) * 0.1;
 
   for (int i = 0; i < 3; i++) {
-    position = abs(position - mod(position, vec3(1.0, 0.1, 0.5)) * sign(sin(position.y * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1 * echo, 0.3)) * sign(sin(position.y * (13.0 + float(i)) + uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
 
     // Morphing factor based on time
     float morphFactor = sin(stutter * 3.5) * 0.5 + 0.5;
@@ -140,7 +137,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // Combine with a twisting transformation for morphing
     float twist = sin(stutter - length(position) * 5.0) / morphFactor;
 
-    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
   }
 
   return position;
@@ -334,13 +331,13 @@ float sdf(vec3 position) {
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
 
-  float ground = position.y + .55;
-  position.z -= uTime * 0.2;
-  position *= 3.0;
-  position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
-  float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  // ground += groundWave / mobius * 0.08;
-  ground += groundWave;
+  // float ground = position.y + .55;
+  // position.z -= uTime * 0.2;
+  // position *= 3.0;
+  // position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
+  // float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
+  // // ground += groundWave / mobius * 0.08;
+  // ground += groundWave;
 
   return polynomialSMin(0.1, octahedron, 0.5);
 }
@@ -424,10 +421,15 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
       break;
 
+    float alpha = cos(round(position.x * 3.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
+    float beta = sin(floor(position.y * 89.0) - uTime * 2.0) * 1.0 / 2.5;
+    float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
+    float delta = uTime + (fbm(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
+
     float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
     color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 3.0;
 
-    color *= sin(uTime + TAU * 1.5) - palette(sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
+    color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * fract(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
   }
   return color;

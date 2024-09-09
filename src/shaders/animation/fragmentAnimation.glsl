@@ -131,16 +131,17 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
   float delta = fbm(position, alpha - (beta / 2.0) - charlie * 0.3) * 0.2;
 
-  for (int i = 0; i < 5; i++) {
-    position = abs(position - mod(position, vec3(1.0, 0.1, 0.5)) * sign(sin(position * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
-  }
+  for (int i = 0; i < 3; i++) {
+    position = abs(position - mod(position, vec3(1.0, 0.1, 0.5)) * sign(sin(position.y * (13.0 + float(i)) + uTime)) * sign(cos(position.x * (5.0 - float(i)) + uTime * 0.3)));
+
     // Morphing factor based on time
-  float morphFactor = sin(stutter * 1.5) * 0.5 + 0.5;
+    float morphFactor = sin(stutter * 3.5) * 0.5 + 0.5;
 
     // Combine with a twisting transformation for morphing
-  float twist = sin(stutter - length(position) * 5.0) / morphFactor;
+    float twist = sin(stutter - length(position) * 5.0) / morphFactor;
 
-  position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+  }
 
   return position;
 }

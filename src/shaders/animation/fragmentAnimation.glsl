@@ -14,7 +14,7 @@ uniform float uTime;
 
 varying vec2 vUv;
 
-// #include ../includes/effects/random2D.glsl
+#include ../includes/effects/voronoi.glsl
 
 vec3 palette(float tone) {
 

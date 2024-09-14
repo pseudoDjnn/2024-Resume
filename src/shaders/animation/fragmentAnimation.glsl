@@ -40,7 +40,7 @@ float positionEase(float t, in float T) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float echo = fbm(position, uTime * 0.3) + 0.5 * 0.5;
+  float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.5 * 0.5;
 
   for (int i = 0; i < 3; i++) {
     position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.y + (8.0 + float(i)) - uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
@@ -70,7 +70,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   // float circle = angle;
 
-  float random = step(0.8 * angle, rand(position.zxy * 3.0) * 21.0);
+  float random = step(0.8 * angle, randomValue(position.zxy * 3.0) * 21.0);
 
   float rot_angle = sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0));
 
@@ -111,7 +111,7 @@ float sdOctahedron(vec3 position, float size) {
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2, -0.8, 0.1);
 
-  float morphIntensity = 0.03 + 0.5 * sin(uTime + m * 0.03) + 0.03;
+  float morphIntensity = 0.03 + 0.5 * tan(uTime + m * 0.03) + 0.03;
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   // m *= max(m, rip * uTime * x * y);
@@ -135,7 +135,7 @@ float sdOctahedron2(vec3 position, float size) {
   float scale = 89.0;
 
 // Introduce Perlin noise to the displacement for a more organic feel
-  float noise = noise(position * 0.1 + uTime * 0.2);
+  float noise = smoothNoise(position * 0.1 + uTime * 0.2);
   float displacement = length(sin(position * scale + noise) - sin(uTime * 0.8));
 
 // Use smoother transitions and larger variations in minor and major values
@@ -179,7 +179,7 @@ float sdOctahedron2(vec3 position, float size) {
 
 float sdf(vec3 position) {
 
-  float distorted = fbm(position * 2.0, 1.0) / 5.0;
+  float distorted = fractalBrownianMotion(position * 2.0, 1.0) / 5.0;
 
   // float intensity = uFrequencyData[int(distorted * 255.0)]
 
@@ -291,8 +291,8 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   float audioFactor = uAudioFrequency * 0.1;
 
     // Introduce noise for more organic distortion
-  float noiseFactor = noise(position * 0.5 + uTime * 0.3);
-  float fbmNoise = fbm(position * 0.8, audioFactor);
+  float noiseFactor = smoothNoise(position * 0.5 + uTime * 0.3);
+  float fbmNoise = fractalBrownianMotion(position * 0.8, audioFactor);
 
   // Distort camPos to create a dynamic, shape-changing effect and 
   // smoothly distort camPos for more natural, evolving glow
@@ -338,7 +338,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     float alpha = cos(uTime - tan(position.x * 8.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
     float beta = sin(floor(position.y * 89.0) - uTime * 2.0) * 1.0 / 2.5;
     float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
-    float delta = uTime + (fbm(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
+    float delta = uTime + (fractalBrownianMotion(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
 
     float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
     color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;

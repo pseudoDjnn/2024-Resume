@@ -1,33 +1,44 @@
-float rand(vec3 position) {
-  return fract(sin(dot(position, vec3(12.9898, 4.1414, 1.0))) * 43758.5453);
+float randomValue(vec3 coordinates) {
+  // Generates a pseudo-random value based on input coordinates
+  return fract(sin(dot(coordinates, vec3(12.9898, 4.1414, 1.0))) * 43758.5453);
 }
 
-float noise(vec3 position) {
-  vec3 ip = floor(position);
-  vec3 u = fract(position);
-  u = u * u * (3.0 - 2.0 * u);
+float smoothNoise(vec3 coordinates) {
+  // Generates interpolated noise based on input coordinates
+  vec3 integerPart = floor(coordinates);    // Integer part of the coordinates
+  vec3 fractionalPart = fract(coordinates); // Fractional part of the coordinates
+  fractionalPart = fractionalPart * fractionalPart * (3.0 - 2.0 * fractionalPart); // Smooth interpolation
 
-  float rand_ip = rand(ip);
-  float rand_ip_x = rand(ip + vec3(1.0, 0.0, 0.0));
-  float rand_ip_y = rand(ip + vec3(0.0, 1.0, 0.0));
-  float rand_ip_xy = rand(ip + vec3(1.0, 1.0, 1.0));
+  // Generate random values for neighboring points
+  float randOrigin = randomValue(integerPart);
+  float randOffsetX = randomValue(integerPart + vec3(1.0, 0.0, 0.0));
+  float randOffsetY = randomValue(integerPart + vec3(0.0, 1.0, 0.0));
+  float randOffsetXY = randomValue(integerPart + vec3(1.0, 1.0, 1.0));
 
-  float res = mix(mix(rand_ip, rand_ip_x, u.x), mix(rand_ip_y, rand_ip_xy, u.x), u.y);
-  return res * res;
+  // Perform bilinear interpolation between random values
+  float interpolatedX = mix(randOrigin, randOffsetX, fractionalPart.x);
+  float interpolatedY = mix(randOffsetY, randOffsetXY, fractionalPart.x);
+  float result = mix(interpolatedX, interpolatedY, fractionalPart.y);
+
+  return result * result;  // Square the result for a smoother transition
 }
 
-float fbm(in vec3 position, in float H) {
+float fractalBrownianMotion(vec3 coordinates, float roughness) {
 
-  float G = exp2(-H);
-  float f = 2.0;
-  float a = 2.0;
-  float t = 0.0;
-  vec3 timeOffset = vec3(uTime * 1.0);
+  float persistence = exp2(-roughness);  // Controls the amplitude falloff
+  float frequency = 2.0;                 // Initial frequency
+  float amplitude = 2.0;                 // Initial amplitude
+  float totalNoise = 0.0;                // Accumulated noise
 
-  for (int i = 0; i < NUM_OCTAVES; i++) {
-    t += a * noise(f * position + timeOffset);
-    f *= 2.0;
-    a *= G;
+  vec3 timeOffset = vec3(uTime * 0.2) + 0.2;   // Time-based offset for fluidity
+  float audioEffect = 0.008 + 0.008 * sin(uAudioFrequency);  // Modulate noise by audio frequency
+
+  // Loop through multiple noise layers (octaves)
+  for (int octave = 0; octave < NUM_OCTAVES; octave++) {
+    totalNoise += amplitude * smoothNoise(frequency * coordinates + timeOffset * audioEffect);  // Add scaled noise with audio effect
+    frequency *= 8.0;  // Double the frequency for next octave
+    amplitude *= persistence;  // Decrease amplitude for next octave
   }
-  return t;
+
+  return totalNoise;
 }

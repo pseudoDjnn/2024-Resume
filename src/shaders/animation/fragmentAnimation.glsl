@@ -40,18 +40,18 @@ float positionEase(float t, in float T) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float echo = fbm(position, uTime) * 0.1;
+  float echo = fbm(position, uTime * 0.3) + 0.5 * 0.5;
 
   for (int i = 0; i < 3; i++) {
-    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1 * echo, 0.3)) * sign(sin(position.y * (13.0 + float(i)) + uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.y + (8.0 + float(i)) - uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
 
     // Morphing factor based on time
-    float morphFactor = sin(stutter * 3.5) * 0.5 + 0.5;
+    float morphFactor = sin(stutter * 0.5) * 0.5 + 0.5;
 
     // Combine with a twisting transformation for morphing
-    float twist = sin(stutter - length(position) * 5.0) / morphFactor;
+    float twist = sin(stutter - length(position) * 3.0) / morphFactor;
 
-    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist) * echo);
   }
 
   return position;
@@ -76,7 +76,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
 
-  position.xz *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
+  position.zy *= mat2(cos(uTime + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
 }
@@ -92,7 +92,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, fract(uTime)));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, tan(uTime) * 0.03));
 
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
 
@@ -105,17 +105,17 @@ float sdOctahedron(vec3 position, float size) {
   if (3.0 * position.x < m)
     q = position;
   else if (3.0 * position.y < m)
-    q = position.yzx * gyroid;
+    q = position.yzx - gyroid;
   else if (3.0 * position.z < m)
-    q = position.zxy * gyroid;
+    q = position.zxy;
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2, -0.8, 0.1);
 
-  float morphIntensity = 0.3 + 0.5 * sin(uTime + m * 0.3) + 0.3;
+  float morphIntensity = 0.03 + 0.5 * sin(uTime + m * 0.03) + 0.03;
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   // m *= max(m, rip * uTime * x * y);
-  return length(vec3(q.x, q.y - size + k, q.z - k) / morphIntensity);
+  return length(vec3(q.x, q.y - size + k, q.z - k) - morphIntensity);
   // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
 }
 
@@ -304,7 +304,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 + noiseFactor * 0.1);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), fbmNoise) / palette(light - fbmNoise); // Muted yet dynamic light colors
+  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), fbmNoise) / palette(light / fbmNoise); // Muted yet dynamic light colors
 
     // Apply glow effect to the color, modulating by audio frequency
   // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
@@ -341,7 +341,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     float delta = uTime + (fbm(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
 
     float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
-    color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[64]) + 1.0 / 3.0;
+    color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
     color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);

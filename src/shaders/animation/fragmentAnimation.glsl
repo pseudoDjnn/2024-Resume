@@ -40,7 +40,7 @@ float positionEase(float t, in float T) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.5 * 0.5;
+  float echo = fractalBrownianMotion(position, uTime * 0.03) + 0.5 * 0.5;
 
   for (int i = 0; i < 3; i++) {
     position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.y + (8.0 + float(i)) - uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
@@ -122,6 +122,7 @@ float sdOctahedron(vec3 position, float size) {
 float sdOctahedron2(vec3 position, float size) {
 
   position *= 0.8;
+  position.z *= 0.8;
   // position.z -= sin(uTime) * (0.1 * 13.0);
   // float gyroid = sdGyroid(position.zyx, 13.89, 0.03, 0.3);
 
@@ -132,18 +133,18 @@ float sdOctahedron2(vec3 position, float size) {
 
   position = abs(position);
 
-  float scale = 89.0;
+  float scale = 144.0;
 
-// Introduce Perlin noise to the displacement for a more organic feel
-  float noise = smoothNoise(position * 0.1 + uTime * 0.2);
-  float displacement = length(sin(position * scale + noise) - sin(uTime * 0.8));
+// Introduce noise to the displacement for a more organic feel
+  float noise = smoothNoise(position * 0.1 + uTime * 0.3);
+  float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
 
 // Use smoother transitions and larger variations in minor and major values
   float minor = abs(fract(length(position) / displacement + 0.5) - 0.5) * 1.2;
-  float major = abs(fract(length(position) / (displacement * 0.25) + 0.5) - 0.5) * 2.2;
+  float major = abs(fract(length(position) / (displacement * 0.34) + 0.5) - 0.5) * 2.2;
 
-  minor = positionEase(0.5 * 0.5 + noise * 0.1, major);
-  major = positionEase(0.5 * 0.5 + noise * 0.1, minor);
+  minor = positionEase(0.5 * 0.5 + noise * 0.01, major);
+  major = positionEase(0.5 * 0.5 + noise * 0.3, minor);
 
 // Introduce smoother time-based modulation to the median
   float median = sin(uTime * 0.8 - length(minor * major * 1.5));
@@ -171,7 +172,7 @@ float sdOctahedron2(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * PI * 0.57735027 - median;
+    return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
   return length(vec3(q.x, q.y + k, q.z - k));
@@ -336,7 +337,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
       break;
 
     float alpha = cos(uTime - tan(position.x * 8.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
-    float beta = sin(floor(position.y * 89.0) - uTime * 2.0) * 1.0 / 2.5;
+    float beta = sin(mod(position.y * 89.0, uTime) - uTime * 2.0) * 1.0 / 2.5;
     float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
     float delta = uTime + (fractalBrownianMotion(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
 

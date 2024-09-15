@@ -27,15 +27,15 @@ float fractalBrownianMotion(vec3 coordinates, float roughness) {
 
   float persistence = exp2(-roughness);  // Controls the amplitude falloff
   float frequency = 2.0;                 // Initial frequency
-  float amplitude = 2.0;                 // Initial amplitude
+  float amplitude = 3.0;                 // Initial amplitude
   float totalNoise = 0.0;                // Accumulated noise
 
-  vec3 timeOffset = vec3(uTime * 0.2) + 0.2;   // Time-based offset for fluidity
+  vec3 timeOffset = vec3(uTime * 0.1) + 0.3;   // Time-based offset for fluidity
   float audioEffect = 0.008 + 0.008 * sin(uAudioFrequency);  // Modulate noise by audio frequency
 
   // Loop through multiple noise layers (octaves)
   for (int octave = 0; octave < NUM_OCTAVES; octave++) {
-    totalNoise += amplitude * smoothNoise(frequency * coordinates + timeOffset * audioEffect);  // Add scaled noise with audio effect
+    totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect);  // Add scaled noise with audio effect
     frequency *= 8.0;  // Double the frequency for next octave
     amplitude *= persistence;  // Decrease amplitude for next octave
   }

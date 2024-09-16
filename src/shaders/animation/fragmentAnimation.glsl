@@ -96,12 +96,12 @@ float sdOctahedron(vec3 position, float size) {
 
   position = mirrorEffect(position, mod(uAudioFrequency * 0.03, cos(uTime) * 0.03));
 
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
+  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
 
   float timeFactor = sin(uTime * 0.03 + uAudioFrequency * 0.05);
   float delayEffect = clamp(timeFactor * 0.5 * (3.0 - harmonics), -0.3, 0.3);
 
-  float m = (abs(position.x - delayEffect) + abs(position.y / delayEffect) + abs(position.z) - size);
+  float m = (abs(position.x * delayEffect) + abs(position.y / delayEffect) + abs(position.z) - size);
 
   vec3 q;
   if (3.0 * position.x < m)

@@ -43,7 +43,8 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float echo = fractalBrownianMotion(position, uTime * 0.03) + 0.5 * 0.5;
 
   for (int i = 0; i < 3; i++) {
-    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.y + (8.0 + float(i)) - uTime)) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
+
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z - (8.0 + float(i)) - uTime) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
 
     // Morphing factor based on time
     float morphFactor = sin(stutter * 0.5) * 0.5 + 0.5;
@@ -52,6 +53,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     float twist = sin(stutter - length(position) * 3.0) / morphFactor;
 
     position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist) * echo);
+
   }
 
   return position;
@@ -92,7 +94,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, tan(uTime) * 0.03));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, cos(uTime) * 0.03));
 
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * sin(uTime * 0.3 - PI * position.y * 3.0) * cos(position.z * 2.0);
 
@@ -111,7 +113,7 @@ float sdOctahedron(vec3 position, float size) {
   else
     return m * 0.57735027 - clamp(cos(-uAudioFrequency * 0.2) + 0.2, -0.8, 0.1);
 
-  float morphIntensity = 0.03 + 0.5 * tan(uTime + m * 0.03) + 0.03;
+  float morphIntensity = 0.03 + 0.3 * sin(uTime + m * 0.03) + 0.03;
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   // m *= max(m, rip * uTime * x * y);

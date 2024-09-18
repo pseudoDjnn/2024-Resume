@@ -40,19 +40,17 @@ float positionEase(float t, in float T) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float echo = fractalBrownianMotion(position, uTime * 0.03) + 0.5 * 0.5;
-
-  for (int i = 0; i < 3; i++) {
-
-    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z - (8.0 + float(i)) - uTime) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.3)));
-
     // Morphing factor based on time
-    float morphFactor = sin(stutter * 0.5) * 0.5 + 0.5;
+  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5;
 
     // Combine with a twisting transformation for morphing
-    float twist = sin(stutter - length(position) * 3.0) / morphFactor;
+  float twist = sin(stutter - length(position) * 3.0) - morphFactor;
 
-    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist) * echo);
+  for (int i = 0; i < 5; i++) {
+
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z - (8.0 + float(i)) - uTime * 0.3) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.1)));
+
+    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
 
   }
 
@@ -88,6 +86,8 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 */
 float sdOctahedron(vec3 position, float size) {
 
+  float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
+
   float gyroid = sdGyroid(position, 8.89, 0.8, 0.03) * 3.0;
 
   // position = abs(position);
@@ -98,10 +98,10 @@ float sdOctahedron(vec3 position, float size) {
 
   float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
 
-  float timeFactor = sin(uTime * 0.03 + uAudioFrequency * 0.05);
-  float delayEffect = clamp(timeFactor * 0.5 * (3.0 - harmonics), -0.3, 0.3);
+  float timeFactor = tan(uTime * 0.03 + uAudioFrequency * 0.05);
+  float delayEffect = clamp(timeFactor * 0.5 * (13.0 - harmonics), -0.3, 0.3);
 
-  float m = (abs(position.x * delayEffect) + abs(position.y / delayEffect) + abs(position.z) - size);
+  float m = (abs(position.x * delayEffect) + abs(position.y / echo) + abs(position.z) - size);
 
   vec3 q;
   if (3.0 * position.x < m)
@@ -117,7 +117,7 @@ float sdOctahedron(vec3 position, float size) {
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   // m *= max(m, rip * uTime * x * y);
-  return length(vec3(q.x, q.y - size + k, q.z - k) - morphIntensity);
+  return length(vec3(q.x, q.y - size + k * morphIntensity, q.z - k));
   // return (length(position.xz) + abs(position.y) - distorted * 0.3) * 0.7071;
 }
 
@@ -248,15 +248,15 @@ float sdf(vec3 position) {
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
 
-  // float ground = position.y + .55;
-  // position.z -= uTime * 0.2;
-  // position *= 3.0;
-  // position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
-  // float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  // // ground += groundWave / mobius * 0.08;
-  // ground += groundWave;
+  float ground = position.y + .55;
+  position.z -= uTime * 0.2;
+  position *= 3.0;
+  position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
+  float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
+  // ground += groundWave / mobius * 0.08;
+  ground += groundWave;
 
-  return polynomialSMin(0.1, octahedron, 0.1);
+  return polynomialSMin(ground, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {
@@ -277,7 +277,7 @@ vec3 calcNormal(in vec3 position) {
 // Helper function to calculate the ray direction
 vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
   vec2 centeredUV = (uv - vec2(0.5)) + vec2(0.5);
-  return normalize(vec3(centeredUV - vec2(0.5), -1.0));
+  return -normalize(vec3(centeredUV - vec2(0.5), 1.0));
 }
 
 // Function to compute the light and shadow effects

@@ -76,7 +76,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
 
-  position.zy *= mat2(cos(uTime * 0.03 + rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
+  position.zy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
 }
@@ -87,8 +87,6 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 float sdOctahedron(vec3 position, float size) {
 
   float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-
-  float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
 
   // position = abs(position) / sin(echo);
 
@@ -101,7 +99,7 @@ float sdOctahedron(vec3 position, float size) {
   float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   float delayEffect = clamp(timeFactor * 0.5 * (13.0 - harmonics), -0.3, 0.3) - echo;
 
-  float m = (abs(position.x) + abs(position.y / delayEffect) + abs(position.z - gyroid) - size);
+  float m = (abs(position.x) + abs(position.y / delayEffect) + abs(position.z) - size);
 
   vec3 q;
   if (3.0 * position.x < m)
@@ -131,7 +129,7 @@ float sdOctahedron2(vec3 position, float size) {
   // position.z = smoothstep(-0.5, 0.8, motion);
   // position.x = sin(abs(uTime * TAU * fract(position.z)) * ceil(2.0 + floor(1.0)));
 
-  // position = abs(position);
+  float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
 
   position = abs(position);
 
@@ -177,7 +175,7 @@ float sdOctahedron2(vec3 position, float size) {
     return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k));
+  return length(vec3(q.x, q.y + k, q.z - k) / gyroid);
 }
 
 float sdf(vec3 position) {

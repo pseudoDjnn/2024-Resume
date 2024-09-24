@@ -87,14 +87,10 @@ float sdOctahedron(vec3 position, float size) {
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.5 + vec3(0.5, uTime * 0.1, 0.0), 3.0);
 
-  // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
-
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
   digitalWave = floor(sin(position.x + uTime)) + ceil(sin(position.x + uTime));
 
   position = abs(position);
-
-  // position = abs(position - mod(position, vec3(0.5)) * sign(sin(position * 8.0 + uTime)));
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -103,14 +99,14 @@ float sdOctahedron(vec3 position, float size) {
   float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   float delayEffect = clamp(timeFactor * 0.5 * (13.0 - harmonics), -0.3, 0.3) - organicNoise;
 
-  float m = abs(position.x) + abs(position.y / delayEffect) + abs(position.z) - size;
+  float m = abs(position.x) + abs(position.y) + abs(position.z) - size;
 
   vec3 q;
-  if (3.0 * position.x < m / digitalWave)
+  if (3.0 * position.x < m)
     q = position;
-  else if (3.0 * position.y < m / digitalWave)
+  else if (3.0 * position.y < m)
     q = position.yzx;
-  else if (3.0 * position.z < m / digitalWave)
+  else if (3.0 * position.z < m)
     q = position.zxy;
   else
     return m * 0.57735027 - clamp(fract(-uAudioFrequency * 0.1) + 0.2, -0.8, 0.1);
@@ -124,7 +120,7 @@ float sdOctahedron(vec3 position, float size) {
   // float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + 0.03;
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
-  return length(vec3(q.x, q.y - size + k, q.z - k) - morphIntensity);
+  return length(vec3(q.x, q.y - size + k, q.z - k));
 }
 
 float sdOctahedron2(vec3 position, float size) {
@@ -243,8 +239,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2);
+  // octahedron = min(octahedron, octahedron2);
+  // octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);
@@ -360,7 +356,7 @@ void main() {
   // vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
 
     // Camera and ray setup
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 5.8 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.3 - (smoothstep(0.0, 1.0, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
   vec3 ray = calculateRayDirection(1.0 - vUv, camPos);
 
     // Raymarching

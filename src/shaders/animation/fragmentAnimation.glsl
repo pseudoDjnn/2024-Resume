@@ -85,7 +85,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-  float organicNoise = fractalBrownianMotion(position * 0.5 + vec3(0.5, uTime * 0.1, 0.0), 3.0);
+  float organicNoise = fractalBrownianMotion(position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
 
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
   digitalWave = floor(sin(position.x + uTime)) + ceil(sin(position.x + uTime));
@@ -94,16 +94,20 @@ float sdOctahedron(vec3 position, float size) {
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
-  float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
+  // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
+  float harmonics = 0.4 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
+    0.2 * cos(uAudioFrequency * 0.8 - position.x * 5.0) * tan(uTime * 0.2 - position.z * 13.0);
 
-  float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
-  float delayEffect = clamp(timeFactor * 0.5 * (13.0 - harmonics), -0.3, 0.3) - organicNoise;
+  // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
+  float timeFactor = (1.0 - sin(uTime * 0.3)) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
-  float m = abs(position.x) + abs(position.y) + abs(position.z) - size;
+  float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.3) - organicNoise;
+
+  float m = abs(position.x) + abs(position.y / delayEffect) + abs(position.z - timeFactor) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position;
+    q = position * harmonics * 0.05;
   else if (3.0 * position.y < m)
     q = position.yzx;
   else if (3.0 * position.z < m)
@@ -253,7 +257,7 @@ float sdf(vec3 position) {
   // ground += groundWave / mobius * 0.08;
   ground += groundWave;
 
-  return polynomialSMin(ground, octahedron, 0.1);
+  return polynomialSMin(0.1, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

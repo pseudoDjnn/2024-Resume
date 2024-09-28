@@ -38,25 +38,6 @@ float positionEase(float t, in float T) {
   return f * f * f * (T - t * 0.5);
 }
 
-vec3 mirrorEffect(vec3 position, float stutter) {
-
-    // Morphing factor based on time
-  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5;
-
-    // Combine with a twisting transformation for morphing
-  float twist = sin(stutter - length(position) * 3.0) - morphFactor;
-
-  for (int i = 0; i < 5; i++) {
-
-    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z * (8.0 + float(i)) - uTime * 0.3) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.1)));
-
-    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
-
-  }
-
-  return position;
-}
-
 /*
   Gyroid
 */
@@ -77,6 +58,25 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   position.zy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
+}
+
+vec3 mirrorEffect(vec3 position, float stutter) {
+
+    // Morphing factor based on time
+  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5;
+
+    // Combine with a twisting transformation for morphing
+  float twist = sin(stutter - length(position) * 3.0) - morphFactor;
+
+  for (int i = 0; i < 5; i++) {
+
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z * (8.0 + float(i)) - uTime * 0.3) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.1)));
+
+    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+
+  }
+
+  return position;
 }
 
 /*
@@ -360,7 +360,7 @@ void main() {
   // vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
 
     // Camera and ray setup
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 5.3 - (smoothstep(0.0, 0.8, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 5.3 - (smoothstep(0.0, 0.5, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
   vec3 ray = calculateRayDirection(1.0 - vUv, camPos);
 
     // Raymarching

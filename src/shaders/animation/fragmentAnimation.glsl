@@ -70,7 +70,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
   for (int i = 0; i < 5; i++) {
 
-    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(sin(position.z * (8.0 + float(i)) - uTime * 0.3) * 0.3) * abs(cos(position.x * (5.0 - float(i)) - uTime * 0.1)));
+    position = abs(position - mod(position, vec3(sin(uTime * 0.001 + 0.5), 0.1, 0.3)) * sign(fract(position.z * (8.0 + float(i)) - uTime * 0.3) * 0.3) * abs(fract(position.x * (5.0 - float(i)) - uTime * 0.1)));
 
     position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
 
@@ -103,11 +103,11 @@ float sdOctahedron(vec3 position, float size) {
 
   float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.3) - organicNoise;
 
-  float m = abs(position.x) + abs(position.y / delayEffect) + abs(position.z - timeFactor) - size;
+  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position * harmonics * 0.05;
+    q = position - harmonics;
   else if (3.0 * position.y < m)
     q = position.yzx;
   else if (3.0 * position.z < m)
@@ -134,7 +134,8 @@ float sdOctahedron2(vec3 position, float size) {
 
   float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
 
-  position = abs(position);
+  // position = abs(position);
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, uTime));
 
   float scale = 144.0;
 
@@ -292,7 +293,7 @@ vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
 vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camPos) {
     // Apply a shape-changing transformation to camPos for the glow effect
   float timeFactor = uTime * 0.5;
-  float audioFactor = uAudioFrequency * 0.1;
+  float audioFactor = uAudioFrequency * 0.3;
 
     // Introduce noise for more organic distortion
   float noiseFactor = smoothNoise(position * 0.5 + uTime * 0.3);
@@ -303,18 +304,18 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 - fbmNoise) * 0.13, cos(timeFactor + camPos.y * 1.8 - noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
 
     // Calculate glow using the distorted camPos
-  float glow = sdGyroid(distortedCamPos, 0.2, 0.03, 1.0);
+  float glow = sdGyroid(distortedCamPos, 0.2, 0.3, 1.0);
 
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 + noiseFactor * 0.1);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), fbmNoise) / palette(light / fbmNoise); // Muted yet dynamic light colors
+  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), fbmNoise) * palette(light * fbmNoise); // Muted yet dynamic light colors
 
     // Apply glow effect to the color, modulating by audio frequency
   // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
 
    // Apply the glow effect to the color with more organic modulation using frequency and noise
-  color += smoothstep(-0.21, 0.05, glow) * lightColor * sin(uAudioFrequency * 0.34 * cos(0.5 - centralLight + fbmNoise)) * 1.8;
+  color += smoothstep(-0.13, 0.05, glow) * lightColor * sin(uAudioFrequency * 0.34 * cos(0.5 - centralLight + fbmNoise)) * 1.8;
 
   // Additional subtle frequency-based modulation for organic blending
   color -= 0.5 * sin(audioFactor + fbmNoise * 0.3) + 0.5;
@@ -394,9 +395,9 @@ void main() {
   }
 
     // Edge fading
-  color *= smoothstep(-0.8, 0.3, vUv.x);
+  color *= smoothstep(-0.8, 0.5, vUv.x);
   color *= smoothstep(-1.0, 0.3, vUv.x);
-  color *= smoothstep(-0.8, 0.3, vUv.y);
+  color *= smoothstep(-0.8, 0.5, vUv.y);
   color *= smoothstep(-1.0, 0.3, vUv.y);
 
     // Final color output

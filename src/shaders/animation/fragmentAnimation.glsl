@@ -101,13 +101,13 @@ float sdOctahedron(vec3 position, float size) {
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   float timeFactor = (1.0 - sin(uTime * 0.3)) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
-  float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.3 - sin(uTime)) - organicNoise;
+  float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
 
   float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - harmonics;
+    q = position - harmonics * 0.3;
   else if (3.0 * position.y < m)
     q = position.yzx;
   else if (3.0 * position.z < m)

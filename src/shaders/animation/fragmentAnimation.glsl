@@ -103,11 +103,11 @@ float sdOctahedron(vec3 position, float size) {
 
   float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
 
-  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z) - size;
+  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z - harmonics * 0.1) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - harmonics * 0.3;
+    q = position;
   else if (3.0 * position.y < m)
     q = position.yzx;
   else if (3.0 * position.z < m)
@@ -285,7 +285,7 @@ vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
 // Function to compute the light and shadow effects
 vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
   float diff = dot(normal, lightDir) * 0.5 + 0.5;
-  float fresnel = pow(0.3 - dot(normalize(position - camPos), normal), 5.0);
+  float fresnel = pow(0.3 - dot(normalize(position - camPos), normal), 3.0);
   return vec3(diff) * fresnel;
 }
 

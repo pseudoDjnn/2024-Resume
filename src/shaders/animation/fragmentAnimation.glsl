@@ -101,9 +101,11 @@ float sdOctahedron(vec3 position, float size) {
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   float timeFactor = (1.0 - sin(uTime * 0.3)) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
-  float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
+  // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
+  float jitter = fractalBrownianMotion(position * 0.8 + uTime * 0.3, 3.0);
+  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics) * jitter, 0.3, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z - harmonics * 0.1) - size;
+  float m = abs(position.x / organicNoise) + abs(position.y - delayEffect) + abs(position.z - harmonics * 0.1) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
@@ -179,7 +181,7 @@ float sdOctahedron2(vec3 position, float size) {
     return m * PI * 0.57735027;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k) / gyroid);
+  return length(vec3(q.x, q.y + k, q.z - k) - gyroid);
 }
 
 float sdf(vec3 position) {
@@ -315,7 +317,15 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
 
    // Apply the glow effect to the color with more organic modulation using frequency and noise
-  color += smoothstep(-0.13, 0.05, glow) * lightColor * sin(uAudioFrequency * 0.34 * cos(0.5 - centralLight + fbmNoise)) * 1.8;
+  // color += smoothstep(-0.13, 0.05, glow) * lightColor * sin(uAudioFrequency * 0.34 * cos(0.5 - centralLight + fbmNoise)) * 1.8;
+  // Calculate the distance from the raymarch origin (simulating fisheye lens distortion)
+  float distFromOrigin = length(position - camPos);
+
+// Darken color closer to the start of the raymarch
+  float vignette = smoothstep(0.8, 1.0, distFromOrigin * 0.8); // Increase this value to tighten the effect
+
+// Modify color based on distance, with black near the edges and brighter toward the center
+  color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * fract(uAudioFrequency * 0.34 * floor(0.5 - centralLight + fbmNoise)) * 1.8;
 
   // Additional subtle frequency-based modulation for organic blending
   color -= 0.5 * sin(audioFactor + fbmNoise * 0.3) + 0.5;

@@ -105,7 +105,7 @@ float sdOctahedron(vec3 position, float size) {
   float jitter = fractalBrownianMotion(position * 0.8 + uTime * 0.3, 3.0);
   float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics) * jitter, 0.3, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x / organicNoise) + abs(position.y - delayEffect) + abs(position.z - harmonics * 0.1) - size;
+  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z - harmonics * 0.1) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
@@ -199,7 +199,7 @@ float sdf(vec3 position) {
 
   // position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
 
-  vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
+  vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.3) * 0.3);
 
   position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uAudioFrequency * 0.05)));
 

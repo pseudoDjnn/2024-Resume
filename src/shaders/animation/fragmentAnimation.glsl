@@ -102,8 +102,8 @@ float sdOctahedron(vec3 position, float size) {
   float timeFactor = (1.0 - sin(uTime * 0.3)) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
-  float jitter = fractalBrownianMotion(position * 0.8 + uTime * 0.3, 3.0);
-  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics) * jitter, 0.3, 0.5 * uAudioFrequency) - organicNoise;
+  float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
+  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics) - jitter, 0.3, 0.5 * uAudioFrequency) - organicNoise;
 
   float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z - harmonics * 0.1) - size;
 
@@ -132,7 +132,7 @@ float sdOctahedron(vec3 position, float size) {
 float sdOctahedron2(vec3 position, float size) {
 
   position *= 0.8;
-  position.z *= 0.8;
+  position.z *= 0.5;
 
   float gyroid = sdGyroid(position, 3.89, 0.8, 0.03) * 3.0;
 
@@ -166,7 +166,7 @@ float sdOctahedron2(vec3 position, float size) {
   position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * noise))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (sign(position.x - intensity) + abs(position.y - intensity * 0.5) + abs(position.z + noise * 0.1) - size);
+  float m = (sign(position.x - intensity * 0.3) + abs(position.y - intensity * 0.) + abs(position.z + noise * 0.1) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -247,7 +247,7 @@ float sdf(vec3 position) {
 
 // TODO: Use this
   octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2);
+  // octahedron = max(octahedron, -octahedron2);
 
   // octahedron2 = min(octahedron2, octahedron);
   // octahedron = max(octahedron, -gyroid);

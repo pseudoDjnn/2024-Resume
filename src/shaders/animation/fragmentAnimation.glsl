@@ -85,7 +85,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-  float organicNoise = fractalBrownianMotion(position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
+  float organicNoise = fractalBrownianMotion(uTime * 0.3 - position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
 
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
   digitalWave = floor(sin(position.x + uTime)) + ceil(sin(position.x + uTime));
@@ -99,7 +99,7 @@ float sdOctahedron(vec3 position, float size) {
     0.2 * cos(uAudioFrequency * 0.8 - position.x * 5.0) * tan(uTime * 0.2 - position.z * 13.0);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
-  float timeFactor = (1.0 - sin(uTime * 0.3)) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
+  float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
@@ -160,13 +160,13 @@ float sdOctahedron2(vec3 position, float size) {
 
   float twistDistance = length(twist);
 
-  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 + noise * 13.0, 256.0))];
+  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 * noise * 3.0, 256.0))];
 
 // Modify position with smooth and organic influences
-  position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * noise))));
+  // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (sign(position.x - intensity * 0.3) + abs(position.y - intensity * 0.) + abs(position.z + noise * 0.1) - size);
+  float m = (abs(position.x - intensity * 0.3) + abs(position.y - intensity * 0.3) + abs(position.z - noise * 0.1) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -246,11 +246,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron = min(octahedron, octahedron2);
+  // octahedron = min(octahedron, octahedron2);
   // octahedron = max(octahedron, -octahedron2);
-
-  // octahedron2 = min(octahedron2, octahedron);
-  // octahedron = max(octahedron, -gyroid);
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
@@ -260,7 +257,7 @@ float sdf(vec3 position) {
   // ground += groundWave / mobius * 0.08;
   ground /= groundWave;
 
-  return polynomialSMin(0.1, octahedron, 1.0);
+  return polynomialSMin(0.1, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

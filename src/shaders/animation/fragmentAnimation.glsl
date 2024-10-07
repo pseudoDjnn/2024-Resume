@@ -88,9 +88,10 @@ float sdOctahedron(vec3 position, float size) {
   float organicNoise = fractalBrownianMotion(uTime * 0.3 - position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
 
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
-  digitalWave = floor(sin(position.x + uTime)) + ceil(sin(position.x + uTime));
+  digitalWave = floor(sin(position.x - uAudioFrequency * 0.03)) + ceil(sin(position.x + uAudioFrequency * 0.03));
 
   position = abs(position);
+  position.y /= organicNoise * 0.1;
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -103,9 +104,9 @@ float sdOctahedron(vec3 position, float size) {
 
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
-  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics) - jitter, 0.3, 0.5 * uAudioFrequency) - organicNoise;
+  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x / organicNoise) + abs(position.y / delayEffect) + abs(position.z - harmonics * 0.1) - size;
+  float m = abs(position.x / organicNoise) + abs(position.y - digitalWave) + abs(position.z - harmonics * 0.1) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
@@ -115,7 +116,7 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * 0.57735027 - clamp(fract(-uAudioFrequency * 0.1) + 0.2, -0.8, 0.1);
+    return m * 0.57735027 - clamp(fract(-uAudioFrequency * 0.1) + 0.2, -0.5, 0.1);
 
     // Add varying sine waves for more natural transitions
   float wavePattern = 0.1 * sin(uTime * 0.4 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) +
@@ -246,8 +247,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
@@ -357,6 +358,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
+
   }
   return color;
 }
@@ -399,13 +401,13 @@ void main() {
     color = computeLighting(position, normal, camPos, lightDir);
     color = applyShadowAndGlow(color, position, centralLight, camPos);
     color *= (1.0 - vec3(startDist / endDist / centerDist));
-  }
 
     // Edge fading
-  color *= smoothstep(-0.8, 0.5, vUv.x);
-  color *= smoothstep(-1.0, 0.3, vUv.x);
-  color *= smoothstep(-0.8, 0.5, vUv.y);
-  color *= smoothstep(-1.0, 0.3, vUv.y);
+    // color *= smoothstep(-0.8, 0.5, vUv.x);
+    // color *= smoothstep(-1.0, 0.3, vUv.x);
+    // color *= smoothstep(-0.8, 0.5, vUv.y);
+    // color *= smoothstep(-1.0, 0.3, vUv.y);
+  }
 
     // Final color output
   gl_FragColor = vec4(color, 1.0);

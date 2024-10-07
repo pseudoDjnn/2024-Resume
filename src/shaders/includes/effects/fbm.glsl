@@ -1,6 +1,6 @@
 float randomValue(vec3 coordinates) {
   // Generates a pseudo-random value based on input coordinates
-  return fract(sin(dot(coordinates, vec3(12.9898, 4.1414, 1.0))) * 43758.5453);
+  return fract(sin(dot(coordinates, vec3(12.8989, 5.1515, 1.0))) * 53858.5553);
 }
 
 float smoothNoise(vec3 coordinates) {

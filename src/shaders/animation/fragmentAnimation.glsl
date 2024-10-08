@@ -91,7 +91,7 @@ float sdOctahedron(vec3 position, float size) {
   digitalWave = floor(sin(position.x - uAudioFrequency * 0.03)) + ceil(sin(position.x + uAudioFrequency * 0.03));
 
   position = abs(position);
-  position.y /= organicNoise * 0.1;
+  position.y /= organicNoise * 0.3;
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -112,7 +112,7 @@ float sdOctahedron(vec3 position, float size) {
   if (3.0 * position.x < m)
     q = position;
   else if (3.0 * position.y < m)
-    q = position.yzx;
+    q = position.yzx - delayEffect;
   else if (3.0 * position.z < m)
     q = position.zxy;
   else

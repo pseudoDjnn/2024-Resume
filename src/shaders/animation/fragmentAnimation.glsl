@@ -91,7 +91,7 @@ float sdOctahedron(vec3 position, float size) {
   digitalWave = floor(sin(position.x - uAudioFrequency * 0.03)) + ceil(sin(position.x + uAudioFrequency * 0.03));
 
   position = abs(position);
-  position.y /= organicNoise * 0.3;
+  // position.y /= organicNoise * 0.3;
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -106,13 +106,13 @@ float sdOctahedron(vec3 position, float size) {
   float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x / organicNoise) + abs(position.y - digitalWave) + abs(position.z - harmonics * 0.1) - size;
+  float m = abs(position.x) + abs(position.y) + abs(position.z) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
     q = position;
   else if (3.0 * position.y < m)
-    q = position.yzx - delayEffect;
+    q = position.yzx;
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
@@ -125,7 +125,7 @@ float sdOctahedron(vec3 position, float size) {
   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 
   // float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + 0.03;
-  float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size) * morphIntensity);
+  float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   return length(vec3(q.x, q.y - size + k, q.z - k));
 }
@@ -247,15 +247,14 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2);
+  // octahedron = min(octahedron, octahedron2);
+  // octahedron = max(octahedron, -octahedron2);
 
   float ground = position.y + .55;
   position.z -= uTime * 0.2;
   position *= 3.0;
   position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  // ground += groundWave / mobius * 0.08;
   ground /= groundWave;
 
   return polynomialSMin(0.1, octahedron, 0.1);

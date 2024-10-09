@@ -90,8 +90,14 @@ float sdOctahedron(vec3 position, float size) {
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
   digitalWave = floor(sin(position.x - uAudioFrequency * 0.03)) + ceil(sin(position.x + uAudioFrequency * 0.03));
 
+  // position = abs(position);
+  // Apply a rotation around the Z-axis before taking the absolute value
+  float angle = uTime * 0.1;
+  mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+  position.xy = rotZ * position.xy;
   position = abs(position);
-  // position.y /= organicNoise * 0.3;
+
+  position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x);
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -106,10 +112,12 @@ float sdOctahedron(vec3 position, float size) {
   float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x) + abs(position.y) + abs(position.z) - size;
+  float m = abs(position.x - sin(uTime)) + abs(position.y) + abs(position.z) - size;
+  // Smooth, flowing shape that uses sin and cos to create wave patterns
+  // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
   vec3 q;
-  if (3.0 * position.x < m)
+  if (13.0 * position.x < m)
     q = position;
   else if (3.0 * position.y < m)
     q = position.yzx;
@@ -125,6 +133,7 @@ float sdOctahedron(vec3 position, float size) {
   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 
   // float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + 0.03;
+
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
   return length(vec3(q.x, q.y - size + k, q.z - k));

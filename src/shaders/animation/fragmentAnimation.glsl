@@ -85,7 +85,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-  float organicNoise = fractalBrownianMotion(uTime * 0.3 - position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
+  float organicNoise = fractalBrownianMotion(uTime * 0.03 - position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
 
   float digitalWave = abs(fract(sin(position.x * PI * uTime) + 1.0 * 2.0));
   digitalWave = floor(sin(position.x - uAudioFrequency * 0.03)) + ceil(sin(position.x + uAudioFrequency * 0.03));
@@ -97,7 +97,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   position = abs(position);
 
-  position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x);
+  // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
   // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
@@ -110,21 +110,21 @@ float sdOctahedron(vec3 position, float size) {
 
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
-  float delayEffect = clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
+  float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
 
-  float m = abs(position.x - sin(uTime)) + abs(position.y) + abs(position.z) - size;
+  float m = abs(position.x) + abs(position.y / delayEffect) + abs(position.z) - size;
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
   vec3 q;
   if (13.0 * position.x < m)
-    q = position;
+    q = position / organicNoise;
   else if (3.0 * position.y < m)
-    q = position.yzx;
+    q = position.yzx / organicNoise;
   else if (3.0 * position.z < m)
-    q = position.zxy;
+    q = position.zxy / organicNoise;
   else
-    return m * 0.57735027 - clamp(fract(-uAudioFrequency * 0.1) + 0.2, -0.5, 0.1);
+    return m * 0.57735027 * clamp(fract(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
 
     // Add varying sine waves for more natural transitions
   float wavePattern = 0.1 * sin(uTime * 0.4 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) +
@@ -205,7 +205,7 @@ float sdf(vec3 position) {
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
-  position1.xz *= rot2d(uTime * 0.3 + PI - position.x * 0.8 + positionEase((sin(0.3) * fract(-0.3)), 0.5 - sin(uAudioFrequency * 0.05)));
+  position1.xz *= rot2d(uTime * 0.3 + PI - position.x * 0.8 + positionEase((sin(0.3) * fract(-0.3)), 0.5 - sin(uAudioFrequency * 0.01)));
 
   // position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
 
@@ -256,17 +256,17 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   float ground = position.y + .55;
-  position.z -= uTime * 0.2;
-  position *= 3.0;
-  position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
-  float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
-  ground /= groundWave;
+  // position.z -= uTime * 0.2;
+  // position *= 3.0;
+  // position.y += 1.0 - length(uTime + position.z) * 0.5 + 0.5;
+  // float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
+  // ground += groundWave;
 
-  return polynomialSMin(0.1, octahedron, 0.1);
+  return polynomialSMin(ground, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {
@@ -378,7 +378,7 @@ void main() {
   // vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
 
     // Camera and ray setup
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 5.3 - (smoothstep(0.0, 0.5, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 3.3 - (smoothstep(0.0, 0.5, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
   vec3 ray = calculateRayDirection(1.0 - vUv, camPos);
 
     // Raymarching

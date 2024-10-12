@@ -85,7 +85,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-  float organicNoise = fractalBrownianMotion(uTime * 0.03 - position + 0.5 * vec3(0.5, uTime * 0.1, 0.0), 3.0);
+  float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
 
   float digitalWave = abs(fract(sin(position.x * PI * organicNoise) + 1.0 * 2.0));
   digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
@@ -113,7 +113,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   position = abs(position);
 
-  float m = abs(position.x) + sin(position.y) + abs(position.z) - size;
+  float m = position.x + position.y + position.z - size;
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 

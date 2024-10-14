@@ -113,7 +113,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   position = abs(position);
 
-  float m = position.x + position.y + position.z - size - delayEffect;
+  float m = position.x + position.y + position.z - size - fract(delayEffect);
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
@@ -126,12 +126,6 @@ float sdOctahedron(vec3 position, float size) {
     q = position.zxy / organicNoise;
   else
     return m * 0.57735027 * clamp(fract(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
-
-    // Add varying sine waves for more natural transitions
-  float wavePattern = 0.1 * sin(uTime * 0.4 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) +
-    0.08 * sin(uTime * 0.3 + position.z * 1.5) + organicNoise * 0.05;
-
-  float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 
   // float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + 0.03;
 
@@ -191,8 +185,14 @@ float sdOctahedron2(vec3 position, float size) {
   else
     return m * PI * 0.57735027;
 
+        // Add varying sine waves for more natural transitions
+  float wavePattern = 0.1 * sin(uTime * 0.4 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) +
+    0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
+
+  float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
+
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k) - gyroid);
+  return length(vec3(q.x / morphIntensity, q.y + k, q.z - k) / gyroid);
 }
 
 float sdf(vec3 position) {
@@ -257,8 +257,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  // octahedron = min(octahedron, octahedron2);
-  // octahedron = max(octahedron, -octahedron2);
+  octahedron = min(octahedron, octahedron2);
+  octahedron = max(octahedron, -octahedron2);
 
   float ground = position.y + .55;
   position.z -= uTime;
@@ -267,7 +267,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave;
 
-  return polynomialSMin(ground, octahedron, 0.1);
+  return polynomialSMin(0.1, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

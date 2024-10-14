@@ -113,7 +113,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   position = abs(position);
 
-  float m = position.x + position.y + position.z - size;
+  float m = position.x + position.y + position.z - size - delayEffect;
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
@@ -267,7 +267,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave;
 
-  return polynomialSMin(0.1, octahedron, 0.1);
+  return polynomialSMin(ground, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

@@ -53,8 +53,6 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   float rot_angle = sin(uTime * 0.3) - 1.0 * (random * 0.3) * ceil(2.0 + floor(1.0));
 
-  // position.xz *= rot2d(sin(uTime * 0.3) + 1.0 - (random * 0.3) * ceil(2.0 + floor(1.0)));
-
   position.zy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
@@ -94,7 +92,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.4 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -147,12 +145,12 @@ float sdOctahedron2(vec3 position, float size) {
   float scale = 144.0;
 
 // Introduce noise to the displacement for a more organic feel
-  float noise = smoothNoise(position * 0.1 + uTime * 0.3);
+  float noise = smoothNoise(position * 0.1 + uTime * 0.3) - sin(uTime);
   float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
 
 // Use smoother transitions and larger variations in minor and major values
-  float minor = abs(fract(length(position) / displacement + 0.5) - 0.5) * 1.2;
-  float major = abs(fract(length(position) / (displacement * 0.34) + 0.5) - 0.5) * 2.2;
+  float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
+  float major = abs(fract(length(position) - sin(uTime) / (displacement * 0.34) + 0.5) - 0.5) * 2.2;
 
   minor = positionEase(0.5 * 0.5 + noise * 0.01, major);
   major = positionEase(0.5 * 0.5 + noise * 0.3, minor);
@@ -171,7 +169,7 @@ float sdOctahedron2(vec3 position, float size) {
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (abs(position.x / intensity * 0.3) + abs(position.y - intensity) + abs(position.z - noise * 0.1) - size);
+  float m = (abs(position.x / intensity * 0.5) + abs(position.y - intensity * 0.3) + abs(position.z - noise) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -192,7 +190,7 @@ float sdOctahedron2(vec3 position, float size) {
   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 
   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x / morphIntensity, q.y + k, q.z - k) / gyroid);
+  return length(vec3(q.x, q.y + k, q.z - k) / gyroid) / morphIntensity;
 }
 
 float sdf(vec3 position) {

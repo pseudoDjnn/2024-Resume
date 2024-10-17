@@ -171,7 +171,7 @@ float sdOctahedron2(vec3 position, float size) {
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (abs(position.x - intensity * 0.3) + abs(position.y - intensity * 0.3) + abs(position.z - noise * 0.1) - size);
+  float m = (abs(position.x / intensity * 0.3) + abs(position.y - intensity) + abs(position.z - noise * 0.1) - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 

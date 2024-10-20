@@ -63,20 +63,20 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5;
+  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5 - sin(uAudioFrequency);
 
     // Combine with a twisting transformation for morphing
-  float twist = fract(stutter - length(position) * 3.0) / morphFactor;
+  float twist = fract(stutter - length(position) * 3.0) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position - mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3) * abs(fract(position.x * (7.0 - float(i)) - uTime * 0.15)));
+    position = abs(position + mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3) * abs(fract(position.x * (7.0 - float(i)) - uTime * 0.15)));
 
         // Twisting transformations on the xz and yz planes
-    position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
         // position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
   }
 
@@ -134,7 +134,7 @@ float sdOctahedron(vec3 position, float size) {
 
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
 
-  position.xz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
+  // position.yz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
 
   return length(vec3(q.x, q.y - size + k, q.z - k));
 }
@@ -152,12 +152,12 @@ float sdOctahedron2(vec3 position, float size) {
   float scale = 144.0;
 
 // Introduce noise to the displacement for a more organic feel
-  float noise = smoothNoise(position * 0.1 + uTime * 0.3) - cos(uTime);
-  float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
+  float noise = smoothNoise(position * 0.5 + uTime * 0.3) - cos(uTime);
+  float displacement = length(sin(position * scale * noise) + sin(uTime * 0.8));
 
 // Use smoother transitions and larger variations in minor and major values
   float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
-  float major = abs(fract(length(position) - cos(uTime) / (displacement * 0.34) + 0.5) - 0.5) * 2.2;
+  float major = abs(fract(length(position) - cos(uTime) * (displacement * 0.34) + 0.5) - 0.5) * 2.2;
 
   minor = positionEase(0.5 * 0.5 + noise * 0.01, major);
   major = positionEase(0.5 * 0.5 + noise * 0.3, minor);
@@ -170,7 +170,7 @@ float sdOctahedron2(vec3 position, float size) {
 
   float twistDistance = length(twist);
 
-  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 - noise * 3.0, 256.0))];
+  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 - noise * 3.0, 128.0))];
 
 // Modify position with smooth and organic influences
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));

@@ -43,7 +43,10 @@ float positionEase(float t, in float T) {
 */
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
-  float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+  // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+
+  float digitalWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
+  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
 
   position *= scale;
 
@@ -63,14 +66,14 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5;
 
     // Combine with a twisting transformation for morphing
-  float twist = sin(stutter - length(position) * 3.0) - morphFactor;
+  float twist = fract(stutter - length(position) * 3.0) / morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
-    vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.x, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
+    vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position + step(position, modulation) * sign(fract(position.y - (8.0 + float(i)) - uTime * 0.2) * 0.3) * abs(fract(position.x * (7.0 - float(i)) - uTime * 0.15)));
+    position = abs(position - mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3) * abs(fract(position.x * (7.0 - float(i)) - uTime * 0.15)));
 
         // Twisting transformations on the xz and yz planes
     position.xz *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
@@ -123,13 +126,15 @@ float sdOctahedron(vec3 position, float size) {
   if (13.0 * position.x < m)
     q = position / organicNoise;
   else if (3.0 * position.y < m)
-    q = position.yzx - organicNoise;
+    q = position.yzx / organicNoise;
   else if (3.0 * position.z < m)
     q = position.zxy / organicNoise;
   else
     return m * 0.57735027 * clamp(fract(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
 
   float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
+
+  position.xz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
 
   return length(vec3(q.x, q.y - size + k, q.z - k));
 }

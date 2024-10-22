@@ -73,7 +73,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position + mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3) * abs(fract(position.x * (7.0 - float(i)) - uTime * 0.15)));
+    position = abs(position + mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
     position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));

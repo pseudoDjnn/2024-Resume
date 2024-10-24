@@ -63,7 +63,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = tan(stutter * 0.5) * 0.5 + 0.5 - sin(uAudioFrequency);
+  float morphFactor = abs(tan(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency));
 
     // Combine with a twisting transformation for morphing
   float twist = fract(stutter - length(position) * 3.0) * morphFactor;
@@ -73,7 +73,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position + mod(position, modulation) * sign(fract(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
+    position = abs(position + mod(position, modulation) * sign(cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
     position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
@@ -123,7 +123,7 @@ float sdOctahedron(vec3 position, float size) {
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
   vec3 q;
-  if (13.0 * position.x < m)
+  if (3.0 * position.x < m)
     q = position / organicNoise;
   else if (3.0 * position.y < m)
     q = position.yzx / organicNoise;

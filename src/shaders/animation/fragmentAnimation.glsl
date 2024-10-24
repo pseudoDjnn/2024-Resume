@@ -130,9 +130,9 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy / organicNoise;
   else
-    return m * 0.57735027 * clamp(fract(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
+    return m * 0.57735027;
 
-  float k = smoothstep(0.0, size, 0.5 * (q.z - q.y + size));
+  float k = step(size, 0.5 * (q.z - q.y + size)) * clamp(sin(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
 
   // position.yz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
 
@@ -147,7 +147,7 @@ float sdOctahedron2(vec3 position, float size) {
   float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
 
   // position = abs(position);
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, uTime));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, uTime * 0.1) * 0.5 + 0.5);
 
   float scale = 144.0;
 
@@ -176,7 +176,7 @@ float sdOctahedron2(vec3 position, float size) {
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (abs(position.x / intensity * 0.3) + abs(sin(position.y - intensity * 0.5 - uTime * 0.3)) + abs(position.z - noise) - size);
+  float m = (abs(position.x / intensity * 0.3) + abs(sin(position.y - intensity * 0.5 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
@@ -188,11 +188,10 @@ float sdOctahedron2(vec3 position, float size) {
   else if (3.0 * position.z < m)
     q = position.zxy;
   else
-    return m * TAU * 0.57735027;
+    return m * 0.57735027;
 
         // Add varying sine waves for more natural transitions
-  float wavePattern = 0.1 * sin(uTime * 0.5 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) +
-    0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
+  float wavePattern = 0.1 * sin(uTime * 0.3 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) + 0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
 
   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 

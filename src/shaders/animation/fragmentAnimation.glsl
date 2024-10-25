@@ -147,20 +147,20 @@ float sdOctahedron2(vec3 position, float size) {
   float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
 
   // position = abs(position);
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, uTime * 0.1) * 0.5 + 0.5);
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
 
   float scale = 144.0;
 
 // Introduce noise to the displacement for a more organic feel
-  float noise = smoothNoise(position * 0.5 + uTime * 0.3) - cos(uTime);
-  float displacement = length(sin(position * scale * noise) + sin(uTime * 0.8));
+  float noise = smoothNoise(position * 0.5 + uTime * 0.3);
+  float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
 
 // Use smoother transitions and larger variations in minor and major values
   float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
   float major = abs(fract(length(position) - cos(uTime) * (displacement * 0.34) + 0.5) - 0.5) * 2.2;
 
-  minor = positionEase(0.5 * 0.5 + noise * 0.01, major);
-  major = positionEase(0.5 * 0.5 + noise * 0.3, minor);
+  minor = positionEase((noise * 0.01) * 0.5 + 0.5, major);
+  major = positionEase((noise * 0.3) * 0.5 + 0.5, minor);
 
 // Introduce smoother time-based modulation to the median
   float median = sin(uTime * 0.8 - length(minor * major * 1.5));

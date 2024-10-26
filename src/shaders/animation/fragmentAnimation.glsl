@@ -94,11 +94,11 @@ float sdOctahedron(vec3 position, float size) {
   float digitalWave = abs(fract(sin(position.x * PI * organicNoise) + 1.0 * 2.0));
   digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
 
-  // position = abs(position);
+  position = abs(position);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
+  // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.4 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -112,12 +112,12 @@ float sdOctahedron(vec3 position, float size) {
   float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  float angle = digitalWave;
+  float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
   mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   position.xy = rotZ * position.xy;
-  position = abs(position);
+  // position = abs(position);
 
-  float m = position.x + position.y + position.z - size - abs(fract(delayEffect)) * 0.5;
+  float m = position.x + position.y + position.z - size;
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
@@ -261,8 +261,8 @@ float sdf(vec3 position) {
   // octahedron = abs(octahedron) - 0.03;
 
 // TODO: Use this
-  octahedron = min(octahedron, octahedron2);
-  octahedron = max(octahedron, -octahedron2);
+  // octahedron = min(octahedron, octahedron2);
+  // octahedron = max(octahedron, -octahedron2);
 
   float ground = position.y + .55;
   position.z -= uTime;

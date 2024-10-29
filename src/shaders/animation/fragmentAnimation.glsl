@@ -111,8 +111,10 @@ float sdOctahedron(vec3 position, float size) {
   float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) - length(position) * 0.5;
 
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
-  float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
-  float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
+  // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
+  // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
+  float jitter = fractalBrownianMotion(position * 0.6 * 3.1415, 2.0) * 0.3;
+  float delayEffect = clamp(timeFactor * 0.4 * (4.0 - harmonics), 0.2, 0.5) - organicNoise * 0.4;
 
     // Apply a rotation around the Z-axis before taking the absolute value
   float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
@@ -120,7 +122,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   // position = abs(position);
 
-  float m = position.x + position.y + position.z - size;
+  float m = position.x + position.y + position.z - size - delayEffect * 0.5;
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
@@ -135,7 +137,8 @@ float sdOctahedron(vec3 position, float size) {
   else
     return m * 0.57735027;
 
-  float k = step(size, 0.5 * (q.z - q.y + size)) * clamp(sin(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
+  // float k = step(size, 0.5 * (q.z - q.y + size)) * clamp(sin(-uAudioFrequency * 0.1) + 0.3, -0.3, 0.3);
+  float k = clamp(sin(uAudioFrequency * 0.1) + 0.25, -0.2, 0.3) * step(size, 0.5 * (q.z - q.y + size));
 
   // position.yz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
 

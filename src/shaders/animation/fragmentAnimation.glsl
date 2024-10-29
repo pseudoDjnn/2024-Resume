@@ -88,20 +88,23 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 */
 float sdOctahedron(vec3 position, float size) {
 
+  position *= 0.8;
+
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
-  float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
+  // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
+  float organicNoise = fractalBrownianMotion(position * 0.3 + uTime * 0.1, 2.0) * 0.5 + 0.5;
 
   float digitalWave = abs(fract(sin(position.x * PI * organicNoise) + 1.0 * 2.0));
   digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
 
-  position = abs(position);
+  // position = abs(position);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  // position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
-  float harmonics = 0.4 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
+  float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
     0.2 * cos(uAudioFrequency * 0.8 - position.x * 5.0) * tan(uTime * 0.2 - position.z * 13.0);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);

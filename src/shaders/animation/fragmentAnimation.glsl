@@ -113,8 +113,8 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
-  float jitter = fractalBrownianMotion(position * 0.6 * 3.1415, 2.0) * 0.3;
-  float delayEffect = clamp(timeFactor * 0.4 * (4.0 - harmonics), 0.2, 0.5) - organicNoise * 0.4;
+  float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
+  float delayEffect = jitter - clamp(timeFactor * 0.5 * (5.0 - harmonics), 0.2, 0.5) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
   float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
@@ -122,7 +122,7 @@ float sdOctahedron(vec3 position, float size) {
   position.xy = rotZ * position.xy;
   // position = abs(position);
 
-  float m = position.x + position.y + position.z - size - delayEffect * 0.5;
+  float m = cos(position.x) + position.y + sin(position.z) - size - delayEffect * 0.5;
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;

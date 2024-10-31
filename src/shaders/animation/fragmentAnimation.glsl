@@ -63,7 +63,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = abs(tan(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency));
+  float morphFactor = abs(tan(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency * 0.3));
 
     // Combine with a twisting transformation for morphing
   float twist = fract(stutter - length(position) * 3.0) * morphFactor;
@@ -95,7 +95,7 @@ float sdOctahedron(vec3 position, float size) {
   float organicNoise = fractalBrownianMotion(position * 0.3 + uTime * 0.1, 2.0) * 0.5 + 0.5;
 
   float digitalWave = abs(fract(sin(position.x * PI * organicNoise) + 1.0 * 2.0));
-  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
+  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.5));
 
   // position = abs(position);
 
@@ -114,7 +114,7 @@ float sdOctahedron(vec3 position, float size) {
   // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
   float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
-  float delayEffect = jitter - clamp(timeFactor * 0.5 * (5.0 - harmonics), 0.2, 0.5) - organicNoise * 0.3;
+  float delayEffect = clamp(timeFactor * 0.5 * (5.0 - harmonics), 0.2, 0.5) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
   float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
@@ -182,15 +182,15 @@ float sdOctahedron2(vec3 position, float size) {
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (abs(position.x / intensity * 0.3) + abs(sin(position.y - intensity * 0.5 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
+  float m = (abs(position.x / intensity * 0.3) + abs(sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
   vec3 q;
-  if (2.0 * position.x < m)
+  if (3.0 * position.x < m)
     q = position;
-  else if (2.0 * position.y < m)
-    q = position.yzx;
+  else if (3.0 * position.y < m)
+    q = position.yzx - sin(uAudioFrequency);
   else if (3.0 * position.z < m)
     q = position.zxy;
   else

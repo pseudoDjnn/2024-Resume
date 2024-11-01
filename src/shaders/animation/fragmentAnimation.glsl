@@ -113,7 +113,6 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
-  float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
   float delayEffect = clamp(timeFactor * 0.5 * (5.0 - harmonics), 0.2, 0.5) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
@@ -171,6 +170,8 @@ float sdOctahedron2(vec3 position, float size) {
 // Introduce smoother time-based modulation to the median
   float median = sin(uTime * 0.8 - length(minor * major * 1.5));
 
+  float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
+
 // Add more complex twisting with Perlin noise for smoother transitions
   float twist = cos(uTime - position.x * 3.0 + noise) * sin(uTime - position.y * 5.0 + noise) * cos(uTime - position.z * 34.0 + noise * 0.5);
 
@@ -182,7 +183,7 @@ float sdOctahedron2(vec3 position, float size) {
   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
 // Final m calculation with a broader and smoother influence
-  float m = (abs(position.x / intensity * 0.3) + abs(sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
+  float m = (abs(position.x / intensity * 0.3) + abs(jitter - sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
 
   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 

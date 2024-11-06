@@ -73,7 +73,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position + mod(position, modulation) * sign(cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
+    position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor * 0.3));
 
         // Twisting transformations on the xz and yz planes
     position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
@@ -112,7 +112,7 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
-  float delayEffect = clamp(timeFactor * 0.5 * (5.0 - harmonics), 0.2, 0.5) - organicNoise * 0.3;
+  float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.3, 0.8) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
   float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
@@ -121,6 +121,10 @@ float sdOctahedron(vec3 position, float size) {
   // position = abs(position);
 
   float m = (position.x + position.y + position.z) - size - delayEffect * 0.5;
+
+    // Morphing effect between square and octahedron based on `size`
+  float morphFactor = mix(1.0, organicNoise, size * 0.5);
+  m = mix(max(position.x, max(position.y, position.z)), m, morphFactor);
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;

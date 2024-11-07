@@ -63,17 +63,17 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = abs(tan(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency * 0.3));
+  float morphFactor = abs(cos(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
-  float twist = fract(stutter - length(position) * 3.0) * morphFactor;
+  float twist = cos(stutter - length(position) * 3.0) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (8.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor * 0.3));
+    // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
     position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
@@ -89,18 +89,20 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 float sdOctahedron(vec3 position, float size) {
 
   position *= 0.8;
+  // position.x *= 16.0 / 9.0;
+  // position.xy *= 4.0;
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 + uTime * 0.1, 2.0) * 0.5 + 0.5;
 
-  float digitalWave = abs(fract(sin(position.x * PI * organicNoise) + 1.0 * 2.0));
-  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.5));
+  float digitalWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
+  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
+  // digitalWave = 0.1 / sin(13.0 * digitalWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
   position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
-  position = abs(position);
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -112,13 +114,14 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.5 * (8.0 - harmonics), -0.3, 0.8 * uAudioFrequency * 0.5) - organicNoise;
   // float jitter = fractalBrownianMotion(position * 0.8 * PI * uTime * 0.3, 3.0);
   // float delayEffect = 1.0 - clamp(timeFactor * 0.3 * (8.0 - harmonics), 0.3 - jitter, 0.5 * uAudioFrequency) - organicNoise;
-  float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.3, 0.8) - organicNoise * 0.3;
+  float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.1, 0.8) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
   float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
   mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   position.xy = rotZ * position.xy;
   // position = abs(position);
+  position = abs(position);
 
   float m = (position.x + position.y + position.z) - size - delayEffect * 0.5;
 
@@ -145,6 +148,12 @@ float sdOctahedron(vec3 position, float size) {
   // position.yz *= mat2(cos(organicNoise), -sin(organicNoise), sin(organicNoise), cos(organicNoise));
 
   return length(vec3(q.x, q.y - size + k, q.z - k));
+
+  // return d;
+  // d = smoothstep(0.1, 0.8, d);
+  // d = 0.1 / d;
+
+  // return d;
 }
 
 float sdOctahedron2(vec3 position, float size) {

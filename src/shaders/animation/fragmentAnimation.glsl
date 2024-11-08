@@ -123,7 +123,7 @@ float sdOctahedron(vec3 position, float size) {
   // position = abs(position);
   position = abs(position);
 
-  float m = (position.x + position.y + position.z) - size - delayEffect * 0.5;
+  float m = (position.x + position.y + position.z - organicNoise * 0.5) - size - delayEffect * 0.5;
 
     // Morphing effect between square and octahedron based on `size`
   float morphFactor = mix(1.0, organicNoise, size * 0.5);
@@ -134,11 +134,11 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position / organicNoise;
+    q = position - organicNoise;
   else if (3.0 * position.y < m)
-    q = position.yzx / organicNoise;
+    q = position.yzx - organicNoise;
   else if (3.0 * position.z < m)
-    q = position.zxy / organicNoise;
+    q = position.zxy - organicNoise;
   else
     return m * 0.57735027;
 

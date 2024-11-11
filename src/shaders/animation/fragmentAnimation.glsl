@@ -127,7 +127,7 @@ float sdOctahedron(vec3 position, float size) {
 
     // Morphing effect between square and octahedron based on `size`
   float morphFactor = mix(1.0, organicNoise, size * 0.5);
-  m = mix(max(position.x, max(position.y, position.z)), m, morphFactor);
+  m = mix(max(position.x, min(position.y, position.z)), m, morphFactor);
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;

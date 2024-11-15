@@ -70,14 +70,14 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
-    vec3 modulation = vec3(sin(uTime * 0.001 + 0.5) * position.y, cos(uTime * 0.002 + 0.3) * position.y, 0.3);
+    vec3 modulation = vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
         // Mirror position with modulation based on all coordinates
-    position /= atan(position.y, position.z) * 0.5;
+    position -= sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
-    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xy *= mat2(cos(twist), -sin(uTime - twist), sin(twist), cos(twist));
         // position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
   }
 
@@ -95,7 +95,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
-  float organicNoise = fractalBrownianMotion(position * 0.3 + uTime * 0.1, 2.0) * 0.5 + 0.5;
+  float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
   float digitalWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
   digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));

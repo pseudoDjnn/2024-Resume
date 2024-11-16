@@ -43,10 +43,10 @@ float positionEase(float t, in float T) {
 */
 float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
-  // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
+  // float squareWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
-  float digitalWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
-  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
+  float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
+  squareWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
 
   position *= scale;
 
@@ -58,12 +58,12 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
   position.zy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
-  return abs(0.8 * dot(sin(digitalWave / position), cos(digitalWave / -position.zxy)) / scale) - thickness * bias;
+  return abs(0.8 * dot(sin(squareWave / position), cos(squareWave / -position.zxy)) / scale) - thickness * bias;
 }
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = abs(cos(stutter * 0.1) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
+  float morphFactor = abs(cos(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
   float twist = cos(stutter - length(position) * 3.0) * morphFactor;
@@ -74,6 +74,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
         // Mirror position with modulation based on all coordinates
     position -= sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
+    // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
@@ -97,13 +98,14 @@ float sdOctahedron(vec3 position, float size) {
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
-  float digitalWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  digitalWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
-  // digitalWave = 0.1 / sin(13.0 * digitalWave + uTime + position.x * position.y);
+  float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
+  squareWave = floor(cos(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
+  // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
+  float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.03, digitalWave));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -118,7 +120,7 @@ float sdOctahedron(vec3 position, float size) {
   float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.1, 0.8) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  float angle = digitalWave - abs(fract(delayEffect)) * 0.5;
+  float angle = squareWave - abs(fract(sin(triangleWave)));
   mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   position.xy = rotZ * position.xy;
   // position = abs(position);
@@ -270,7 +272,7 @@ float sdf(vec3 position) {
 
   // float distortion = dot(sin(position.z * 3.0 + uAudioFrequency * 0.02), cos(position.z * 3.0 + uAudioFrequency * 0.01)) * 0.2;
 
-  // float digitalWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
+  // float squareWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
 
 // Shapes used
 

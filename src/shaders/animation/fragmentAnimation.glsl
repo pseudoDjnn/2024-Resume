@@ -63,17 +63,17 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
     // Morphing factor based on time
-  float morphFactor = abs(fract(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
+  float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
-  float twist = fract(stutter - length(position.y));
+  float twist = fract(stutter - length(position.z)) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
   // Mirror position with modulation based on all coordinates
-    position -= sin(uTime * 0.5 * max(position.y, position.y) * 0.3) / morphFactor;
+    position -= modulation * sin(uTime * 0.5 * min(position.y, position.y) * 0.3);
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 

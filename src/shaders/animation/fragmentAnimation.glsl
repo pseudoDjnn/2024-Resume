@@ -66,10 +66,10 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
 
     // Morphing factor based on time
-  float morphFactor = time * abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
+  float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
-  float twist = fract(stutter / length(position.z)) * morphFactor;
+  float twist = time - fract(stutter / length(position.z)) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions

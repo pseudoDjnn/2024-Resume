@@ -74,6 +74,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
   // Mirror position with modulation based on all coordinates
     position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
+    position.x -= modulation.z;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 

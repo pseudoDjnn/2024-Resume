@@ -63,27 +63,25 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
-  float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
-
     // Morphing factor based on time
   float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
-  float twist = time - fract(stutter / length(position.z)) * morphFactor;
+  float twist = fract(stutter / length(position.z)) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
   // Mirror position with modulation based on all coordinates
-    position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
-    position.x -= modulation.z;
-    // position.y /= time;
+    // position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
+    position.y -= modulation.z;
+    position.y += 0.3;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
-    position.xy *= mat2(cos(twist), -sin(uTime - twist), sin(twist), cos(twist));
+    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
         // position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
   }
 
@@ -98,6 +96,8 @@ float sdOctahedron(vec3 position, float size) {
   position *= 0.8;
   // position.x *= 16.0 / 9.0;
   // position.xy *= 4.0;
+
+  float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;

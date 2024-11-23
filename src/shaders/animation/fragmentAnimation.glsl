@@ -63,6 +63,8 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 
 vec3 mirrorEffect(vec3 position, float stutter) {
 
+  float distance = length(position) * exp(-length(position));
+
     // Morphing factor based on time
   float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
 
@@ -70,6 +72,12 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float twist = fract(stutter / length(position.z)) * morphFactor;
 
   for (int i = 0; i < 5; i++) {
+
+    distance = sin(distance * 8.0 + uTime) / 8.0;
+    distance = abs(distance);
+
+    distance = pow(0.01 / distance, 1.2);
+
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
@@ -77,11 +85,12 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
     position.y -= modulation.z;
     position.y += 0.3;
+    // position.y /= distance;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
-    position.xy *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    position.xy *= mat2(cos(twist), -sin(twist), distance / sin(twist), cos(twist));
         // position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
   }
 
@@ -110,7 +119,7 @@ float sdOctahedron(vec3 position, float size) {
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave));
+  position = mirrorEffect(position, time / mod(uAudioFrequency * 0.01, squareWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +

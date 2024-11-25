@@ -113,13 +113,13 @@ float sdOctahedron(vec3 position, float size) {
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
+  squareWave = time - floor(cos(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
-  position = mirrorEffect(position, time / mod(uAudioFrequency * 0.01, squareWave));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave));
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +

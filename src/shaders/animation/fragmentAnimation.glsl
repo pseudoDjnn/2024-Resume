@@ -83,15 +83,16 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
   // Mirror position with modulation based on all coordinates
     // position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
-    position.y -= modulation.z;
+    position.y -= pow(modulation.z, 0.5);
     position.y += 0.3;
+    // position.z /= 0.8;
     // position.y /= distance;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
-    position.xy *= mat2(cos(twist), -sin(twist), distance / sin(twist), cos(twist));
-        // position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
+    position.yx *= mat2(cos(twist), -sin(twist), distance / sin(twist), cos(twist));
+    position.yz *= mat2(cos(twist * 0.7), sin(twist * 0.7), -sin(twist * 0.7), cos(twist * 0.7));
   }
 
   return position;
@@ -106,14 +107,16 @@ float sdOctahedron(vec3 position, float size) {
   // position.x *= 16.0 / 9.0;
   // position.xy *= 4.0;
 
-  float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
+  // float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
+  float time = exp(-uTime * 0.2) * 55.0 + sin(uTime * 0.5) * 8.0;
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = time - floor(cos(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.y + uAudioFrequency * 0.5));
+  squareWave = sin(uTime) - floor(cos(position.z - uAudioFrequency * 0.1) / uTime * 0.5) + ceil(sin(position.x + uAudioFrequency * 0.5));
+  squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
@@ -134,11 +137,12 @@ float sdOctahedron(vec3 position, float size) {
   float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.1, 0.8) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  float angle = squareWave - abs(fract(sin(triangleWave)));
+  float angle = abs(fract(sin(triangleWave)));
   mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   position.xy = rotZ * position.xy;
   // position = abs(position);
   position = abs(position);
+  // position.y *= triangleWave;
 
   float m = (position.x + position.y + position.z - organicNoise * 0.5 - delayEffect * 0.5) - size;
 
@@ -181,7 +185,7 @@ float sdOctahedron2(vec3 position, float size) {
   float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
 
   // position = abs(position);
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
+  // position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
 
   float scale = 144.0;
 

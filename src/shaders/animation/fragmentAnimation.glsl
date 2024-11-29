@@ -115,13 +115,14 @@ float sdOctahedron(vec3 position, float size) {
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
+  float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
+
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.2 * organicNoise * 0.3) / uTime * 0.5) + ceil(sin(position.y - uAudioFrequency * 0.5));
+  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) / uTime * 0.5) + ceil(sin(position.y - uAudioFrequency * 0.5) / time);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
-  float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
   position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave));
 
@@ -171,11 +172,6 @@ float sdOctahedron(vec3 position, float size) {
 
   return length(vec3(q.x, q.y - size + k, q.z - k));
 
-  // return d;
-  // d = smoothstep(0.1, 0.8, d);
-  // d = 0.1 / d;
-
-  // return d;
 }
 
 float sdOctahedron2(vec3 position, float size) {

@@ -66,7 +66,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
   float distance = length(position) * exp(-length(position));
 
     // Morphing factor based on time
-  float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 - sin(uAudioFrequency * 0.03));
+  float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5 * sin(uAudioFrequency * 0.03));
 
     // Combine with a twisting transformation for morphing
   float twist = fract(stutter / length(position.z)) * morphFactor;
@@ -75,7 +75,8 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = distance / vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
-    vec3 cubeMovement = vec3(sin(uTime * 0.2 + float(i) * 0.3) * fract(position.x * 3.0), cos(uTime * 0.2 + float(i) * 0.5) * fract(position.y * 3.0), sin(uTime * 0.3 + float(i) * 0.8) * fract(position.z * 3.0));
+
+    vec3 cubeMovement = min(modulation, modulation * 0.01) / vec3(sin(uTime * 0.2 + float(i) * 0.3) * fract(position.x * 3.0), cos(uTime * 0.2 + float(i) * 0.5) * fract(position.y * 3.0), sin(uTime * 0.3 + float(i) * 0.8) * fract(position.z * 3.0));
 
     // distance = sin(distance * 13.0 + uTime) / 13.0;
     // distance = abs(distance);
@@ -86,7 +87,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // position.y -= pow(modulation.z, 0.5);
     // position.y += 0.3;
     // position.z /= 0.8;
-    position -= cubeMovement * fract(modulation);
+    position -= cubeMovement * fract(position);
     // position.y *= modulation.y * 3.0;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
@@ -118,7 +119,7 @@ float sdOctahedron(vec3 position, float size) {
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - time * 0.5) / time);
+  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - time * 0.8) / time);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 

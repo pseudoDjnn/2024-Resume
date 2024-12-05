@@ -87,7 +87,8 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // position.y -= pow(modulation.z, 0.5);
     // position.y += 0.3;
     // position.z /= 0.8;
-    position -= cubeMovement * fract(position);
+    position -= cubeMovement * fract(position.y);
+    position.y /= fract(uTime * PI * position.z);
     // position.y *= modulation.y * 3.0;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
@@ -106,7 +107,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
 float sdOctahedron(vec3 position, float size) {
 
   position *= 0.8;
-  // position.x *= 16.0 / 9.0;
+  // position.x *= 21.0 / 9.0;
   // position.xy *= 4.0;
 
   // float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;

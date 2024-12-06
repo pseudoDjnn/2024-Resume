@@ -76,7 +76,7 @@ vec3 mirrorEffect(vec3 position, float stutter) {
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = distance / vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
-    vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) / vec3(sin(uTime * 0.2 + float(i) * 0.3) * fract(position.x * 3.0), cos(uTime * 0.2 + float(i) * 0.5) * fract(position.y * 3.0), sin(uTime * 0.3 + float(i) * 0.8) * fract(position.z * 3.0));
+    vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(abs(sin(uTime * 0.2 + float(i) * 0.3) / fract(position.x * 3.0)), cos(uTime * 0.2 + float(i) * 0.5) * fract(position.y * 3.0), sin(uTime * 0.3 + float(i) * 0.8) * fract(position.z * 3.0));
 
     // distance = sin(distance * 13.0 + uTime) / 13.0;
     // distance = abs(distance);
@@ -88,9 +88,9 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // position.y += 0.3;
     // position.z /= 0.8;
     position *= mod(cubeMovement, fract(position.y));
-    // position.y *= fract(uTime * PI * position.z);
+    position /= cos(uTime * position.z);
     // position.y *= modulation.y * 3.0;
-    position -= modulation * 0.2 * abs(position.y);
+    // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
@@ -176,67 +176,67 @@ float sdOctahedron(vec3 position, float size) {
 
 }
 
-float sdOctahedron2(vec3 position, float size) {
+// float sdOctahedron2(vec3 position, float size) {
 
-  position *= 0.8;
-  position.z *= 0.5;
+//   position *= 0.8;
+//   position.z *= 0.5;
 
-  float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
+//   float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
 
-  // position = abs(position);
-  // position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
+//   // position = abs(position);
+//   // position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
 
-  float scale = 144.0;
+//   float scale = 144.0;
 
-// Introduce noise to the displacement for a more organic feel
-  float noise = smoothNoise(position * 0.5 + uTime * 0.3);
-  float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
+// // Introduce noise to the displacement for a more organic feel
+//   float noise = smoothNoise(position * 0.5 + uTime * 0.3);
+//   float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
 
-// Use smoother transitions and larger variations in minor and major values
-  float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
-  float major = abs(fract(length(position) - cos(uTime) * (displacement * 0.34) + 0.5) - 0.5) * 2.2;
+// // Use smoother transitions and larger variations in minor and major values
+//   float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
+//   float major = abs(fract(length(position) - cos(uTime) * (displacement * 0.34) + 0.5) - 0.5) * 2.2;
 
-  minor = positionEase((noise * 0.01) * 0.5 + 0.5, major);
-  major = positionEase((noise * 0.3) * 0.5 + 0.5, minor);
+//   minor = positionEase((noise * 0.01) * 0.5 + 0.5, major);
+//   major = positionEase((noise * 0.3) * 0.5 + 0.5, minor);
 
-// Introduce smoother time-based modulation to the median
-  float median = sin(uTime * 0.8 - length(minor * major * 1.5));
+// // Introduce smoother time-based modulation to the median
+//   float median = sin(uTime * 0.8 - length(minor * major * 1.5));
 
-  float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
+//   float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
 
-// Add more complex twisting with Perlin noise for smoother transitions
-  float twist = cos(uTime - position.x * 3.0 + noise) * sin(uTime - position.y * 5.0 + noise) * cos(uTime - position.z * 34.0 + noise * 0.5);
+// // Add more complex twisting with Perlin noise for smoother transitions
+//   float twist = cos(uTime - position.x * 3.0 + noise) * sin(uTime - position.y * 5.0 + noise) * cos(uTime - position.z * 34.0 + noise * 0.5);
 
-  float twistDistance = length(twist);
+//   float twistDistance = length(twist);
 
-  float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 - noise * 3.0, 128.0))];
+//   float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 - noise * 3.0, 128.0))];
 
-// Modify position with smooth and organic influences
-  // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
+// // Modify position with smooth and organic influences
+//   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
 
-// Final m calculation with a broader and smoother influence
-  float m = (abs(position.x / intensity * 0.3) + abs(jitter - sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
+// // Final m calculation with a broader and smoother influence
+//   float m = (abs(position.x / intensity * 0.3) + abs(jitter - sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
 
-  // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
+//   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
 
-  vec3 q;
-  if (3.0 * position.x < m)
-    q = position;
-  else if (3.0 * position.y < m)
-    q = position.yzx - sin(uAudioFrequency);
-  else if (3.0 * position.z < m)
-    q = position.zxy;
-  else
-    return m * 0.57735027;
+//   vec3 q;
+//   if (3.0 * position.x < m)
+//     q = position;
+//   else if (3.0 * position.y < m)
+//     q = position.yzx - sin(uAudioFrequency);
+//   else if (3.0 * position.z < m)
+//     q = position.zxy;
+//   else
+//     return m * 0.57735027;
 
-        // Add varying sine waves for more natural transitions
-  float wavePattern = 0.1 * sin(uTime * 0.3 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) + 0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
+//         // Add varying sine waves for more natural transitions
+//   float wavePattern = 0.1 * sin(uTime * 0.3 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) + 0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
 
-  float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
+//   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
 
-  float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-  return length(vec3(q.x, q.y + k, q.z - k) / gyroid) / morphIntensity;
-}
+//   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
+//   return length(vec3(q.x, q.y + k, q.z - k) / gyroid) / morphIntensity;
+// }
 
 float sdf(vec3 position) {
 
@@ -294,7 +294,7 @@ float sdf(vec3 position) {
 // Shapes used
 
   float octahedron = sdOctahedron(position1, octaGrowth);
-  float octahedron2 = sdOctahedron2(position2, octaGrowth);
+  // float octahedron2 = sdOctahedron2(position2, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
   // octahedron = abs(octahedron) - 0.03;
@@ -310,7 +310,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave;
 
-  return polynomialSMin(ground, octahedron, 0.1);
+  return polynomialSMin(0.1, octahedron, 0.1);
 }
 
 // float ground(vec3 position) {

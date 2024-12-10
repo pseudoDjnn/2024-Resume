@@ -1,7 +1,7 @@
 vec3 palette(float tone) {
 
   // Increase intensity for each component to create a more vibrant color effect
-  vec3 a = 1.0 - cos(vec3(1.2, 1.2, 1.2)); // Higher values to make colors more intense
+  vec3 a = 1.0 - cos(uTime - vec3(1.2, 1.2, 1.2)); // Higher values to make colors more intense
   vec3 b = 1.0 - sin(vec3(1.2, 1.2, 1.2));
   vec3 c = -sin(vec3(0.8, 1.2, 1.0));
   vec3 d = 1.0 - cos(vec3(0.8, 0.5, 0.8));

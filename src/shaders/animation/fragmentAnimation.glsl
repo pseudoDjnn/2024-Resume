@@ -61,7 +61,7 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
   return abs(0.8 * dot(sin(squareWave / position), cos(squareWave / -position.zxy)) / scale) - thickness * bias;
 }
 
-vec3 mirrorEffect(vec3 position, float stutter) {
+vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float distance = length(position) * exp(-length(position));
 
@@ -71,12 +71,57 @@ vec3 mirrorEffect(vec3 position, float stutter) {
     // Combine with a twisting transformation for morphing
   float twist = fract(stutter / length(position.z)) * morphFactor;
 
+  // STEP 1: Aggregate audio data from low, mid, and high freq
+  float lowFreq = 0.0;
+  float midFreq = 0.0;
+  float highFreq = 0.0;
+
+  // Map frequency bands
+  for (int i = 0; i < 256; i++) {
+    if (i < 86) {
+      lowFreq += uFrequencyData[i];
+    } else if (i < 171) {
+      midFreq += uFrequencyData[i];
+    } else {
+      highFreq += uFrequencyData[i];
+    }
+  }
+
+  // Normalize values
+  lowFreq /= 86.0;
+  midFreq /= 86.0;
+  highFreq /= 86.0;
+
+  vec3 audioData = vec3(lowFreq, midFreq, highFreq);
+
+  // STEP 2: Frequency based angular morphing
+  float angularY = abs(cos(position.x * midFreq * 5.0)) * 0.3;
+  float angularX = abs(sin(position.y * lowFreq * 5.0));
+  float angularZ = abs(sin(position.z * highFreq * 5.0)) * 0.5;
+
+  vec3 angularMorph = vec3(angularX, angularY, angularZ);
+
+  // STEP 3: Negative space creation(using mod and clipping)
+  float clipThreshold = 0.3; // Adjust size of voids
+  // vec3 clippedPosition = mod(position, angularMorph) / step(clipThreshold, angularMorph);
+  vec3 clippedPosition = position + (angularMorph * step(clipThreshold, angularMorph)); 
+
+      // STEP 4: Add dynamic rotation for fluidity
+  float rotationAngle = time * 0.5; // Rotation speed
+  mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
+
+  vec3 rotatedPosition = rotationMatrix * clippedPosition;
+
+    // STEP 5: Fine-tuned twisting based on aggregate audio intensity
+  float twistAmount = dot(audioData, vec3(1.0)) * 0.1; // Total audio impact
+  rotatedPosition.xy *= mat2(cos(twistAmount), -sin(twistAmount), sin(twistAmount), cos(twistAmount));
+
   for (int i = 0; i < NUM_OCTAVES; i++) {
 
         // Apply dynamic modulation based on x, y, and z positions
     vec3 modulation = distance / vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
 
-    vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2 + float(i) * 0.3) / fract(position.x * 3.0)), fract(uTime * 0.2 + float(i) * 0.5) * sin(position.y * 3.0), cos(uTime - sin(uAudioFrequency * float(i) * 0.8) * fract(position.z * 3.0)));
+    vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2 + float(i) * 0.3) / fract(position.x * 3.0)), fract(uTime * 0.2 + float(i) * 0.5) * sin(position.y * 3.0), cos(uTime - fract(uAudioFrequency * float(i)) + fract(position.z * 8.0)));
 
     // distance = sin(distance * 13.0 + uTime) / 13.0;
     // distance = abs(distance);
@@ -127,7 +172,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave));
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), 1.0);
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -409,7 +454,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
     color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
-    color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime + round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
+    color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     color = smoothstep(-1.0, 1.0, color);
 
   }

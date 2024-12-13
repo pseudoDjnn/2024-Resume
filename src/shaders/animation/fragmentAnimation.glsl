@@ -89,22 +89,27 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   // Normalize values
   lowFreq /= 86.0;
-  midFreq /= 86.0;
-  highFreq /= 86.0;
+  midFreq /= 85.0;
+  highFreq /= 85.0;
 
   vec3 audioData = vec3(lowFreq, midFreq, highFreq);
 
+  // Apply dynamic modulation based on x, y, and z positions
+  vec3 modulation = distance / vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
+
+  vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2) / fract(position.x * 3.0)), fract(uTime * 0.2) * sin(position.y * 3.0), cos(uTime - fract(uAudioFrequency) + fract(position.z * 8.0)));
+
   // STEP 2: Frequency based angular morphing
-  float angularY = abs(cos(position.x * midFreq * 5.0)) * 0.3;
   float angularX = abs(sin(position.y * lowFreq * 5.0));
+  float angularY = abs(cos(position.x * midFreq * 8.0)) * 0.3;
   float angularZ = abs(sin(position.z * highFreq * 5.0)) * 0.5;
 
   vec3 angularMorph = vec3(angularX, angularY, angularZ);
 
   // STEP 3: Negative space creation(using mod and clipping)
-  float clipThreshold = 0.3; // Adjust size of voids
+  float clipThreshold = 0.8; // Adjust size of voids
   // vec3 clippedPosition = mod(position, angularMorph) / step(clipThreshold, angularMorph);
-  vec3 clippedPosition = position + (angularMorph * step(clipThreshold, angularMorph)); 
+  vec3 clippedPosition = position + (angularMorph * step(clipThreshold, angularMorph)) * mod(modulation, cubeMovement) / fract(cubeMovement); 
 
       // STEP 4: Add dynamic rotation for fluidity
   float rotationAngle = time * 0.5; // Rotation speed
@@ -116,35 +121,27 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   float twistAmount = dot(audioData, vec3(1.0)) * 0.1; // Total audio impact
   rotatedPosition.xy *= mat2(cos(twistAmount), -sin(twistAmount), sin(twistAmount), cos(twistAmount));
 
-  for (int i = 0; i < NUM_OCTAVES; i++) {
-
-        // Apply dynamic modulation based on x, y, and z positions
-    vec3 modulation = distance / vec3(sin(uTime * 0.1 + 0.5) * position.y, cos(uTime * 0.2 + 0.3) * position.y, 0.3);
-
-    vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2 + float(i) * 0.3) / fract(position.x * 3.0)), fract(uTime * 0.2 + float(i) * 0.5) * sin(position.y * 3.0), cos(uTime - fract(uAudioFrequency * float(i)) + fract(position.z * 8.0)));
+  // for (int i = 0; i < NUM_OCTAVES; i++) {
 
     // distance = sin(distance * 13.0 + uTime) / 13.0;
     // distance = abs(distance);
     // distance = pow(0.01 / distance, 1.2);
 
   // Mirror position with modulation based on all coordinates
-    // position -= modulation * sin(uTime * 0.5 * max(position.y, position.y) * 0.3);
-    // position.y -= pow(modulation.z, 0.5);
-    // position.y += 0.3;
-    // position.z /= 0.8;
-    position *= mod(cubeMovement * distance * 0.3, fract(position.y));
-    position /= cos(uTime * position.z);
-    // position += sin(modulation * uTime) *  morphFactor;
-    // position.y *= modulation.y * 3.0;
+  // rotatedPosition *= mod(cubeMovement * distance * 0.3, fract(rotatedPosition.y));
+  // rotatedPosition /= cos(uTime * rotatedPosition.z);
+  // rotatedPosition += sin(modulation * uTime) * morphFactor;
+  // rotatedPosition.y *= modulation.y * 3.0;
     // position -= modulation * 0.2 * abs(position.y);
     // position = abs(position + mod(position, modulation) * sign(uTime * PI * cos(position.y - (8.0 - float(i)) - uTime * 0.2) * 0.3 / modulation) * abs(fract(position.x * (89.0 - float(i)) - uTime * 0.15)) * abs(position.z / morphFactor));
 
         // Twisting transformations on the xz and yz planes
-    position.yx *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
+    // rotatedPosition.yx *= mat2(cos(twist), -sin(twist), sin(twist), cos(twist));
     // position.yz *= mat2(cos(twist * 0.3), sin(twist * 0.3), -sin(twist * 0.3), cos(twist * 0.3));
-  }
+  // }
+  // rotatedPosition *= rotatedPosition - sin(cos(uTime) - cubeMovement);
 
-  return position;
+  return rotatedPosition;
 }
 
 /*
@@ -166,13 +163,13 @@ float sdOctahedron(vec3 position, float size) {
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
+  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), 1.0);
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), 0.1);
 
   // float harmonics = 0.3 * cos(uAudioFrequency * 0.5 - position.x * 2.0) * tan(uTime * 0.3 - PI * position.y * 13.0) * sin(position.z * 21.0);
   float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -205,11 +202,11 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position;
+    q = position - sin(uTime - organicNoise * 8.0);
   else if (3.0 * position.y < m)
-    q = position.yzx;
+    q = position.yzx - sin(uTime - organicNoise * 8.0);
   else if (3.0 * position.z < m)
-    q = position.zxy;
+    q = position.zxy - sin(uTime - organicNoise * 8.0);
   else
     return m * 0.57735027;
 

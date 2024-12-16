@@ -71,6 +71,8 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // Combine with a twisting transformation for morphing
   float twist = fract(stutter / length(position.z)) * morphFactor;
 
+  float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
+
   // STEP 1: Aggregate audio data from low, mid, and high freq
   float lowFreq = 0.0;
   float midFreq = 0.0;
@@ -100,11 +102,16 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2) / fract(position.x * 3.0)), fract(uTime * 0.2) * sin(position.y * 3.0), cos(uTime - fract(uAudioFrequency) + fract(position.z * 8.0)));
 
   // STEP 2: Frequency based angular morphing
-  float angularX = abs(sin(position.y * lowFreq * 5.0));
-  float angularY = abs(cos(position.x * midFreq * 8.0)) * 0.3;
-  float angularZ = abs(sin(position.z * highFreq * 5.0)) * 0.5;
+  float angularX = organicNoise - abs(sin(position.y * lowFreq * 5.0));
+  float angularY = organicNoise - abs(cos(position.x * midFreq * 8.0)) * 0.3;
+  float angularZ = organicNoise - abs(sin(position.z * highFreq * 5.0)) * 0.5;
 
   vec3 angularMorph = vec3(angularX, angularY, angularZ);
+
+  float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0);
+
+  float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
+  // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time);
 
   // STEP 3: Negative space creation(using mod and clipping)
   float clipThreshold = 0.8; // Adjust size of voids
@@ -116,6 +123,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
   vec3 rotatedPosition = rotationMatrix * clippedPosition;
+  // rotatedPosition.y *= cubeMovement.z;
 
     // STEP 5: Fine-tuned twisting based on aggregate audio intensity
   float twistAmount = dot(audioData, vec3(1.0)) * 0.1; // Total audio impact
@@ -160,10 +168,8 @@ float sdOctahedron(vec3 position, float size) {
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
 
-  float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0) * organicNoise;
-
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
+  // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
@@ -184,7 +190,7 @@ float sdOctahedron(vec3 position, float size) {
   float delayEffect = clamp(timeFactor * 0.8 * (3.0 - harmonics), 0.1, 0.8) - organicNoise * 0.3;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  float angle = abs(fract(sin(triangleWave)));
+  float angle = abs(fract(sin(squareWave)));
   mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
   position.xy = rotZ * position.xy;
   // position = abs(position);

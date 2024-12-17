@@ -12,6 +12,6 @@ vec3 palette(float tone) {
 
   // Apply dulling factor to tone and time-based color calculation
   // return (a + b * -cos(uTime / 5.28318 * (c + tone + d))) * dullFactor;
-  return mix(vec3(0.3, 0.8, fract(uTime * 0.5)), a + b * cos(c + tone + uTime * 0.3) * 0.3, dullFactor) * d;
+  return mix(vec3(0.3, 0.8, fract(uTime * 0.5)), a + b * cos(c + tone + uTime * 0.3) * 0.3, dullFactor * d);
 
 }

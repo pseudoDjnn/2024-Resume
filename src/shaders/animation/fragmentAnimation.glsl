@@ -478,16 +478,25 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
       break;
 
-    float alpha = cos(uTime - tan(position.x * 8.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
-    float beta = sin(mod(position.y * 89.0, uTime) - uTime * 2.0) * 1.0 / 2.5;
-    float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
-    float delta = uTime + (fractalBrownianMotion(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
+    // float alpha = cos(uTime - tan(position.x * 8.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
+    // float beta = sin(mod(position.y * 89.0, uTime) - uTime * 2.0) * 1.0 / 2.5;
+    // float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
+    // float delta = uTime + (fractalBrownianMotion(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
 
-    float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
-    color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
+    // float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
+    // color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
-    color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
-    color = smoothstep(-1.0, 1.0, color) * 0.5 + 0.5;
+    // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
+    float fbmVal = fractalBrownianMotion(position * 0.5, 3.0);
+    float alpha = exp(-0.05 * startDist);
+    float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
+    float turb = fbmVal * (1.0 + uFrequencyData[64] * 0.1);
+
+    color = mix(color, vec3(0.2, 0.5, 0.8), gradient); // Smooth gradient coloring
+    color += vec3(turb) * 0.2;                         // Turbulence-based variations
+    color = mix(color, vec3(0.0), 1.0 - alpha);        // Fade with distance
+
+    // color = smoothstep(-1.0, 1.0, color) * 0.5 + 0.5;
 
   }
   return color;

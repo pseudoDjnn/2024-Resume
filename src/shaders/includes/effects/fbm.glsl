@@ -13,7 +13,7 @@ float smoothNoise(vec3 coordinates) {
   float randOrigin = randomValue(integerPart);
   float randOffsetX = randomValue(integerPart + vec3(1.0, 0.0, 0.0));
   float randOffsetY = randomValue(integerPart + vec3(0.0, 1.0, 0.0));
-  float randOffsetXY = randomValue(integerPart + vec3(1.0, 1.0, 1.0));
+  float randOffsetXY = randomValue(integerPart + vec3(1.0, 1.0, 0.0));
 
   // Perform bilinear interpolation between random values
   float interpolatedX = mix(randOrigin, randOffsetX, fractionalPart.x);
@@ -24,20 +24,20 @@ float smoothNoise(vec3 coordinates) {
 }
 
 float fractalBrownianMotion(vec3 coordinates, float roughness) {
+  float persistence = 0.5 + 0.3 * sin(uTime * 0.2);  // Evolving persistence for organic transitions
+  float frequency = 2.0;                             // Initial frequency
+  float amplitude = 3.0;                             // Initial amplitude
+  float totalNoise = 0.0;                            // Accumulated noise
 
-  float persistence = exp2(-roughness);  // Controls the amplitude falloff
-  float frequency = 2.0;                 // Initial frequency
-  float amplitude = 3.0;                 // Initial amplitude
-  float totalNoise = 0.0;                // Accumulated noise
-
-  vec3 timeOffset = vec3(uTime * 0.1) + 0.3;   // Time-based offset for fluidity
+  vec3 timeOffset = vec3(uTime * 0.1) + 0.5;         // Time-based offset for fluidity
   float audioEffect = 0.008 + 0.008 * sin(uAudioFrequency);  // Modulate noise by audio frequency
 
-  // Loop through multiple noise layers (octaves)
+    // Loop through multiple noise layers (octaves)
   for (int octave = 0; octave < NUM_OCTAVES; octave++) {
-    totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect);  // Add scaled noise with audio effect
-    frequency *= 8.0;  // Double the frequency for next octave
-    amplitude *= persistence;  // Decrease amplitude for next octave
+    float octaveWeight = mix(1.0, 0.8, float(octave) / float(NUM_OCTAVES)); // Scale amplitude for fluidity
+    totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect) * octaveWeight;
+    frequency *= 1.8;  // Less aggressive frequency scaling for smoother layers
+    amplitude *= persistence;  // Adjust amplitude using evolving persistence
   }
 
   return totalNoise;

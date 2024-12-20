@@ -16,9 +16,10 @@ float smoothNoise(vec3 coordinates) {
   float randOffsetXY = randomValue(integerPart + vec3(1.0, 1.0, 0.0));
 
   // Perform bilinear interpolation between random values
-  float interpolatedX = mix(randOrigin, randOffsetX, fractionalPart.x);
-  float interpolatedY = mix(randOffsetY, randOffsetXY, fractionalPart.x);
-  float result = mix(interpolatedX, interpolatedY, fractionalPart.y);
+  float interpolatedX = fract(uTime * 0.2 - mix(randOrigin, randOffsetX, fractionalPart.x));
+  float interpolatedY = mix(randOffsetY, randOffsetXY, fractionalPart.x * fract(uAudioFrequency * 0.03));
+  // TODO: YOU STOPPED HERE !!!
+  float result = sin(uTime * 0.5 - mix(interpolatedX, interpolatedY, fractionalPart.y)) * 0.5 + 0.1;
 
   return result * result;  // Square the result for a smoother transition
 }

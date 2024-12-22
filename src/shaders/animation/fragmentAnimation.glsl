@@ -114,7 +114,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0);
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time) - organicNoise;
+  // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time) - organicNoise;
 
     // STEP 6: Define base shapes dynamically based on position
   float sphereSDF = length(position) * 0.5;                  // Sphere shape
@@ -123,7 +123,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
     // STEP 7: Shape morphing factor based on audio and time
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3) * 0.5 + 0.5); // Time-driven smooth morph
-  float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
+  // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
 
     // STEP 8: Blend between shapes using mix()
   float blendedShape = mix(cubeSDF, sphereSDF, angularY - timeMorph); // Cube <-> Sphere

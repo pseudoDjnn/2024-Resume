@@ -18,8 +18,7 @@ float smoothNoise(vec3 coordinates) {
   // Perform bilinear interpolation between random values
   float interpolatedX = fract(uTime * 0.2 - mix(randOrigin, randOffsetX, fractionalPart.x));
   float interpolatedY = mix(randOffsetY, randOffsetXY, fractionalPart.x * fract(uAudioFrequency * 0.03));
-  // TODO: YOU STOPPED HERE !!!
-  float result = sin(uTime * 0.5 - mix(interpolatedX, interpolatedY, fractionalPart.y)) * 0.5 + 0.1;
+  float result = sin(mix(interpolatedX, interpolatedY, fractionalPart.y)) * 0.5 + 0.5;
 
   return result * result;  // Square the result for a smoother transition
 }
@@ -35,7 +34,7 @@ float fractalBrownianMotion(vec3 coordinates, float roughness) {
 
     // Loop through multiple noise layers (octaves)
   for (int octave = 0; octave < NUM_OCTAVES; octave++) {
-    float octaveWeight = mix(1.0, 0.8, float(octave) / float(NUM_OCTAVES)); // Scale amplitude for fluidity
+    float octaveWeight = 0.5 / 0.5 - mix(1.0, 0.9, sin(uTime - float(octave) / float(NUM_OCTAVES))); // Scale amplitude for fluidity
     totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect) * octaveWeight;
     frequency *= 1.8;  // Less aggressive frequency scaling for smoother layers
     amplitude *= persistence;  // Adjust amplitude using evolving persistence

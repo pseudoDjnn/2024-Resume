@@ -239,9 +239,9 @@ float sdOctahedron(vec3 position, float size) {
   if (3.0 * position.x < m)
     q = position - sin(uTime - organicNoise * 8.0);
   else if (3.0 * position.y < m)
-    q = position.yzx - sin(uTime - organicNoise * 8.0);
+    q = position.yzx - cos(uTime - organicNoise * 8.0);
   else if (3.0 * position.z < m)
-    q = position.zxy - sin(uTime - organicNoise * 8.0);
+    q = position.zxy - fract(uTime - organicNoise * 8.0);
   else
     return m * 0.57735027;
 

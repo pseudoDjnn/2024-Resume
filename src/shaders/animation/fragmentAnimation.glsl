@@ -119,7 +119,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // STEP 6: Define base shapes dynamically based on position
   float sphereSDF = length(position) * 0.5;                  // Sphere shape
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z))); // Cube shape
-  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.6; // Octahedron shape
+  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.8; // Octahedron shape
 
     // STEP 7: Shape morphing factor based on audio and time
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3) * 0.5 + 0.5); // Time-driven smooth morph
@@ -136,7 +136,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
     // STEP 10: Apply modulation for dynamic offsets
   vec3 modulation = angularMorph * sin(uTime + length(position)) * 0.5;
-  vec3 morphedPosition = position + modulation;
+  vec3 morphedPosition = position - smoothstep(0.0, 1.0, modulation);
 
     // STEP 11: Final clipping for negative space
   float clipThreshold = 0.8 + audioData.z * 0.01; // High-frequency-based voids
@@ -195,7 +195,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
-  float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 2.0) * 0.5 + 0.5;
+  float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 1.0) * 0.5 + 0.5;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
   // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
@@ -230,16 +230,16 @@ float sdOctahedron(vec3 position, float size) {
 
     // Morphing effect between square and octahedron based on `size`
   float morphFactor = mix(1.0, organicNoise, size * 0.5);
-  m = mix(max(position.z, min(position.y, position.x)), m, morphFactor);
+  // m = mix(max(position.z, min(position.y, position.x)), m, morphFactor);
 
   // Smooth, flowing shape that uses sin and cos to create wave patterns
   // float m = abs(position.x + sin(uTime * 0.3 + fract(position.y * 1.3))) + abs(position.y + cos(uTime * 0.5 - position.z * 1.2)) + abs(position.z + sin(position.x * 0.8 + uTime * 0.2)) - size;
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - sin(uTime - organicNoise * 8.0);
+    q = position - sin(uTime * 0.5 - organicNoise * 8.0);
   else if (3.0 * position.y < m)
-    q = position.yzx - cos(uTime - organicNoise * 8.0);
+    q = position.yzx - cos(uTime * 0.8 - organicNoise * 8.0);
   else if (3.0 * position.z < m)
     q = position.zxy - fract(uTime - organicNoise * 8.0);
   else

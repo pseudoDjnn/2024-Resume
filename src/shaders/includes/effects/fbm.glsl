@@ -37,7 +37,7 @@ float fractalBrownianMotion(vec3 coordinates, float roughness) {
     float octaveWeight = 0.5 / 0.5 - mix(1.0, 0.9, sin(uTime - float(octave) / float(NUM_OCTAVES))); // Scale amplitude for fluidity
     totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect) * octaveWeight;
     frequency *= 2.5;  // Less aggressive frequency scaling for smoother layers
-    amplitude *= persistence;  // Adjust amplitude using evolving persistence
+    amplitude *= persistence * 0.5;  // Adjust amplitude using evolving persistence
   }
 
   return totalNoise;

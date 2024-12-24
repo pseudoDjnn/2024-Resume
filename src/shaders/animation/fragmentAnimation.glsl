@@ -119,7 +119,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // STEP 6: Define base shapes dynamically based on position
   float sphereSDF = length(position) * 0.5;                  // Sphere shape
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z))); // Cube shape
-  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.8; // Octahedron shape
+  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.5; // Octahedron shape
 
     // STEP 7: Shape morphing factor based on audio and time
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3) * 0.5 + 0.5); // Time-driven smooth morph
@@ -127,12 +127,12 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
     // STEP 8: Blend between shapes using mix()
   float blendedShape = mix(cubeSDF, sphereSDF, angularY - timeMorph); // Cube <-> Sphere
-  float finalShape = mix(blendedShape, octahedronSDF, float(angularMorph)); // Blending Octahedron
+  float finalShape = mix(blendedShape, octahedronSDF, float(angularMorph) / sin(uTime - normalizedDist * 0.05)); // Blending Octahedron
 
     // STEP 9: Introduce twisting and angular morph
   float twistFactor = sin(position.y * audioData.y * 3.0) * 0.3;
   mat2 twistMatrix = mat2(cos(twistFactor), -sin(twistFactor), sin(twistFactor), cos(twistFactor));
-  position.xz *= twistMatrix;
+  // position.xz *= twistMatrix;
 
     // STEP 10: Apply modulation for dynamic offsets
   vec3 modulation = angularMorph * sin(uTime + length(position)) * 0.5;
@@ -149,14 +149,16 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
     // STEP 12: Add dynamic rotation for fluidity
   float rotationAngle = time * 0.5; // Rotation speed
+  float interference = fract(cos(dot(position, vec3(1.0, 2.0, 3.0)) * 10.0) * 43758.5453123);
+
   mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
   vec3 rotatedPosition = rotationMatrix * clippedPosition;
   // rotatedPosition.y *= cubeMovement.z;
 
     // STEP 13: Fine-tuned twisting based on aggregate audio intensity
-  float twistAmount = dot(audioData * 0.3, vec3(1.0)) * 0.1; // Total audio impact
-  rotatedPosition.xy *= mat2(cos(twistAmount), -sin(twistAmount), sin(twistAmount), cos(twistAmount));
+  float twistAmount = dot(audioData * 0.1, vec3(1.0)) * 0.1; // Total audio impact
+  // rotatedPosition.xy *= mat2(cos(twistAmount), -sin(twistAmount), sin(twistAmount), cos(twistAmount));
 
   // for (int i = 0; i < NUM_OCTAVES; i++) {
 
@@ -237,9 +239,9 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - sin(uTime * 0.5 - organicNoise * 8.0);
+    q = position / sin(uTime * 0.5 - organicNoise * 8.0);
   else if (3.0 * position.y < m)
-    q = position.yzx - cos(uTime * 0.8 - organicNoise * 8.0);
+    q = position.yzx / cos(uTime * 0.8 - organicNoise * 8.0);
   else if (3.0 * position.z < m)
     q = position.zxy - fract(uTime - organicNoise * 8.0);
   else
@@ -487,14 +489,14 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     // color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
     // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
-    float fbmVal = fractalBrownianMotion(position * 0.5, 3.0);
+    float fbmVal = fractalBrownianMotion(position * 0.5, 5.0) - sin(uTime);
     float alpha = exp(-0.05 * startDist);
     float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
     float turb = fbmVal * (1.0 + uFrequencyData[64] * 0.1);
 
     color = mix(color, vec3(0.2, 0.5, 0.8), gradient); // Smooth gradient coloring
-    color += vec3(turb) * 0.2;                         // Turbulence-based variations
-    color = mix(color, vec3(0.0), 1.0 - alpha);        // Fade with distance
+    color += vec3(turb) * 0.1;                         // Turbulence-based variations
+    color = mix(color, vec3(0.0), alpha);        // Fade with distance
 
     // color = smoothstep(-1.0, 1.0, color) * 0.5 + 0.5;
 

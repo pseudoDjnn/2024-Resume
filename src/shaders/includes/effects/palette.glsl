@@ -8,7 +8,7 @@ vec3 palette(float tone) {
 
   // Dulling factor to reduce vibrancy
   // float dullFactor = abs(sin(uTime * 0.01 * atan(uTime, uAudioFrequency)));
-  float dullFactor = smoothstep(0.2, 0.8, abs(sin(uTime * 0.1)));
+  float dullFactor = smoothstep(0.2, 0.5, abs(sin(uTime * 0.1)));
 
   float interpo = smoothstep(0.0, 1.0, fract(tone + uTime * 0.2));
 

@@ -30,7 +30,7 @@ float fractalBrownianMotion(vec3 coordinates, float roughness) {
   float totalNoise = 0.0 * (roughness * 0.5);                            // Accumulated noise
 
   vec3 timeOffset = vec3(uTime * 0.3) * 0.5 + 0.5;         // Time-based offset for fluidity
-  float audioEffect = sin(0.05 + 0.05 * uAudioFrequency);  // Modulate noise by audio frequency
+  float audioEffect = sin(0.5 + 0.5 * uFrequencyData[255]);  // Modulate noise by audio frequency
 
     // Loop through multiple noise layers (octaves)
   for (int octave = 0; octave < NUM_OCTAVES; octave++) {

@@ -64,14 +64,14 @@ float sdGyroid(vec3 position, float scale, float thickness, float bias) {
 vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float dist = length(position);
-  float normalizedDist = dist * exp(-dist);
+  float normalizedDist = dist * exp(-dist * 0.5);
 
     // STEP 1: Morphing factor driven by stutter, audio, and time
   float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5);
   morphFactor *= sin(uAudioFrequency * 0.03);
 
     // STEP 2: Organic noise using Fractal Brownian Motion
-  float organicNoise = fractalBrownianMotion(position - uTime, 5.0);
+  float organicNoise = fractalBrownianMotion(position * 0.5 - uTime * 0.2, 5.0);
 
     // Combine with a twisting transformation for morphing
   // float twist = fract(stutter / length(position.z)) * morphFactor;
@@ -83,11 +83,11 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   for (int i = 0; i < 256; i++) {
     if (i < 86) {
-      lowFreq += uFrequencyData[i];
+      lowFreq *= uFrequencyData[i];
     } else if (i < 171) {
-      midFreq += uFrequencyData[i];
+      midFreq *= uFrequencyData[i];
     } else {
-      highFreq += uFrequencyData[i];
+      highFreq *= uFrequencyData[i];
     }
   }
 
@@ -104,32 +104,19 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // vec3 cubeMovement = 3.0 * min(modulation, modulation * 0.01) * vec3(sign(sin(uTime * 0.2) / fract(position.x * 3.0)), fract(uTime * 0.2) * sin(position.y * 3.0), cos(uTime - fract(uAudioFrequency) + fract(position.z * 8.0)));
 
     // STEP 4: Shape blending using morph factor
-  float angularX = abs(sin(position.x * lowFreq));
-  float angularY = abs(cos(position.y * midFreq)) * 0.1;
+  float angularX = abs(sin(position.x * lowFreq + organicNoise));
+  float angularY = abs(cos(position.y * midFreq + uTime * 0.1)) * 0.1;
   float angularZ = abs(sin(position.z * highFreq)) * 0.5 + 0.5;
 
   float interference = fract(cos(dot(position * stutter, vec3(1.0, 2.0, 3.0)) * 13.0) * 43758.5453123);
 
     // STEP 5: Audio-driven angular morphing factor for the axis
-  vec3 angularMorph = vec3(angularX, angularY, angularZ) * 0.3;
+  vec3 angularMorph = vec3(angularX, angularY, angularZ) * 0.5;
 
   float triangleWave = abs(fract(position.x * 0.5 + uAudioFrequency * 0.05) * 2.0 - 1.0);
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
   // squareWave = floor(cos(position.z - uAudioFrequency * 0.2) / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time) - organicNoise;
-
-    // STEP 6: Define base shapes dynamically based on position
-  float sphereSDF = length(position) * 0.8;                  // Sphere shape
-  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z))); // Cube shape
-  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.5; // Octahedron shape
-
-    // STEP 7: Shape morphing factor based on audio and time
-  float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3)); // Time-driven smooth morph
-  // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
-
-    // STEP 8: Blend between shapes using mix()
-  float blendedShape = mix(cubeSDF, sphereSDF, uFrequencyData[0]); // Cube <-> Sphere
-  float finalShape = mix(blendedShape, octahedronSDF, float(angularMorph)); // Blending Octahedron
 
     // STEP 9: Introduce twisting and angular morph
   // float twistFactor = sin(position.y * audioData.y * 3.0) * 0.3;
@@ -137,13 +124,13 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // position.zy *= twistMatrix;
 
     // STEP 10: Apply modulation for dynamic offsets
-  vec3 modulation = angularMorph * sin(uTime - dist);
+  vec3 modulation = angularMorph * exp(dist * 0.3);
 
   vec3 morphedPosition = position - modulation;
 
     // STEP 11: Final clipping for negative space
-  float clipThreshold = 0.5 + audioData.z * 0.01; // High-frequency-based voids
-  vec3 clippedPosition = mod(clipThreshold, finalShape) * morphedPosition;
+  // float clipThreshold = 0.5 + audioData.z * 0.01; // High-frequency-based voids
+  // vec3 clippedPosition = mod(clipThreshold, finalShape) * morphedPosition;
 
   // STEP 3: Negative space creation(using mod and clipping)
   // float clipThreshold = 0.8; // Adjust size of voids
@@ -155,7 +142,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
-  vec3 rotatedPosition = rotationMatrix * clippedPosition;
+  vec3 rotatedPosition = rotationMatrix * (position - morphedPosition);
   // rotatedPosition.y *= cubeMovement.z;
 
     // STEP 13: Fine-tuned twisting based on aggregate audio intensity
@@ -181,8 +168,20 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // position.yz *= mat2(cos(twist * 0.3), sin(twist * 0.3), -sin(twist * 0.3), cos(twist * 0.3));
   // }
   // rotatedPosition *= rotatedPosition - sin(cos(uTime) - cubeMovement);
+     // STEP 6: Define base shapes dynamically based on position
+  float sphereSDF = length(position) * 0.8;                  // Sphere shape
+  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z))); // Cube shape
+  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.5; // Octahedron shape
 
-  return rotatedPosition;
+      // STEP 7: Shape morphing factor based on audio and time
+  float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3)); // Time-driven smooth morph
+  // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
+
+      // STEP 8: Blend between shapes using mix()
+  float blendedShape = mix(cubeSDF, sphereSDF, timeMorph); // Cube <-> Sphere
+  float finalShape = mix(blendedShape, octahedronSDF, float(angularMorph)); // Blending Octahedron
+
+  return rotatedPosition * finalShape;
 }
 
 /*

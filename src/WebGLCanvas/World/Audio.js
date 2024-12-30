@@ -22,7 +22,7 @@ export default class Audio {
     this.audioLoader.load('sound/1st Track06-16-24(2).mp3', (bufnr) => {
       this.sound.setBuffer(bufnr)
       window.addEventListener('click', () => {
-        this.sound.setVolume(0.3)
+        this.sound.setVolume(0.2)
         this.sound.play()
       })
     })

@@ -17,7 +17,7 @@ float smoothNoise(vec3 coordinates) {
 
   // Perform bilinear interpolation between random values
   float interpolatedX = fract(mix(randOrigin, randOffsetX, fractionalPart.x));
-  float interpolatedY = fract(mix(randOffsetY, randOffsetXY, fractionalPart.x * fract(uFrequencyData[32])));
+  float interpolatedY = fract(mix(randOffsetY, randOffsetXY, fractionalPart.y - sin(uFrequencyData[32])));
   float result = sin(mix(interpolatedX, interpolatedY, fractionalPart.y)) * 0.5 + 0.5;
 
   return result * result;  // Square the result for a smoother transition

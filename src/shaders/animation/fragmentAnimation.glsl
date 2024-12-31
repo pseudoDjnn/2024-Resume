@@ -202,7 +202,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  position /= 1.1;
+  position /= 1.0;
   // position.x *= 21.0 / 8.0;
   // position.xy *= 4.0;
 
@@ -222,13 +222,13 @@ float sdOctahedron(vec3 position, float size) {
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 1.0 - size) * 0.5 + 0.5;
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0) * organicNoise);
-  squareWave = floor(cos(position.z - uAudioFrequency * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
+  squareWave = floor(cos(position.y - uTime * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), 0.1);
+  position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), organicNoise);
 
   float harmonics = 1.0 - cos(uAudioFrequency * 0.3 - position.x * 2.0) - tan(uTime * 0.08 * PI * position.y * 13.0) * 0.1;
   // float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
@@ -244,9 +244,9 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.1 * (PI * harmonics), 0.1, 0.8) / organicNoise;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  float angle = abs(fract(sin(time)));
-  mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-  position.xy = rotZ * position.xy;
+  // float angle = abs(fract(sin(time)));
+  // mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+  // position.xy = rotZ * position.xy;
   // position = abs(position);
   position = abs(position);
   // position.x *= organicNoise;
@@ -262,7 +262,7 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position - sin(harmonics * 0.1);
+    q = position - cos(harmonics * 0.1);
   else if (3.0 * position.y < m)
     q = position.yzx - fract(uFrequencyData[177]);
   else if (3.0 * position.z < m)
@@ -359,7 +359,7 @@ float sdf(vec3 position) {
 
   vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.3) * 0.3);
 
-  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uAudioFrequency * 0.05)));
+  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uFrequencyData[255])));
 
   // vec3 position3 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
 

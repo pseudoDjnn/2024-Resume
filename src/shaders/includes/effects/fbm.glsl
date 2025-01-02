@@ -16,26 +16,27 @@ float smoothNoise(vec3 coordinates) {
   float randOffsetXY = randomValue(integerPart + vec3(1.0, 1.0, 0.0));
 
   // Perform bilinear interpolation between random values
-  float interpolatedX = fract(mix(randOrigin, randOffsetX, fractionalPart.x));
-  float interpolatedY = fract(mix(randOffsetY, randOffsetXY, fractionalPart.y - sin(uFrequencyData[32])));
-  float result = sin(mix(interpolatedX, interpolatedY, fractionalPart.y)) * 0.5 + 0.5;
+  float interpolatedX = mix(randOrigin, randOffsetX, fractionalPart.x);
+  float interpolatedY = mix(randOffsetY, randOffsetXY, fractionalPart.y);
+  float result = sin(uTime * 0.5 - mix(interpolatedX, interpolatedY, fractionalPart.z)) * 0.5 + 0.5;
 
   return result * result;  // Square the result for a smoother transition
 }
 
 float fractalBrownianMotion(vec3 coordinates, float roughness) {
-  float persistence = 0.5 + 0.3 * sin(uTime * 0.2);  // Evolving persistence for organic transitions
+  float persistence = 1.3;  // Evolving persistence for organic transitions
+  // TODO This is the stopping point
   float frequency = 2.0;                             // Initial frequency
   float amplitude = 3.0;                             // Initial amplitude
   float totalNoise = 0.0 * (uTime - roughness);                            // Accumulated noise
 
-  vec3 timeOffset = vec3(uTime * 0.3) * 0.5 + 0.5;         // Time-based offset for fluidity
+  vec3 timeOffset = vec3(1.0, 0.0, 0.0) * 0.5 + 0.5;         // Time-based offset for fluidity
   float audioEffect = sin(0.5 + 0.5 * uFrequencyData[255]);  // Modulate noise by audio frequency
 
     // Loop through multiple noise layers (octaves)
   for (int octave = 0; octave < NUM_OCTAVES; octave++) {
     float octaveWeight = 0.5 / 0.5 - mix(1.0, 0.8, float(octave) / float(NUM_OCTAVES)); // Scale amplitude for fluidity
-    totalNoise += amplitude * smoothNoise(frequency * coordinates - timeOffset * audioEffect) * octaveWeight;
+    totalNoise += amplitude * smoothNoise(frequency - coordinates - timeOffset) * octaveWeight;
     frequency *= 2.5;  // Less aggressive frequency scaling for smoother layers
     amplitude *= persistence;  // Adjust amplitude using evolving persistence
   }

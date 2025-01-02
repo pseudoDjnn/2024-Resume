@@ -76,8 +76,6 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // STEP 2: Organic noise using Fractal Brownian Motion
   float organicNoise = fractalBrownianMotion(position - uTime * 0.2, 5.0);
 
-  float harmonics = 1.0 - cos(uTime * 0.3 - position.x * 2.0) - sin(uTime * 0.08 * PI * position.y * 13.0) * 0.1;
-
     // Combine with a twisting transformation for morphing
   // float twist = fract(stutter / length(position.z)) * morphFactor;
 
@@ -186,17 +184,18 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   //   sin(position.y * gyroidScale) * cos(position.z * gyroidScale) +
   //   sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  // float starScale = 0.5;
-  // float starSDF = abs(sin(position.x * starScale) + cos(position.y * starScale)) * length(position.xy) - 0.2;
+  float starScale = 0.5;
+  float starSDF = abs(sin(position.x * starScale) + cos(uTime - position.y * starScale) * 0.3) * length(position.xy) - 0.2;
 
       // STEP 7: Shape morphing factor based on audio and time
-  float timeMorph = smoothstep(0.0, 1.0, sin(uTime * 0.3)); // Time-driven smooth morph
+  float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
+  float timeMorph2 = smoothstep(0.3, 0.8, 0.3 - sin(uTime)) * 0.5; // Time-driven smooth morph
   // float timeMorph = smoothstep(0.0, 1.0, 0.5 + 0.5 * sin(uTime * 0.4 + uFrequencyData[255] * 0.2)) * smoothstep(0.0, 1.0, 0.5 + 0.5 * cos(uTime * 0.3));
   // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
 
       // STEP 8: Blend between shapes using mix()
-  float blendedShape = mix(sphereSDF, cubeSDF, timeMorph); // Cube <-> Sphere
-  float finalShape = mix(blendedShape, octahedronSDF, float(angularMorph)); // Blending Octahedron
+  float blendedShape = mix(sphereSDF - starSDF / 2.3, cubeSDF, timeMorph); // Cube <-> Sphere
+  float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;
 }
@@ -206,7 +205,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 */
 float sdOctahedron(vec3 position, float size) {
 
-  position /= 1.0;
+  position /= 0.8;
   // position.x *= 21.0 / 8.0;
   // position.xy *= 4.0;
 
@@ -453,6 +452,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Apply a shape-changing transformation to camPos for the glow effect
   float timeFactor = uTime * 0.5;
   float audioFactor = uAudioFrequency * 0.2;
+  float harmonics = 1.0 - cos(uTime * 0.3 - position.x * 2.0) - sin(uTime * 0.08 * PI * position.y * 3.0) * 0.1;
 
     // Introduce noise for more organic distortion
   float noiseFactor = smoothNoise(position * 0.5 + uTime * 0.3);
@@ -465,14 +465,14 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   //   vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.2, smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.13, smoothstep(0.3, 0.8, fbmNoise) * sin(uTime) * 0.21);
 
     // Calculate glow using the distorted camPos
-  float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8);
+  float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 00.3;
   // float glow = sdf(distortedCamPos);
   // float glow = sdOctahedron(distortedCamPos, 0.1);
 
     // Adjust light calculations to soften and tone down the brightness
-  float light = 0.03 / (centralLight + 0.13 + noiseFactor * 0.1);
+  float light = 0.03 / (centralLight + 0.13 - noiseFactor);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = mix(vec3(0.8, 0.089, 0.5), vec3(0.5, 0.8, 0.89), glow) * palette(light * fbmNoise); // Muted yet dynamic light colors
+  vec3 lightColor = mix(sin(uTime * 0.3 - vec3(0.8, 0.089, 0.5)), cos(uTime * 0.3 - vec3(0.5, 0.8, 0.89)), glow) * palette(light * fbmNoise); // Muted yet dynamic light colors
 
     // Apply glow effect to the color, modulating by audio frequency
   // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
@@ -485,7 +485,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
 // Darken color closer to the start of the raymarch
   // float vignette = smoothstep(0.8, 1.0, distFromOrigin * 0.3); // Increase this value to tighten the effect
-  float vignette = smoothstep(0.6, 1.0, distFromOrigin * 0.5 + position.x * 0.1);
+  float vignette = smoothstep(0.5, 1.0, distFromOrigin * 0.5 + position.x * 0.1);
 
 // Modify color based on distance, with black near the edges and brighter toward the center
   color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
@@ -495,7 +495,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   color -= 0.5 * sin(uFrequencyData[255] + fbmNoise * 0.3) + 0.5;
 
   // Final smooth transition for more of a natural feel and color effect
-  color = smoothstep(-0.3, 1.0, color);
+  color = smoothstep(-0.3, 1.0, color - harmonics);
 
   return color;
 }
@@ -523,13 +523,13 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     // color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
     // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
-    float fbmVal = fractalBrownianMotion(position * 0.5, 5.0) - sin(uTime);
+    float fbmVal = fractalBrownianMotion(position + 0.5, 5.0) - sin(uTime);
     float alpha = exp(-0.05 * startDist);
     float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
-    float turb = fbmVal * (1.0 + uFrequencyData[21] * 0.1);
+    float turb = fbmVal * (1.0 + uFrequencyData[34] * 0.1);
 
     color = mix(color, vec3(0.2, 0.5, 0.8), gradient); // Smooth gradient coloring
-    color += vec3(turb) * 0.2;                         // Turbulence-based variations
+    color += vec3(turb) * 0.05;                         // Turbulence-based variations
     color = mix(color, vec3(0.0), alpha);        // Fade with distance
 
     // color = smoothstep(-1.0, 1.0, color) * 0.5 + 0.5;

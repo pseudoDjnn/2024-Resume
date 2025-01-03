@@ -65,7 +65,7 @@ float organicGyroid(vec3 position, float scale, float thickness, float bias) {
 vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float dist = sqrt(dot(position, position));
-  float normalizedDist = dist * exp(-dist * 0.5);
+  // float normalizedDist = dist * exp(-dist * 0.5);
 
     // STEP 1: Morphing factor driven by stutter, audio, and time
   // float morphFactor = abs(sign(sin(stutter * 0.5)) * 0.5 + 0.5);
@@ -139,7 +139,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // vec3 clippedPosition = position + (angularMorph - step(clipThreshold, angularMorph)); 
 
     // STEP 12: Add dynamic rotation for fluidity
-  float rotationAngle = time - uTime * 0.1; // Rotation speed
+  float rotationAngle = time - uTime * 0.8; // Rotation speed
 
   mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
@@ -183,7 +183,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   //   sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
 
   float starScale = 0.5;
-  float starSDF = abs(sin(position.x * starScale) + cos(uTime - position.y * starScale) * 0.3) * length(position.xy) - 0.2;
+  float starSDF = abs(sin(uTime - position.x * starScale) + cos(position.y * starScale) * 0.5) * length(position.xy) - 0.2;
 
       // STEP 7: Shape morphing factor based on audio and time
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
@@ -192,7 +192,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
 
       // STEP 8: Blend between shapes using mix()
-  float blendedShape = mix(sphereSDF - starSDF / 2.3, cubeSDF, timeMorph); // Cube <-> Sphere
+  float blendedShape = polynomialSMin(sphereSDF - starSDF / 3.8, cubeSDF, timeMorph); // Cube <-> Sphere
   float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;
@@ -244,9 +244,9 @@ float sdOctahedron(vec3 position, float size) {
   // float delayEffect = clamp(timeFactor * 0.1 * (PI * harmonics), 0.1, 0.8) / organicNoise;
 
     // Apply a rotation around the Z-axis before taking the absolute value
-  // float angle = abs(fract(sin(time)));
-  // mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-  // position.xy = rotZ * position.xy;
+  float angle = abs(fract(sin(organicNoise * 0.3)));
+  mat2 rotZ = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+  position.xy = rotZ * position.xy;
   // position = abs(position);
   position = abs(position);
   // position.x *= organicNoise;
@@ -357,9 +357,9 @@ float sdf(vec3 position) {
 
   // position1.zy *= rot2d(position.x * 0.5 * cos(uTime * 0.5));
 
-  vec3 position2 = rotate(position, vec3(1.0), sin(-uTime * 0.3) * 0.3);
+  vec3 position2 = rotate(position, vec3(0.5), sin(-uTime * 0.1) * 0.2);
 
-  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.5)), 0.5 - sin(uFrequencyData[255])));
+  position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.3)), 0.8 - sin(uTime)));
 
   // vec3 position3 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
 
@@ -397,7 +397,7 @@ float sdf(vec3 position) {
 
 // Shapes used
 
-  float octahedron = sdOctahedron(position1, octaGrowth);
+  float octahedron = sdOctahedron(position, octaGrowth);
   // float octahedron2 = sdOctahedron2(position2, octaGrowth);
 
   // octahedron = max(octahedron, -position.x - uTime);
@@ -462,7 +462,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   //   vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.2, smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.13, smoothstep(0.3, 0.8, fbmNoise) * sin(uTime) * 0.21);
 
     // Calculate glow using the distorted camPos
-  float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 00.3;
+  float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 0.2;
   // float glow = sdf(distortedCamPos);
   // float glow = sdOctahedron(distortedCamPos, 0.1);
 
@@ -542,7 +542,7 @@ void main() {
   // vec3 background = cos(mix(vec3(0.0), vec3(0.3), dist));
 
     // Camera and ray setup
-  vec3 camPos = vec3(0.0, -0.01 * sin(uTime), 5.8 - (smoothstep(0.0, 0.5, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
+  vec3 camPos = vec3(0.0, -0.1 * sin(uTime), 5.8 - (smoothstep(0.0, 0.5, fract(uAudioFrequency * 0.01)) * sin(uAudioFrequency * 0.008)));
   vec3 ray = calculateRayDirection(1.0 - vUv, camPos);
 
     // Raymarching
@@ -558,9 +558,8 @@ void main() {
 
       // Calculate center distance for lighting
     float centerDist = length(position);
-    // TODO: You stopped here
     // float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
-    float centralLight = sdf(position);
+    float centralLight = sdf(camPos);
     // centerDist = uTime * centralLight;
 
     // Interaction with uFrequencyData

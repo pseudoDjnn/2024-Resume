@@ -41,25 +41,23 @@ float positionEase(float t, in float T) {
 /*
   Gyroid
 */
-/*
-  Gyroid
-*/
 float organicGyroid(vec3 position, float scale, float thickness, float bias) {
 
   // float squareWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uTime * 0.3) + PI * (sin(uAudioFrequency * 0.3 + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.3))) + floor(2.144 * 1.08) * 0.2));
 
   float squareWave = abs(fract(sin(position.x * PI) + 1.0 * 2.0));
   // squareWave = floor(sin(position.z - uAudioFrequency * 0.1) / uTime * 0.3) + ceil(sin(position.y + uAudioFrequency * 0.3));
+  float harmonics = 1.0 - cos(uTime * 0.3 - position.x * 2.0) - sin(uTime * 0.08 * PI * position.y * 3.0) * 0.1;
 
   position *= scale;
 
-  float angle = atan(uTime + position.x - 0.5, uTime + position.y - 0.5);
+  float angle = atan(uTime - position.x - 0.8, uTime - position.y - 0.5);
 
   float random = step(0.8 * angle, randomValue(position.zxy * 3.0) * 21.0);
 
-  float rot_angle = sin(uTime * 0.3) - 1.0 * (random * 0.3) * ceil(2.0 + floor(1.0));
+  float rot_angle = sin(uTime * 0.3) - 1.0 * (random * 0.3) * ceil(2.0 + floor(harmonics));
 
-  position.zy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
+  position.xy *= mat2(cos(uTime * 0.03 * rot_angle), -sin(rot_angle), sin(uTime * 0.3 - rot_angle), cos(uTime - rot_angle));
 
   return abs(0.8 * dot(sin(squareWave / position), cos(squareWave / -position.zxy)) / scale) - thickness * bias;
 }
@@ -452,7 +450,6 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Apply a shape-changing transformation to camPos for the glow effect
   float timeFactor = uTime * 0.5;
   float audioFactor = uAudioFrequency * 0.2;
-  float harmonics = 1.0 - cos(uTime * 0.3 - position.x * 2.0) - sin(uTime * 0.08 * PI * position.y * 3.0) * 0.1;
 
     // Introduce noise for more organic distortion
   float noiseFactor = smoothNoise(position * 0.5 + uTime * 0.3);
@@ -495,14 +492,14 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   color -= 0.5 * sin(uFrequencyData[255] + fbmNoise * 0.3) + 0.5;
 
   // Final smooth transition for more of a natural feel and color effect
-  color = smoothstep(-0.3, 1.0, color - harmonics);
+  color = smoothstep(-0.3, 1.0, color);
 
   return color;
 }
 
 // Main raymarching loop
 vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
-  vec3 color = vec3(0.0);
+  vec3 color = palette(endDist);
   for (int i = 0; i < 100; i++) {
     vec3 position = raypos + startDist * ray;
     // position.xy *= rot2d(startDist * 0.2 * uMouse.x);
@@ -561,7 +558,9 @@ void main() {
 
       // Calculate center distance for lighting
     float centerDist = length(position);
-    float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
+    // TODO: You stopped here
+    // float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
+    float centralLight = sdf(position);
     // centerDist = uTime * centralLight;
 
     // Interaction with uFrequencyData

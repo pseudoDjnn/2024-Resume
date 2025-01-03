@@ -25,7 +25,6 @@ float smoothNoise(vec3 coordinates) {
 
 float fractalBrownianMotion(vec3 coordinates, float roughness) {
   float persistence = 1.3;  // Evolving persistence for organic transitions
-  // TODO This is the stopping point
   float frequency = 2.0;                             // Initial frequency
   float amplitude = 3.0;                             // Initial amplitude
   float totalNoise = 0.0 * (uTime - roughness);                            // Accumulated noise

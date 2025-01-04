@@ -182,17 +182,17 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   //   sin(position.y * gyroidScale) * cos(position.z * gyroidScale) +
   //   sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  float starScale = 0.5;
-  float starSDF = abs(sin(uTime - position.x * starScale) + cos(position.y * starScale) * 0.5) * length(position.xy) - 0.2;
+  float starScale = fract(uAudioFrequency * 0.8);
+  float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;
 
       // STEP 7: Shape morphing factor based on audio and time
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
-  float timeMorph2 = smoothstep(0.3, 0.8, 0.3 - sin(uTime)) * 0.5; // Time-driven smooth morph
+  float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.5; // Time-driven smooth morph
   // float timeMorph = smoothstep(0.0, 1.0, 0.5 + 0.5 * sin(uTime * 0.4 + uFrequencyData[255] * 0.2)) * smoothstep(0.0, 1.0, 0.5 + 0.5 * cos(uTime * 0.3));
   // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
 
       // STEP 8: Blend between shapes using mix()
-  float blendedShape = polynomialSMin(sphereSDF - starSDF / 3.8, cubeSDF, timeMorph); // Cube <-> Sphere
+  float blendedShape = polynomialSMin(sphereSDF + starSDF, cubeSDF, timeMorph); // Cube <-> Sphere
   float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;
@@ -204,8 +204,6 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 float sdOctahedron(vec3 position, float size) {
 
   position /= 0.8;
-  // position.x *= 21.0 / 8.0;
-  // position.xy *= 4.0;
 
   // float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
   // float time = exp(-uTime * 0.1) - smoothstep(0.0, 1.0, 55.0) - sin(uTime * 0.5) * 8.0;
@@ -218,7 +216,6 @@ float sdOctahedron(vec3 position, float size) {
 // float time = exp(-uTime * 0.1) * abs(sin(uTime * 0.8)) - step(0.5, uTime * 0.05);
 // float time = sin(uTime * 0.5) * exp(-uTime * 0.05) - smoothstep(0.2, 0.9, abs(cos(uTime * 0.3)));
 
-  // float echo = fractalBrownianMotion(position, uTime * 0.3) + 0.3 * 0.3;
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 1.0 - size) * 0.5 + 0.5;
 
@@ -230,9 +227,6 @@ float sdOctahedron(vec3 position, float size) {
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
   position = mirrorEffect(position, mod(uAudioFrequency * 0.01, squareWave), 0.5);
-
-  // float harmonics = 0.3 * sin(uAudioFrequency * 1.2 + position.y * 3.0) +
-  // 0.2 * cos(uAudioFrequency * 0.8 - position.x * 5.0) * fract(uTime * 0.2 - position.z * 13.0);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   // float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) / length(time * 0.3 / position) * 0.5;
@@ -262,7 +256,7 @@ float sdOctahedron(vec3 position, float size) {
 
   vec3 q;
   if (3.0 * position.x < m)
-    q = position;
+    q = position * smoothstep(0.0, 1.0, randomValue(position) / 0.8);
   else if (3.0 * position.y < m)
     q = position.yzx - fract(uFrequencyData[177]);
   else if (3.0 * position.z < m)
@@ -414,7 +408,7 @@ float sdf(vec3 position) {
   float groundWave = abs(dot(sin(position), cos(position.yzx))) * 0.1;
   ground += groundWave;
 
-  return polynomialSMin(0.1, octahedron, 0.1);
+  return polynomialSMin(0.1, octahedron, 1.0);
 }
 
 // float ground(vec3 position) {

@@ -133,8 +133,8 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // float clipThreshold = 0.5 + audioData.z * 0.01; // High-frequency-based voids
   // vec3 clippedPosition = mod(clipThreshold, finalShape) * morphedPosition;
 
-  float gyroidScale = 3.0;
-  float gyroidSDF = abs(sin(uTime - position.x * gyroidScale) * cos(position.y * gyroidScale) +
+  float gyroidScale = clamp(uTime, 0.0, 13.0);
+  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(position.y * gyroidScale) +
     sin(position.y * gyroidScale) * cos(position.z * gyroidScale) +
     sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
 
@@ -146,7 +146,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
     // STEP 12: Add dynamic rotation for fluidity
   float rotationAngle = time - uTime * 0.8; // Rotation speed
 
-  mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle)) / smoothstep(0.0, 1.0, gyroidSDF);
+  mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
   vec3 rotatedPosition = rotationMatrix * (position - morphedPosition);
   // rotatedPosition.y *= cubeMovement.z;
@@ -179,7 +179,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
   // float sphereSDF = max(abs(position.x), max(abs(position.y), abs(position.z))) + 0.2 * (abs(position.x) + abs(position.y) + abs(position.z));
 
-  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z))); // Cube shape
+  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
   // float cubeSDF = polynomialSMin(polynomialSMin(abs(position.x), abs(position.y), 0.1), position.z, 0.1);
   float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.5; // Octahedron shape
 
@@ -227,7 +227,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = mirrorEffect(position, mod(uAudioFrequency, squareWave), 0.5);
+  position = mirrorEffect(position, mod(uFrequencyData[255], squareWave), 0.5);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   // float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) / length(time * 0.3 / position) * 0.5;

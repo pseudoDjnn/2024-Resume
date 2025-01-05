@@ -182,7 +182,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   //   sin(position.y * gyroidScale) * cos(position.z * gyroidScale) +
   //   sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  float starScale = fract(uAudioFrequency * 0.8);
+  float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;
 
       // STEP 7: Shape morphing factor based on audio and time
@@ -192,7 +192,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // float audioMorph = abs(sin(uAudioFrequency * 0.05));                 // Low-freq modulation
 
       // STEP 8: Blend between shapes using mix()
-  float blendedShape = polynomialSMin(sphereSDF + starSDF, cubeSDF, timeMorph); // Cube <-> Sphere
+  float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.2), cubeSDF, timeMorph); // Cube <-> Sphere
   float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;

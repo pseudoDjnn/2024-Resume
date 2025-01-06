@@ -9,7 +9,7 @@
             #978963,
             #282729,
             #361515c1,
-            #110f17)
+            #110f17);
 }
 
 *,
@@ -20,66 +20,54 @@
     box-sizing: border-box;
 }
 
-
 html,
 body {
-    /* background: -webkit-linear-gradient(to right, #303030, #361515c1); */
-    background-image: var(--gradient);
-    background-size: 987%;
-    animation: bg-animation 377s infinite alternate;
-    /* background: url('/pictures/echo.png') no-repeat 50% 50%; */
-    /* background-size: cover; */
+    background: radial-gradient(circle, #110f17 0%, #282729 50%, #303030 100%);
+    background-blend-mode: overlay;
     width: 100%;
     height: 100vh;
-    /* overflow: hidden;
-    object-fit: cover;
-    font-size: 16px;
-    line-height: 1.3; */
-    /* font-family: 'Neue Montreal', sans-serif; */
-    /* border: 0; */
-    /* padding: .5em 1.5em; */
+    overflow: hidden;
+    font-family: 'Neue Montreal', sans-serif;
 }
 
-@keyframes bg-animation {
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--gradient);
+    background-size: 500%;
+    mix-blend-mode: overlay;
+    opacity: 0.8;
+    animation: bg-pulse 20s infinite alternate ease-in-out;
+}
+
+@keyframes bg-pulse {
     0% {
-        background-position: left;
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 50% 100%;
     }
 
     100% {
-        background-position: right;
+        background-position: 100% 50%;
     }
 }
 
-::-webkit-scrollbar {
-    display: none;
-}
-
-
-.webgl {
+.canvas-container {
     position: fixed;
     top: 0;
     left: 0;
-    outline: none;
-}
-
-/* .section {
-    display: flex;
-    align-items: center;
-    width: 100vh;
-    height: 100vh;
-    position: relative;
-    justify-content: center;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
     overflow: hidden;
-    color: #ffededaf;
-    text-transform: uppercase;
-    font-size: 7vmin;
-    padding-left: 10%;
-    padding-right: 10%;
-} */
-
-/* .section:nth-child(odd) {
-    justify-content: flex-end;
-} */
+}
 
 .logo {
     position: fixed;
@@ -89,7 +77,6 @@ body {
     margin: 2em;
     width: 18px;
     height: 18px;
-    /* background: #361515; */
     border-radius: 100%;
     z-index: 10000;
     background-image: var(--gradient);

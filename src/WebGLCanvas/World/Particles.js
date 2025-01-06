@@ -17,7 +17,7 @@ export default class Particles {
      */
 
     this.parameters = {
-      count: 2584
+      count: 987
     }
 
     this.color = {}
@@ -28,13 +28,13 @@ export default class Particles {
       this.particles = {}
 
       // Geometry
-      this.particles.geometry = new THREE.IcosahedronGeometry(5, 3)
+      this.particles.geometry = new THREE.IcosahedronGeometry(2, 2)
       this.particles.geometry.setIndex(null)
       this.particles.geometry.deleteAttribute('normal')
 
       this.color.colorAlpha = '#CEB180'
       this.color.colorBeta = '#4D516D'
-      this.particles.positions = new Float32Array(this.parameters.count * 3)
+      this.particles.positions = new Float32Array(this.parameters.count * 1)
       this.particles.randomness = new Float32Array(this.parameters.count)
 
       /**
@@ -47,7 +47,7 @@ export default class Particles {
 
         // Spherical body
         this.spherical = new THREE.Spherical(
-          radius * (0.21 + Math.random() * 0.13),
+          radius * (1.0 - Math.random() * 0.13),
           Math.random() * Math.PI,
           Math.random() * Math.PI * 2,
         )
@@ -115,7 +115,7 @@ export default class Particles {
   }
 
   update() {
-    this.particles.material.uniforms.uTime.value = (-this.time.elapsed - 0.5) * 0.0000000034
+    this.particles.material.uniforms.uTime.value = (-this.time.elapsed - 0.5) * 0.0000000089
     // console.log(this.particles)
   }
 }

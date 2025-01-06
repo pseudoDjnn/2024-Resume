@@ -1,6 +1,6 @@
 // #include ../effects/simplexNoise3d.glsl
 // #include ../effects/random2D.glsl
-#include ../effects/voronoi.glsl
+// #include ../effects/voronoi.glsl
 
 float terrainGeneration(in vec3 position) {
 

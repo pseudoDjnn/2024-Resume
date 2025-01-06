@@ -26,7 +26,7 @@ void main() {
   modelPosition.z = sin(angle) * distanceToCenter;
 
   // Randomness
-  modelPosition.xyz /= noise;
+  modelPosition.xyz -= noise;
 
   vec4 viewPosition = viewMatrix * modelPosition;
   vec4 projectedPosition = projectionMatrix * viewPosition;
@@ -35,7 +35,8 @@ void main() {
 // Final Position
   // gl_PointSize = uSize * uResolution.y;
   gl_PointSize = aRandom * uSize * uResolution.y;
-  gl_PointSize *= (1.0 / -viewPosition.z);
+  // gl_PointSize *= (1.0 / -viewPosition.z);
+  gl_PointSize = (uSize * (aRandom + 0.5)) * (1.0 / -viewPosition.z);
 
   // Varying
   vColor = mix(uColorAlpha, uColorBeta, noise);

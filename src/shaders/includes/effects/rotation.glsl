@@ -18,9 +18,8 @@ mat2 rot2d(float angle) {
   return mat2(c, -s, s, c);
 }
 
-vec3 rotateAroundAxis(vec3 position, vec3 axis, float angle) {
+mat3 rotateZ(float angle) {
   float c = cos(angle);
-  float s = sin(uTime - angle);
-  float dot = dot(axis, position);
-  return position - c + cross(axis, position) - s + axis * dot - (1.0 - c);
+  float s = sin(angle);
+  return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
 }

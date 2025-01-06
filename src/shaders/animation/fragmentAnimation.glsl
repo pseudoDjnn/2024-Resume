@@ -38,16 +38,6 @@ float positionEase(float t, in float T) {
   return f * f * f * (T - t * 0.5);
 }
 
-mat3 rotateZ(float angle) {
-  float c = cos(angle);
-  float s = sin(angle);
-  return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
-}
-
-vec3 rotateAroundZAxis(vec3 position, float angle) {
-  return rotateZ(angle) * position;
-}
-
 vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float dist = sqrt(dot(position, position));
@@ -289,68 +279,6 @@ float sdOctahedron(vec3 position, float size) {
 
 }
 
-// float sdOctahedron2(vec3 position, float size) {
-
-//   position *= 0.8;
-//   position.z *= 0.5;
-
-//   float gyroid = sdGyroid(position, 13.89, 0.8, 0.03) * 34.0;
-
-//   // position = abs(position);
-//   // position = mirrorEffect(position, mod(uAudioFrequency * 0.01, uTime * 0.1) * 0.5 + 0.5);
-
-//   float scale = 144.0;
-
-// // Introduce noise to the displacement for a more organic feel
-//   float noise = smoothNoise(position * 0.5 + uTime * 0.3);
-//   float displacement = length(sin(position * scale * noise) - sin(uTime * 0.8));
-
-// // Use smoother transitions and larger variations in minor and major values
-//   float minor = abs(fract(length(position) - sin(uTime) / displacement + 0.5) - 0.5) * 1.2;
-//   float major = abs(fract(length(position) - cos(uTime) * (displacement * 0.34) + 0.5) - 0.5) * 2.2;
-
-//   minor = positionEase((noise * 0.01) * 0.5 + 0.5, major);
-//   major = positionEase((noise * 0.3) * 0.5 + 0.5, minor);
-
-// // Introduce smoother time-based modulation to the median
-//   float median = sin(uTime * 0.8 - length(minor * major * 1.5));
-
-//   float jitter = fractalBrownianMotion(position * 0.5 * 3.1415, 2.0) * 0.3;
-
-// // Add more complex twisting with Perlin noise for smoother transitions
-//   float twist = cos(uTime - position.x * 3.0 + noise) * sin(uTime - position.y * 5.0 + noise) * cos(uTime - position.z * 34.0 + noise * 0.5);
-
-//   float twistDistance = length(twist);
-
-//   float intensity = uFrequencyData[int(median * mod(twistDistance * 144.0 - noise * 3.0, 128.0))];
-
-// // Modify position with smooth and organic influences
-//   // position.y = smoothstep(0.1, 0.0, abs((abs(position.x) - smoothstep(0.0, 0.5, position.y * intensity))));
-
-// // Final m calculation with a broader and smoother influence
-//   float m = (abs(position.x / intensity * 0.3) + abs(jitter - sin(position.y - intensity * 0.8 - uTime * 0.3)) + abs(position.z - noise * 0.1) * 0.5 + 0.5 - size);
-
-//   // position *= smoothstep(0.05, 0.0, abs((abs(sin(uAudioFrequency * 0.3 - position.x)) - smoothstep(sin(m / 0.5) + fract(m) * TAU, 0.0, position.y) - displacement * 0.3)));
-
-//   vec3 q;
-//   if (3.0 * position.x < m)
-//     q = position;
-//   else if (3.0 * position.y < m)
-//     q = position.yzx - sin(uAudioFrequency);
-//   else if (3.0 * position.z < m)
-//     q = position.zxy;
-//   else
-//     return m * 0.57735027;
-
-//         // Add varying sine waves for more natural transitions
-//   float wavePattern = 0.1 * sin(uTime * 0.3 + position.x * 3.0) + 0.05 * sin(uTime * 0.2 + position.y * 2.0) + 0.08 * sin(uTime * 0.3 + position.z * 1.5) + intensity * 0.05;
-
-//   float morphIntensity = 0.03 * 0.2 + sin(uTime * 0.3 - m * 0.03) + wavePattern + 0.03;
-
-//   float k = clamp(0.5 * (q.z - q.y + size), 0.0, size);
-//   return length(vec3(q.x, q.y + k, q.z - k) / gyroid) / morphIntensity;
-// }
-
 float sdf(vec3 position) {
 
   // float distorted = fractalBrownianMotion(position * 2.0, 1.0) / 5.0;
@@ -369,14 +297,6 @@ float sdf(vec3 position) {
   vec3 position2 = rotate(position, vec3(0.5), sin(-uTime * 0.1) * 0.2);
 
   position2.xz *= rot2d(uTime * 0.3 - -position.x * 0.8 - positionEase((sin(uTime * 0.03) * fract(-0.3)), 0.8 - sin(uTime)));
-
-  // vec3 position3 = rotate(position, vec3(1.0), sin(uTime * 0.3) * 0.5);
-
-  // position3.xz *= rot2d(uTime * 0.1 - position.x * 0.8 + smoothstep((sin(0.8) * fract(-0.5)), 0.5, uAudioFrequency * 0.1));
-
-  // position3.zy *= rot2d(position.z * 0.5 * cos(uTime * 0.8) * intensity * 0.003);
-
-  // position3 *= rotateAroundAxis(position1, position1, 1.0);
 
   // position1.z += sin(position1.x * 5.0 + uAudioFrequency) * 0.1;
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);

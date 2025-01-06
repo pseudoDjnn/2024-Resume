@@ -38,6 +38,16 @@ float positionEase(float t, in float T) {
   return f * f * f * (T - t * 0.5);
 }
 
+mat3 rotateZ(float angle) {
+  float c = cos(angle);
+  float s = sin(angle);
+  return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
+}
+
+vec3 rotateAroundZAxis(vec3 position, float angle) {
+  return rotateZ(angle) * position;
+}
+
 vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float dist = sqrt(dot(position, position));
@@ -109,11 +119,6 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   // float clipThreshold = 0.5 + audioData.z * 0.01; // High-frequency-based voids
   // vec3 clippedPosition = mod(clipThreshold, finalShape) * morphedPosition;
 
-  float gyroidScale = clamp(uTime, 0.0, 13.0);
-  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(position.y * gyroidScale) +
-    sin(position.y * gyroidScale) * cos(position.z * gyroidScale) +
-    sin(position.z * gyroidScale) * cos(position.x * gyroidScale));
-
   // STEP 3: Negative space creation(using mod and clipping)
   // float clipThreshold = 0.8; // Adjust size of voids
   // vec3 clippedPosition = mod(position, angularMorph) / step(clipThreshold, angularMorph);
@@ -153,11 +158,20 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
      // STEP 6: Define base shapes dynamically based on position
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
-  // float sphereSDF = max(abs(position.x), max(abs(position.y), abs(position.z))) + 0.2 * (abs(position.x) + abs(position.y) + abs(position.z));
+
+  float gyroidScale = clamp(uTime, 0.0, 13.0);
+
+  vec3 rotation = sin(uTime * PI - cos(uTime - 1.0)) - rotateZ(smoothstep(0.0, 1.0, uFrequencyData[34])) * position;
+
+  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(position.y * gyroidScale) +
+    sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) +
+    sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
-  // float cubeSDF = polynomialSMin(polynomialSMin(abs(position.x), abs(position.y), 0.1), position.z, 0.1);
-  float octahedronSDF = (abs(position.x) + abs(position.y) + abs(position.z)) * 0.5; // Octahedron shape
+
+  float octahedronSDF = (abs(rotation.x) + abs(rotation.y) + abs(position.z)) * 0.8; // Octahedron shape
+  // octahedronSDF *= (1.0 + 0.3 * organicNoise);
+  // octahedronSDF += 0.2 * sin(uTime + length(position) * 0.5) * time;
 
   float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;

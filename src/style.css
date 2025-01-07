@@ -1,5 +1,5 @@
 :root {
-    --gradient: linear-gradient(144deg,
+    --primary-gradient: linear-gradient(144deg,
             #354f52,
             #859e86,
             #361515c1,
@@ -10,6 +10,10 @@
             #282729,
             #361515c1,
             #110f17);
+    --background-gradient: radial-gradient(circle, #110f17 0%, #282729 50%, #303030 100%);
+    --loading-gradient: linear-gradient(135deg, #202020, #0f0f0f);
+    --highlight-color: #8c40ff;
+    --font-family: 'Neue Montreal', sans-serif;
 }
 
 *,
@@ -22,14 +26,16 @@
 
 html,
 body {
-    background: radial-gradient(circle, #110f17 0%, #282729 50%, #303030 100%);
-    background-blend-mode: overlay;
     width: 100%;
     height: 100vh;
+    background: var(--background-gradient);
+    background-blend-mode: overlay;
+    font-family: var(--font-family);
     overflow: hidden;
-    font-family: 'Neue Montreal', sans-serif;
+    position: relative;
 }
 
+/* Layered Background with Pulsing Animation */
 body::before {
     content: '';
     position: absolute;
@@ -37,12 +43,27 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: var(--gradient);
+    background: var(--primary-gradient);
     background-size: 500%;
     mix-blend-mode: overlay;
     opacity: 0.8;
     animation: bg-pulse 20s infinite alternate ease-in-out;
 }
+
+/* Initially hide the canvas */
+.hidden {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1.5s ease, visibility 0s linear 1.5s;
+}
+
+/* Show the canvas when the class is removed */
+.fade-in {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 1.5s ease, visibility 0s linear 0s;
+}
+
 
 @keyframes bg-pulse {
     0% {
@@ -58,6 +79,134 @@ body::before {
     }
 }
 
+/* Loading Screen */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--loading-gradient);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+/* Loading Animation with Persistent Outlined Cube */
+.loading-animation {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    perspective: 800px;
+    /* For the 3D effect */
+}
+
+.loading-animation .cube {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    animation: rotate-cube 3s infinite linear;
+}
+
+.loading-animation .cube div {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: none;
+    /* No solid fill */
+    border: 2px solid var(--highlight-color);
+    /* Keep the outline */
+    border-radius: 4px;
+    /* Optional: rounded edges */
+    box-shadow: 0 0 8px rgba(163, 64, 255, 0.5);
+    /* Optional: glowing effect */
+}
+
+.loading-animation .cube div:nth-child(1) {
+    transform: rotateY(0deg) translateZ(40px);
+}
+
+.loading-animation .cube div:nth-child(2) {
+    transform: rotateY(90deg) translateZ(40px);
+}
+
+.loading-animation .cube div:nth-child(3) {
+    transform: rotateY(180deg) translateZ(40px);
+}
+
+.loading-animation .cube div:nth-child(4) {
+    transform: rotateY(-90deg) translateZ(40px);
+}
+
+.loading-animation .cube div:nth-child(5) {
+    transform: rotateX(90deg) translateZ(40px);
+}
+
+.loading-animation .cube div:nth-child(6) {
+    transform: rotateX(-90deg) translateZ(40px);
+}
+
+@keyframes rotate-cube {
+    0% {
+        transform: rotateX(0deg) rotateY(0deg);
+    }
+
+    50% {
+        transform: rotateX(180deg) rotateY(180deg);
+    }
+
+    100% {
+        transform: rotateX(360deg) rotateY(360deg);
+    }
+}
+
+/* Loading Text */
+#loading-screen p {
+    margin-top: 20px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: fadeIn 1s ease-in-out infinite alternate;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Logo Animation */
+.logo {
+    position: fixed;
+    cursor: pointer;
+    top: 0;
+    right: 0;
+    margin: 2em;
+    width: 18px;
+    height: 18px;
+    border-radius: 100%;
+    z-index: 10000;
+    background-image: var(--primary-gradient);
+    background-size: 987%;
+    background-position: left;
+    transition: background-position 3s cubic-bezier(.87, -1.38, .03, 1.54);
+}
+
+.logo:hover,
+.logo:focus {
+    background-position: right;
+}
+
+/* Canvas Container for Elements */
 .canvas-container {
     position: fixed;
     top: 0;
@@ -69,23 +218,14 @@ body::before {
     overflow: hidden;
 }
 
-.logo {
-    position: fixed;
-    cursor: pointer;
-    top: 0;
-    right: 0;
-    margin: 2em;
-    width: 18px;
-    height: 18px;
-    border-radius: 100%;
-    z-index: 10000;
-    background-image: var(--gradient);
-    background-size: 987%;
-    background-position: left;
-    transition: background-position 3s cubic-bezier(.87, -1.38, .03, 1.54);
-}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .loading-animation {
+        width: 50px;
+        height: 50px;
+    }
 
-.logo:hover,
-.logo:focus {
-    background-position: right;
+    #loading-screen p {
+        font-size: 12px;
+    }
 }

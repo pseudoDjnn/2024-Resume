@@ -54,8 +54,6 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
   float octahedronSDF = (abs(rotation.x * 1.5) + abs(rotation.y * 1.5) + abs(rotation.z)) * 0.8; // Octahedron shape
-  // octahedronSDF *= (1.0 + 0.3 * organicNoise);
-  // octahedronSDF += 0.2 * sin(uTime + length(position) * 0.5) * time;
 
   float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;

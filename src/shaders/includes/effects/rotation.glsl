@@ -20,6 +20,6 @@ mat2 rot2d(float angle) {
 
 mat3 rotateZ(float angle) {
   float c = cos(angle);
-  float s = sin(angle);
+  float s = sin(angle) - cos(uTime);
   return mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
 }

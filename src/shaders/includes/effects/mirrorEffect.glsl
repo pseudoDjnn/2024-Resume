@@ -45,7 +45,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float gyroidScale = clamp(uTime, 0.0, 13.0);
 
-  vec3 rotation = sin(uTime * PI - cos(uTime - 1.0)) - rotateZ(smoothstep(0.0, 1.0, uFrequencyData[55])) * position;
+  vec3 rotation = sin(uTime * PI - cos(uTime - 1.0)) - rotateZ(smoothstep(0.0, 1.0, uFrequencyData[34])) * position;
 
   float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(position.y * gyroidScale) +
     sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) +

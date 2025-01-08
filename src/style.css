@@ -100,7 +100,7 @@ body::before {
     position: relative;
     width: 80px;
     height: 80px;
-    perspective: 0100px;
+    perspective: 100px;
     /* For the 3D effect */
 }
 
@@ -114,8 +114,8 @@ body::before {
 
 .loading-animation .cube div {
     position: absolute;
-    width: 80px;
-    height: 80px;
+    width: 89px;
+    height: 89px;
     background: none;
     /* No solid fill */
     border: 2px solid var(--highlight-color);
@@ -170,13 +170,13 @@ body::before {
     font-size: 14px;
     color: rgba(255, 255, 255, 0.7);
     letter-spacing: 3px;
-    text-transform: uppercase;
+    text-transform: capitalize;
     animation: fadeIn 1s ease-in-out infinite alternate;
 }
 
 @keyframes fadeIn {
     0% {
-        opacity: 0.5;
+        opacity: 0.3;
     }
 
     100% {

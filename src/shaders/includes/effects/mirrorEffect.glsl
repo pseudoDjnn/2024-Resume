@@ -41,19 +41,23 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   vec3 rotatedPosition = rotationMatrix * (position - morphedPosition);
 
+  float frequencyScale = uFrequencyData[0] * 255.0;
+
+  float rampedTime = pow(uTime * 0.2, 1.0);
+
+  vec3 rotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - ceil(position));
+
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
 
   float gyroidScale = clamp(uTime, 0.0, 13.0);
 
-  vec3 rotation = sin(uTime * PI - cos(uTime - 1.0)) - rotateZ(smoothstep(0.0, 1.0, uFrequencyData[34])) * position;
-
-  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(position.y * gyroidScale) +
-    sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) +
+  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(rotation.y * gyroidScale) +
+    sin(position.y * gyroidScale) * cos(uTime * TAU - rotation.z * gyroidScale) +
     sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
-  float octahedronSDF = (abs(rotation.x * 1.5) + abs(rotation.y * 1.5) + abs(rotation.z)) * 0.8; // Octahedron shape
+  float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) * 0.8; // Octahedron shape
 
   float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;

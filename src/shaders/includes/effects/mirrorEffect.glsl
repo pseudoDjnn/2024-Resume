@@ -45,17 +45,17 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 rotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - ceil(position));
+  vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime * 0.5 - ceil(position));
 
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
 
   float gyroidScale = clamp(uTime, 0.0, 13.0);
 
-  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(rotation.y * gyroidScale) +
-    sin(position.y * gyroidScale) * cos(uTime * TAU - rotation.z * gyroidScale) +
+  float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(objectRotation.y * gyroidScale) +
+    sin(position.y * gyroidScale) * cos(uTime * TAU - objectRotation.z * gyroidScale) +
     sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
+  float cubeSDF = max(abs(objectRotation.x), max(abs(objectRotation.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
   float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) * 0.8; // Octahedron shape
 

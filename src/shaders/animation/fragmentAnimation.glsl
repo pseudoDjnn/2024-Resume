@@ -168,17 +168,23 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
 // Main raymarching loop
 vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
+
   vec3 color = palette(endDist);
+
   for (int i = 0; i < 100; i++) {
+
     vec3 position = raypos + startDist * ray;
     // position.xy *= rot2d(startDist * 0.2 * uMouse.x);
     // position.y = max(-0.9, position.y);
     // position.y += sin(startDist * (uMouse.y - 0.5) * 0.02) * 0.21;
 
     float distanceToSurface = sdf(position);
+
     startDist += distanceToSurface;
-    if (abs(distanceToSurface) < 0.0001 || startDist > endDist)
+
+    if (abs(distanceToSurface) < 0.0001 || startDist > endDist) {
       break;
+    }
 
     // float alpha = cos(uTime - tan(position.x * 8.0) * fract(uAudioFrequency) * 3.0) * 1.0 / 2.0;
     // float beta = sin(mod(position.y * 89.0, uTime) - uTime * 2.0) * 1.0 / 2.5;
@@ -190,8 +196,11 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     float fbmVal = fractalBrownianMotion(position + 0.5, 5.0) - sin(uTime);
+
     float alpha = exp(-0.05 * startDist);
+
     float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
+
     float turb = fbmVal * (1.0 + uFrequencyData[34] * 0.1);
 
     color = mix(color, vec3(0.2, 0.5, 0.8), gradient); // Smooth gradient coloring

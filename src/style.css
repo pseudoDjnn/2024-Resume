@@ -35,6 +35,20 @@ body {
     position: relative;
 }
 
+canvas {
+    position: relative;
+    /* Ensures it fills the viewport */
+    top: 0;
+    left: 0;
+    /* width: 100%; */
+    /* height: 100%; */
+    /* background-color: black; */
+    /* Sets a solid background color */
+    /* z-index: 10; */
+    /* Ensures it's on top of other elements */
+}
+
+
 /* Layered Background with Pulsing Animation */
 body::before {
     content: '';

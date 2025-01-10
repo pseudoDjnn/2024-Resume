@@ -67,7 +67,7 @@ export default class Animation {
     // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
     // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
 
-    this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
+    // this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
     this.material.uniforms.uTime.value = this.time.elapsed * 0.0008
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
     this.material.uniforms.uFrequencyData.value = this.audio.analyser.getFrequencyData()

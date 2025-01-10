@@ -23,5 +23,5 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
       console.error("Loader or canvas element not found.");
     }
-  }, 3000); // Simulate a 3-second loading time
+  }, 4181); // Simulate a 3-second loading time
 });

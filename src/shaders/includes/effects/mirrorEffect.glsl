@@ -52,10 +52,10 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
   float gyroidScale = clamp(uTime, 0.0, 13.0);
 
   float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(objectRotation.y * gyroidScale) +
-    sin(position.y * gyroidScale) * cos(uTime * TAU - objectRotation.z * gyroidScale) +
-    sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
+    sin(position.y * gyroidScale) * cos(uTime * PI - objectRotation.z * gyroidScale) +
+    sin(uTime * TAU - objectRotation.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  float cubeSDF = max(abs(objectRotation.x), max(abs(objectRotation.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
+  float cubeSDF = max(abs(objectRotation.x), max(abs(objectRotation.y), abs(position.z) * 0.2 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
   float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) * 0.8; // Octahedron shape
 

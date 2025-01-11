@@ -45,22 +45,29 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime * 0.5 - ceil(position));
+  vec3 segmentation = ceil(position);
+  // segmentation.y *= sin(uTime / cos(segmentation.x));
+  segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
+  segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
+
+  vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
+  // objectRotation.x -= round(position.y);
+  // objectRotation.y += 
+
+  float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
+  float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;
 
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
 
   float gyroidScale = clamp(uTime, 0.0, 13.0);
 
   float gyroidSDF = abs(sin(uTime * TAU - position.x * gyroidScale) * cos(objectRotation.y * gyroidScale) +
-    sin(position.y * gyroidScale) * cos(uTime * PI - objectRotation.z * gyroidScale) +
-    sin(uTime * TAU - objectRotation.z * gyroidScale) * cos(position.x * gyroidScale));
+    sin(position.y * gyroidScale) * cos(uTime * TAU - objectRotation.z * gyroidScale) +
+    sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
 
-  float cubeSDF = max(abs(objectRotation.x), max(abs(objectRotation.y), abs(position.z) * 0.2 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
+  float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
   float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) * 0.8; // Octahedron shape
-
-  float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
-  float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;
 
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
   float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.5; // Time-driven smooth morph

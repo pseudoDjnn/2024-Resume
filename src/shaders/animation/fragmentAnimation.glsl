@@ -130,7 +130,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 - fbmNoise);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = -mix(fract(uTime * 0.3 - vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 - vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow + uFrequencyData[64]); // Muted yet dynamic light colors
+  vec3 lightColor = -mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow + uFrequencyData[64]); // Muted yet dynamic light colors
 
 // Enhanced dynamic light color using palette and audio-driven variations
   // vec3 lightColor = mix(palette(light * glow + uFrequencyData[64] * 0.5),        // Audio-influenced palette colors
@@ -152,9 +152,9 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   float vignette = smoothstep(0.5, 1.0, distFromOrigin * 0.5 + position.x * 0.1);
 
 // Modify color based on distance, with black near the edges and brighter toward the center
-#ifdef ENABLLE_FISHEYE
-  color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
-  #endif
+// #ifdef ENABLE_FISHEYE
+  color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
+  // #endif
   // color += vignette * smoothstep(-0.1, 0.05, glow) * lightColor - (0.8 + sin(position.y * 1.2 + fbmNoise) * 0.3);
 
   // Additional subtle frequency-based modulation for organic blending
@@ -197,7 +197,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
     float fbmVal = fractalBrownianMotion(position + 0.5, 5.0) - sin(uTime);
 
-    float alpha = exp(-0.05 * startDist);
+    float alpha = 1.0 - exp(-0.05 * startDist);
 
     float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
 

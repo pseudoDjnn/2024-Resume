@@ -6,7 +6,7 @@
 
 * What is the purpose of this repository?<br/>
 
-  New year, new resume for hire
+  New year, same resume
 
 # Table of Contents
 

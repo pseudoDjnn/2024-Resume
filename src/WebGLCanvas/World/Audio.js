@@ -27,7 +27,7 @@ export default class Audio {
       })
     })
 
-    this.analyser = new THREE.AudioAnalyser(this.sound, 512)
+    this.analyser = new THREE.AudioAnalyser(this.sound, 1024)
 
   }
 }

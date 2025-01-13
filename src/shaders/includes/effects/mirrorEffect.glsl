@@ -65,16 +65,7 @@ vec3 mirrorEffect(vec3 position, float stutter, float time) {
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
-// Weird float based on audio, time, position, noise, and chaotic harmonics
-  float weirdFloat = sin(uTime * position.x * 0.8) * cos(uAudioFrequency * position.y * 1.3) *
-    tan(fract(uTime * 0.5 + position.z * 0.7)) +
-    fractalBrownianMotion(position * 0.4 + sin(uTime * 0.1), 6.0) *
-    uFrequencyData[int(mod(uTime * 10.0, 256.0))] * 0.015 -
-    abs(sin(position.x * position.y * position.z * 0.5) * cos(uTime * 0.2)) * 0.3 +
-    pow(sin(position.z * 1.1 - uTime * 0.3), 3.0) * 0.5 +
-    step(0.5, fract(uTime * 0.7)) * uFrequencyData[int(mod(position.x * position.y * 123.45, 256.0))] * 0.02;
-
-  float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) / weirdFloat; // Octahedron shape
+  float octahedronSDF = (abs(position.x * 1.5) + abs(position.y * 1.5) + abs(position.z)) / 0.8; // Octahedron shape
 
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
   float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.3; // Time-driven smooth morph

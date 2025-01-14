@@ -13,21 +13,21 @@ float sdOctahedron(vec3 position, float size) {
   // float time = log(uTime + 1.0) * 3.0 - tan(uTime * 0.2) + smoothstep(0.1, 1.0, 15.0);
   // float time = 1.0 / exp(uTime * 0.05) + mod(uTime, 10.0) * 2.0 - smoothstep(0.2, 0.8, 30.0);
   // float time = exp(-uTime * 0.15) * sin(uTime * 0.7) - smoothstep(0.0, 1.0, 45.0);
-  float time = pow(uTime * 0.1, 2.0) - mix(10.0, 5.0, sin(uTime * 0.3)) - smoothstep(0.0, 1.0, 65.0);
-// float time = exp(-uTime * 0.1) * abs(sin(uTime * 0.8)) - step(0.5, uTime * 0.05);
-// float time = sin(uTime * 0.5) * exp(-uTime * 0.05) - smoothstep(0.2, 0.9, abs(cos(uTime * 0.3)));
+  // float time = pow(uTime * 0.1, 2.0) - mix(10.0, 5.0, sin(uTime * 0.3)) - smoothstep(0.0, 1.0, 65.0);
+  // float time = exp(-uTime * 0.1) * abs(sin(uTime * 0.8)) - step(0.5, uTime * 0.05);
+  float time = sin(uTime * 0.5) * exp(-uTime * 0.05) - smoothstep(0.2, 0.9, abs(cos(uTime * 0.3)));
 
   // float organicNoise = fractalBrownianMotion(uTime * 0.1 - position + 0.5 * vec3(0.3, uTime * 0.1, 0.0), 3.0) - sin(uTime * 0.5) * 0.3 + 0.3;
   float organicNoise = fractalBrownianMotion(position * 0.3 - uTime * 0.1, 1.0 - size) * 0.5 + 0.5;
 
-  float squareWave = abs(fract(sin(time - position.x * PI) + 1.0 * 2.0) + organicNoise);
+  float squareWave = abs(fract(sin((uTime - position.z * PI) * (uTime - position.y * PI)) + 1.0 * 2.0) * organicNoise);
   // squareWave = floor(cos(position.y - uTime * 0.2) * organicNoise / uTime * 0.5) + ceil(sin(position.y - cos(time * 0.8)) / time / organicNoise);
   // squareWave *= abs(squareWave * 2.0 - 1.0);
   // squareWave = 0.1 / sin(13.0 * squareWave + uTime + position.x * position.y);
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  // position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
+  position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   // float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) / length(time * 0.3 / position) * 0.5;
@@ -59,9 +59,9 @@ float sdOctahedron(vec3 position, float size) {
   if (3.0 * position.x < m)
     q = position * smoothstep(0.0, 1.0, randomValue(position) / 0.8);
   else if (3.0 * position.y < m)
-    q = position.yzx - fract(uFrequencyData[177]);
+    q = position.yzx - squareWave * 0.3;
   else if (3.0 * position.z < m)
-    q = position.zxy - sin(uTime - inversesqrt(squareWave));
+    q = position.zxy - sin(uTime);
   else
     return m * 0.57735027;
 

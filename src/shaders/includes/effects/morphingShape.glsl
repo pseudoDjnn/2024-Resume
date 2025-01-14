@@ -1,6 +1,6 @@
 #include ../helpers/smoothMin.glsl
 
-vec3 mirrorEffect(vec3 position, float stutter, float time) {
+vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float dist = sqrt(dot(position, position));
 

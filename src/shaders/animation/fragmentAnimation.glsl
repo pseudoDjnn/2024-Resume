@@ -17,7 +17,7 @@ varying vec2 vUv;
 #include ../includes/effects/fbm.glsl
 #include ../includes/effects/rotation.glsl
 #include ../includes/effects/palette.glsl
-#include ../includes/effects/mirrorEffect.glsl
+#include ../includes/effects/morphingShape.glsl
 #include ../includes/shapes/gyroid.glsl
 #include ../includes/shapes/octahedron.glsl
 

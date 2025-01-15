@@ -59,7 +59,7 @@ float sdOctahedron(vec3 position, float size) {
   if (3.0 * position.x < m)
     q = position * smoothstep(0.0, 1.0, randomValue(position) / 0.8);
   else if (3.0 * position.y < m)
-    q = position.yzx - squareWave * 0.3;
+    q = position.yzx - fract(uFrequencyData[177]);
   else if (3.0 * position.z < m)
     q = position.zxy - sin(uTime);
   else

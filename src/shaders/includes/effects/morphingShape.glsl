@@ -56,7 +56,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   // objectRotation.x -= round(position.y);
   // objectRotation.y += 
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
-  vec3 squareWave = vec3(step(0.3, fract(sin(uTime * 3.0 + position.x) * organicNoise)), step(0.3, fract(sin(uTime * 2.5 + position.y) * organicNoise)), step(0.3, fract(sin(uTime * 2.0 + position.z) * organicNoise))) * 0.8;
+  vec3 squareWave = vec3(step(0.3, fract(sin(uTime * 3.0 + position.x) * organicNoise)), step(0.3, fract(sin(uTime * 2.5 + position.y) * organicNoise)), step(0.3, fract(sin(uTime * 2.8 + position.z) * organicNoise)));
 
   float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy) - 0.2;

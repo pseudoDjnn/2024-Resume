@@ -69,7 +69,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
-  float octahedronSDF = (abs(2.0 * position.x) + abs(2.0 * position.y) + abs(position.z * smoothstep(0.0, 1.0, squareWave.z))) / 0.5; // Octahedron shape
+  float octahedronSDF = (abs(2.0 * position.x) + abs(2.0 * position.y) + abs(position.z * smoothstep(0.0, 2.0, squareWave.z))) / 0.5; // Octahedron shape
 
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
   float timeMorph2 = smoothstep(0.0, 1.0, 0.5 - sin(uTime)) * 0.1; // Time-driven smooth morph

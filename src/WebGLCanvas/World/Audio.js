@@ -19,10 +19,10 @@ export default class Audio {
     // console.log(this.sound)
 
     this.audioLoader = new THREE.AudioLoader()
-    this.audioLoader.load('sound/LFO_uKno.mp3', (bufnr) => {
+    this.audioLoader.load('sound/1st Track06-16-24(2).mp3', (bufnr) => {
       this.sound.setBuffer(bufnr)
       window.addEventListener('click', () => {
-        this.sound.setVolume(0.2)
+        this.sound.setVolume(0.8)
         this.sound.play()
       })
     })

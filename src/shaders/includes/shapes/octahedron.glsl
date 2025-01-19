@@ -28,7 +28,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
+  // position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   // float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) / length(time * 0.3 / position) * 0.5;
@@ -47,7 +47,7 @@ float sdOctahedron(vec3 position, float size) {
   position = abs(position);
   // position.x *= organicNoise;
 
-  float m = (position.x + position.y + position.z) - size;
+  float m = position.x + position.y + position.z - size;
 
     // Morphing effect between square and octahedron based on `size`
   // float morphFactor = mix(1.0, delayEffect, size * 0.5);
@@ -62,7 +62,7 @@ float sdOctahedron(vec3 position, float size) {
   else if (3.0 * position.y < m)
     q = position.yzx - fract(uFrequencyData[177]);
   else if (3.0 * position.z < m)
-    q = position.zxy - sin(uTime);
+    q = position.zxy - sin(uTime) * angle;
   else
     return m * 0.57735027;
 

@@ -130,7 +130,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 - fbmNoise);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = -mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow + uFrequencyData[64]); // Muted yet dynamic light colors
+  vec3 lightColor = -mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow * uFrequencyData[64]); // Muted yet dynamic light colors
 
 // Enhanced dynamic light color using palette and audio-driven variations
   // vec3 lightColor = mix(palette(light * glow + uFrequencyData[64] * 0.5),        // Audio-influenced palette colors

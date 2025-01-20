@@ -10,7 +10,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   float midFreq = 0.0;
   float highFreq = 0.0;
 
-  for (int i = 0; i < 256; i++) {
+  for (int i = 0; i < 257; i++) {
     if (i < 89) {
       lowFreq *= uFrequencyData[i];
     } else if (i < 144) {
@@ -43,14 +43,14 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   vec3 rotatedPosition = rotationMatrix * (position - morphedPosition);
 
-  float frequencyScale = uFrequencyData[0] * 255.0;
+  float frequencyScale = uFrequencyData[0] * 256.0;
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
   vec3 segmentation = ceil(position);
   // segmentation.y *= sin(uTime / cos(segmentation.x));
-  segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
-  segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
+  // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
+  // segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
 
   vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
   // objectRotation.x -= round(position.y);
@@ -63,9 +63,9 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float sphereSDF = length(position) * 0.8;                  // Sphere shape
 
-  float gyroidScale = clamp(uTime, 0.0, 13.0);
+  float gyroidScale = clamp(uTime, 0.0, 21.0);
 
-  float gyroidSDF = abs(sin(uTime * TAU - objectRotation.x * gyroidScale) * cos(squareWave.y * gyroidScale) + sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) + sin(uTime * TAU - position.z * gyroidScale) * cos(position.x * gyroidScale));
+  float gyroidSDF = abs(sin(uTime * TAU - objectRotation.x * gyroidScale) * cos(squareWave.y * gyroidScale) + sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) + sin(uTime * TAU - objectRotation.z * gyroidScale) * cos(position.x * gyroidScale));
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 

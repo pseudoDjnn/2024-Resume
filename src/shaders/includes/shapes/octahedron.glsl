@@ -4,7 +4,7 @@
 float sdOctahedron(vec3 position, float size) {
 
   position /= 0.8;
-  position.x += smoothstep(0.0, 1.0, sin(uTime) * 0.2);
+  position.x += smoothstep(0.0, 1.0, sin(uTime) * 0.2) / uAudioFrequency;
   position.y += 0.03;
 
   // float time = uTime * 3.0 + 5000.0 + sin(uTime / 3.0) * 5.0;
@@ -28,7 +28,7 @@ float sdOctahedron(vec3 position, float size) {
 
   // position.x = sin(position.y * 2.0 + position.z * 0.5) * abs(position.x) * organicNoise;
 
-  // position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
+  position = morphingShape(position, mod(uFrequencyData[255], squareWave), 0.5);
 
   // float timeFactor = tan(uTime * 0.3 + uAudioFrequency * 0.1);
   // float timeFactor = 1.0 - sin(uTime * 0.3) * cos(uAudioFrequency * 0.01) / length(time * 0.3 / position) * 0.5;

@@ -47,12 +47,12 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 segmentation = ceil(position);
+  vec3 segmentation = vec3(ceil(position.x), ceil(position.y), ceil(position.z));
   // segmentation.y *= sin(uTime / cos(segmentation.x));
   // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
   // segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
 
-  vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
+  vec3 objectRotation = rotateZ(frequencyScale * 0.0003) * sin(rampedTime - segmentation);
   // objectRotation.x -= round(position.y);
   // objectRotation.y += 
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
@@ -76,7 +76,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   float timeMorph2 = smoothstep(0.0, 1.0, 0.5 - sin(uTime)) * 0.1; // Time-driven smooth morph
 
   float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph); // Sphere <-> Cube
-  float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron
+  float finalShape = mix(blendedShape, octahedronSDF * float(objectRotation), timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;
 }

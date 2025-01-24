@@ -3,7 +3,7 @@
 */
 float sdOctahedron(vec3 position, float size) {
 
-  position /= 0.8;
+  position /= 0.5;
   position.x += smoothstep(0.0, 1.0, sin(uTime) * 0.2) / uAudioFrequency;
   position.y += 0.03;
 

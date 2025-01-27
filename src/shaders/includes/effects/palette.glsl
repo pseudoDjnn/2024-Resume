@@ -1,20 +1,19 @@
 vec3 palette(float tone) {
+  // Define a neutral and modern base palette
+  vec3 a = vec3(0.8, 0.8, 0.85); // Light gray with a hint of blue for a modern feel
+  vec3 b = vec3(0.5, 0.55, 0.6); // Muted cool tones for contrast
+  vec3 c = vec3(0.3, 0.3, 0.35); // Darker gray for depth
+  vec3 d = vec3(0.1, 0.15, 0.2); // Dark tones for grounding
 
-  // Increase intensity for each component to create a more vibrant color effect
-  vec3 a = 1.0 - cos(vec3(1.2, 1.2, 1.2)); // Higher values to make colors more intense
-  vec3 b = 1.0 - sin(vec3(1.2, 1.2, 1.2));
-  vec3 c = -sin(vec3(0.8, 1.2, 1.0));
-  vec3 d = 1.0 - cos(vec3(0.8, 0.5, 0.8));
-
-  // Dulling factor to reduce vibrancy
+  // Dulling factor to subtly blend colors
   float dullFactor = smoothstep(0.2, 0.8, abs(sin(uTime * 0.1)));
 
+  // Interpolation for smooth transitions
   float interpo = smoothstep(0.0, 1.0, fract(tone + uTime * 0.2));
 
+  // Fractal-based noise for organic blending
   float fbm = fractalBrownianMotion(c * d, interpo);
 
-  // Apply dulling factor to tone and time-based color calculation
-  // return (a + b * -cos(uTime / 5.28318 * (c + tone + d))) * dullFactor;
-  return mix(vec3(0.1, 0.2, fract(uTime * 0.1)) - dullFactor, a + b + tone * 0.3, fbm);
-
+  // Combine colors with subtle dynamics
+  return mix(a, b + tone * 0.3, fbm) * (1.0 - dullFactor) + c * dullFactor;
 }

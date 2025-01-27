@@ -1,16 +1,36 @@
 :root {
-    --primary-gradient: linear-gradient(144deg,
-            #354f52,
-            #859e86,
-            #361515c1,
-            #110f17,
-            #303030,
-            #787f85c2,
-            #978963,
-            #282729,
-            #361515c1,
-            #110f17);
-    --background-gradient: radial-gradient(circle, #110f17 0%, #282729 50%, #303030 100%);
+    --primary-gradient: radial-gradient(circle,
+            #1a1c1d 0%,
+            /* Dark Charcoal Gray */
+            #2d3537 40%,
+            /* Subtle Graphite */
+            #465f63 70%,
+            /* Muted Teal-Green */
+            /* #6e7f83 45%, */
+            /* Soft Stone Gray */
+            #2b2e31 89%,
+            /* Deep Gray with Blue Undertones */
+            #1e2022 100%
+            /* Sleek Jet Black */
+            /* #3b474a 89%, */
+            /* Polished Gunmetal */
+            /* #586b6e 95%, */
+            /* Calm Oceanic Green */
+            /* #42484a 100% */
+            /* Smoky Industrial Gray */
+        );
+
+
+    --background-gradient: radial-gradient(circle,
+            #1a1c1d 0%,
+            /* Dark Charcoal Gray */
+            #2d3537 40%,
+            /* Subtle Graphite */
+            #465f63 70%,
+            /* Muted Teal-Green */
+            #1e2022 100%
+            /* Sleek Jet Black */
+        );
     --loading-gradient: linear-gradient(135deg, #202020, #0f0f0f);
     --highlight-color: #8c40ff;
     --font-family: 'Neue Montreal', sans-serif;

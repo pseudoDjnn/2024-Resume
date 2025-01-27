@@ -1,20 +1,21 @@
+#define NUM_OCTAVES 5
+
 precision mediump float;
 
 uniform float uAudioFrequency;
+uniform float uFrequencyData[256];
+
 uniform float uTimeAnimation;
 uniform float uTime;
-// uniform float uWaveElevation;
-// uniform float uWaveSpeed;
 
 attribute float aRandom;
 
 varying float vRandom;
-// varying float vElevation;
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUv;
 
-// #include ../includes/effects/terrainGeneration.glsl
+#include ../includes/effects/fbm.glsl
 
 void main() {
   // Base Postion
@@ -31,15 +32,15 @@ void main() {
   // 
   vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
   // 
-// 
+
   // Glitching effect
-  // float glitchTime = uAudioFrequency * 0.01 - modelPosition.y * 0.2;
-  // float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
-  // stuttering /= 3.0;
-  // stuttering *= uAudioFrequency * 0.1;
-  // stuttering *= 0.34;
-  // modelPosition.x += (random2D(modelPosition.xz * uAudioFrequency) - 0.5) * stuttering / 3.0;
-  // modelPosition.z += (random2D(modelPosition.zx * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  float glitchTime = uAudioFrequency * 0.8 - modelPosition.y * 0.2;
+  float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
+  stuttering /= 3.0;
+  stuttering *= uAudioFrequency;
+  stuttering *= 0.34;
+  modelPosition.x += (randomValue(modelPosition.xzy * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  modelPosition.z += (randomValue(modelPosition.yzx * uAudioFrequency) - 0.5) * stuttering / 3.0;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

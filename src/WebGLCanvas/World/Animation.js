@@ -18,7 +18,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.PlaneGeometry(8, 8, 1, 1)
+    this.geometry = new THREE.CircleGeometry(3, 89)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
     // this.geometry.deleteAttribute('normal')

@@ -1,6 +1,5 @@
-// #include ../effects/simplexNoise3d.glsl
+#include ../effects/simplexNoise3d.glsl
 // #include ../effects/random2D.glsl
-// #include ../effects/voronoi.glsl
 
 float terrainGeneration(in vec3 position) {
 
@@ -18,9 +17,9 @@ float terrainGeneration(in vec3 position) {
   float elevation = 0.0;
   // elevation = 0.02 * lerp(uAudioFrequency);
   // elevation *= fnoise(uWarpFrequency, uWarpFrequency);
-  elevation += voroNoise(warpedPosition * uPositionFrequency, uWarpFrequency, uPositionFrequency) / 2.0;
-  elevation += voroNoise(warpedPosition * uPositionFrequency * 2.0, uWarpFrequency, uPositionFrequency) / 5.0;
-  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0;
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency) / 2.0;
+  elevation += simplexNoise3d(warpedPosition * uPositionFrequency * 2.0) / 5.0;
+  elevation *= simplexNoise3d(warpedPosition * uPositionFrequency * 3.0) / 8.0;
   // elevation += iqnoise(warpedPosition, uWarpFrequency * 5.0, uStrength);
 
   float elevationSign = sin(elevation);

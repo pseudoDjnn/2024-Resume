@@ -13,6 +13,7 @@ uniform float uFrequencyData[256];
 uniform float uTime;
 
 varying vec2 vUv;
+varying vec3 vPosition;
 
 #include ../includes/effects/fbm.glsl
 #include ../includes/effects/rotation.glsl
@@ -256,14 +257,14 @@ void main() {
     color *= (1.0 - vec3(startDist / endDist / centerDist));
 
     // Edge fading
-    // color *= smoothstep(-0.8, 0.5, vUv.x);
-    // color *= smoothstep(-1.0, 0.3, vUv.x);
-    // color *= smoothstep(-0.8, 0.5, vUv.y);
-    // color *= smoothstep(-1.0, 0.3, vUv.y);
+    color *= smoothstep(-0.8, 0.5, vUv.x);
+    color *= smoothstep(-1.0, 0.3, vUv.x);
+    color *= smoothstep(-0.8, 0.5, vUv.y);
+    color *= smoothstep(-1.0, 0.3, vUv.y);
   }
 
     // Final color output
-  gl_FragColor = vec4(color, 0.8);
+  gl_FragColor = vec4(color, 0.5);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

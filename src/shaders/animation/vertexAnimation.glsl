@@ -1,3 +1,5 @@
+#define PI 3.1415926535897932384626433832795
+#define TAU  6.28318530718
 #define NUM_OCTAVES 5
 
 precision mediump float;
@@ -34,13 +36,13 @@ void main() {
   // 
 
   // Glitching effect
-  float glitchTime = uAudioFrequency * 0.8 - modelPosition.y * 0.2;
+  float glitchTime = sin(uTime - modelPosition.y);
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
-  stuttering *= uAudioFrequency;
-  stuttering *= 0.34;
-  modelPosition.x += (randomValue(modelPosition.xzy * uAudioFrequency) - 0.5) * stuttering / 3.0;
-  modelPosition.z += (randomValue(modelPosition.yzx * uAudioFrequency) - 0.5) * stuttering / 3.0;
+  stuttering = smoothstep(0.3, 1.0, stuttering * uFrequencyData[64]);
+  stuttering *= 0.21;
+  modelPosition.x += (randomValue(modelPosition.xzy + uTime) - 0.5) * stuttering / 3.0;
+  modelPosition.z += (randomValue(modelPosition.yzx + uTime) - 0.5) * stuttering / 3.0;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;
@@ -51,6 +53,6 @@ void main() {
   // vRandom = aRandom;
   // vElevation = elevation;
   vNormal = computeNormal;
-  // vPosition = modelPosition.xyz;
+  vPosition = modelPosition.xyz;
   vUv = uv;
 }

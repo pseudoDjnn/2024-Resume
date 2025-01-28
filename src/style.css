@@ -197,7 +197,28 @@ body::before {
     }
 }
 
-/* Keyframes */
+
+/* Initial Hidden State */
+.vertical-line,
+.horizontal-line {
+    position: absolute;
+    opacity: 1;
+    /* Start hidden */
+    /* box-shadow: 0 0 10px var(--highlight-color); */
+}
+
+/* When the loading is complete, these animations start */
+.animate-lines .vertical-line {
+    width: 1px;
+    height: 78%;
+    background-color: var(--base-color);
+    left: 13%;
+    top: 13%;
+    animation: verticalLineMove 8s ease-in-out 0.3s forwards;
+    /* 1s delay, 1 iteration */
+    opacity: 0.3;
+}
+
 @keyframes verticalLineMove {
     0% {
         height: 0%;
@@ -227,11 +248,22 @@ body::before {
         opacity: 1;
     }
 
-    100% {
+    0% {
         height: 0%;
         top: 50%;
         opacity: 0;
     }
+}
+
+.animate-lines .horizontal-line {
+    height: 1px;
+    width: 69%;
+    background-color: var(--base-color);
+    left: 15%;
+    top: 5%;
+    animation: horizontalLineGrow 8s ease-in-out 0.3s forwards;
+    /* 1s delay, 1 iteration */
+    opacity: 0.3;
 }
 
 @keyframes horizontalLineGrow {
@@ -264,44 +296,11 @@ body::before {
         opacity: 1;
     }
 
-    100% {
+    0% {
         width: 0%;
         left: 50%;
         opacity: 0;
     }
-}
-
-
-/* Initial Hidden State */
-.vertical-line,
-.horizontal-line {
-    position: absolute;
-    opacity: 1;
-    /* Start hidden */
-    /* box-shadow: 0 0 10px var(--highlight-color); */
-}
-
-/* When the loading is complete, these animations start */
-.animate-lines .vertical-line {
-    width: 1px;
-    height: 78%;
-    background-color: var(--base-color);
-    left: 13%;
-    top: 13%;
-    animation: verticalLineMove 8s ease-in-out 0.3s forwards;
-    /* 1s delay, 1 iteration */
-    opacity: 0.5;
-}
-
-.animate-lines .horizontal-line {
-    height: 1px;
-    width: 69%;
-    background-color: var(--base-color);
-    left: 15%;
-    top: 5%;
-    animation: horizontalLineGrow 8s ease-in-out 0.3s forwards;
-    /* 1s delay, 1 iteration */
-    opacity: 0.5;
 }
 
 

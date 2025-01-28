@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     const loader = document.getElementById("loading-screen");
     const canvas = document.querySelector("canvas.webgl"); // Updated to target the canvas with the correct class
+    const verticalLine = document.getElementById("vertical-line");
+    const horizontalLine = document.getElementById("horizontal-line")
 
     if (loader && canvas) {
       // Fade out the loader
@@ -16,6 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
       loader.addEventListener("transitionend", () => {
         loader.style.display = "none"; // Completely remove the loader
       });
+
+
+      // Animate the lines
+      verticalLine.style.animation = "fade-slide-down 1.2s ease-out forwards";
+      horizontalLine.style.animation = "fade-slide-right 1.2s ease-out forwards";
 
       // Fade in the canvas
       canvas.classList.remove("hidden");

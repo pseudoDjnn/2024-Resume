@@ -7,9 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Simulate a loading process (adjust the timeout as needed)
   setTimeout(() => {
     const loader = document.getElementById("loading-screen");
+    const animation = document.querySelector(".animation-container");
     const canvas = document.querySelector("canvas.webgl"); // Updated to target the canvas with the correct class
-    const verticalLine = document.getElementById("vertical-line");
-    const horizontalLine = document.getElementById("horizontal-line")
+    // const verticalLine = document.getElementById("vertical-line");
+    // const horizontalLine = document.getElementById("horizontal-line")
 
     if (loader && canvas) {
       // Fade out the loader
@@ -21,8 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
       // Animate the lines
-      verticalLine.style.animation = "fade-slide-down 1.2s ease-out forwards";
-      horizontalLine.style.animation = "fade-slide-right 1.2s ease-out forwards";
+      // verticalLine.style.animation = "fade-slide-down 1.2s ease-out forwards";
+      // horizontalLine.style.animation = "fade-slide-right 1.2s ease-out forwards";
+
+      animation.classList.add("animate-lines");
 
       // Fade in the canvas
       canvas.classList.remove("hidden");

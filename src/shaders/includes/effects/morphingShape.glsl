@@ -73,11 +73,11 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float octahedronSDF = (abs(2.0 * position.x) + abs(2.0 * position.y) + abs(position.z * smoothstep(0.0, 2.0, squareWave.z))) * 0.8; // Octahedron shape
 
-  float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
-  float timeMorph2 = smoothstep(0.0, 1.0, 0.5 - sin(uTime)) * 0.1; // Time-driven smooth morph
+  float timeMorph = smoothstep(0.0, 0.8, sin(uTime)); // Time-driven smooth morph
+  float timeMorph2 = smoothstep(0.0, 0.8, 0.5 - sin(uTime)) * 0.1; // Time-driven smooth morph
 
-  float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph); // Sphere <-> Cube
-  float finalShape = mix(blendedShape, octahedronSDF * float(objectRotation * 0.2), timeMorph2); // Blending Octahedron
+  float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph2); // Sphere <-> Cube
+  float finalShape = mix(blendedShape, octahedronSDF * float(objectRotation * 0.2), timeMorph); // Blending Octahedron
 
   return rotatedPosition * finalShape;
 }

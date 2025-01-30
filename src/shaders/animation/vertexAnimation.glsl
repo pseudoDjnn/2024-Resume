@@ -36,13 +36,13 @@ void main() {
   // 
 
   // Glitching effect
-  float glitchTime = sin(uTime - modelPosition.y);
+  float glitchTime = sin(uTime * PI * modelPosition.y);
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering * uFrequencyData[64]);
   stuttering *= 0.21;
   modelPosition.x += (randomValue(modelPosition.xzy + uTime) - 0.5) * stuttering / 3.0;
-  modelPosition.z += (randomValue(modelPosition.yzx + uTime) - 0.5) * stuttering / 3.0;
+  modelPosition.z += (randomValue(modelPosition.yzx + uTime) - 0.5) * stuttering;
 
   // Final Position
   vec4 viewPosition = viewMatrix * modelPosition;

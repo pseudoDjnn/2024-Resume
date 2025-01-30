@@ -150,12 +150,12 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
 // Darken color closer to the start of the raymarch
   // float vignette = smoothstep(0.8, 1.0, distFromOrigin * 0.3); // Increase this value to tighten the effect
-  float vignette = smoothstep(0.5, 1.0, distFromOrigin * 0.5 + position.x * 0.1);
+  float vignette = smoothstep(0.5, 1.0, distFromOrigin * 0.5 + position.y * 0.1);
 
 // Modify color based on distance, with black near the edges and brighter toward the center
 // #ifdef ENABLE_FISHEYE
   // color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
-  color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
+  color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise * 0.1)) * 1.5;
 
   // #endif
   // color += vignette * smoothstep(-0.1, 0.05, glow) * lightColor - (0.8 + sin(position.y * 1.2 + fbmNoise) * 0.3);
@@ -206,8 +206,8 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     float turb = fbmVal * (1.0 + uFrequencyData[34] * 0.1);
 
-    color = mix(color, fract(uTime - vec3(0.2, 0.5, 0.8)), gradient); // Smooth gradient coloring
-    color += vec3(turb) * 0.05;                         // Turbulence-based variations
+    color = mix(color, fract(uTime - vec3(0.8, 0.8, 0.8)), gradient - sin(uTime * PI - -position.z)); // Smooth gradient coloring
+    color -= vec3(turb) * 0.05;                         // Turbulence-based variations
     color = mix(color, vec3(0.0), alpha);        // Fade with distance
 
     // color = smoothstep(-1.0, 1.0, color) * 0.5 + 0.5;

@@ -131,7 +131,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 - fbmNoise);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = -mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow * uFrequencyData[64]); // Muted yet dynamic light colors
+  vec3 lightColor = mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow * uFrequencyData[64]); // Muted yet dynamic light colors
 
 // Enhanced dynamic light color using palette and audio-driven variations
   // vec3 lightColor = mix(palette(light * glow + uFrequencyData[64] * 0.5),        // Audio-influenced palette colors
@@ -206,7 +206,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     float turb = fbmVal * (1.0 + uFrequencyData[34] * 0.1);
 
-    color = mix(color, fract(uTime - vec3(1.0, 0.8, 0.8)), gradient - sin(uTime * PI - -position.z)); // Smooth gradient coloring
+    color = mix(color, fract(uTime - vec3(0.9, 0.8, 0.8)), gradient - cos(uTime * PI - -position.z)); // Smooth gradient coloring
     color -= vec3(turb) * 0.05;                         // Turbulence-based variations
     color = mix(color, vec3(0.0), alpha);        // Fade with distance
 

@@ -206,7 +206,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     float turb = fbmVal * (1.0 + uFrequencyData[34] * 0.1);
 
-    color = mix(color, fract(uTime - vec3(1.0, 0.5, 0.8)), gradient - smoothstep(0.0, 1.0, fract(sin(uTime - PI * -position.z)))); // Smooth gradient coloring
+    color -= mix(color, fract(uTime - vec3(1.0, 0.3, 0.5)), gradient - smoothstep(0.0, 1.0, fract(sin(uTime - PI * -position.z)))); // Smooth gradient coloring
     color -= vec3(turb) * 0.05;                         // Turbulence-based variations
     color = mix(color, vec3(0.5), alpha);        // Fade with distance
 

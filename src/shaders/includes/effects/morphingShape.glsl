@@ -47,7 +47,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 segmentation = 1.0 - vec3(ceil(uTime - PI * position.x), uTime - ceil(position.y), uTime * PI * ceil(position.z));
+  vec3 segmentation = 1.0 - vec3(uTime - PI - ceil(position.x), uTime - PI - ceil(position.y), ceil(position.z)) * 0.08;
 
   // segmentation.y *= sin(uTime / cos(segmentation.x));
   // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);

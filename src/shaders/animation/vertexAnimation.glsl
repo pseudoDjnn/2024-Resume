@@ -21,19 +21,21 @@ varying vec2 vUv;
 
 void main() {
   // Base Postion
-  float shift = 0.01;
+  // float shift = 0.01;
   vec4 modelPosition = modelMatrix * vec4(position, 1.0);
-  vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
-  vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
+  // vec3 modelPositionAlpha = modelPosition.xyz + vec3(shift, 0.0, 0.0);
+  // vec3 modelPositionBeta = modelPosition.xyz + vec3(0.0, 0.0, -shift);
 
   // Compute Normal
   // 
-  vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
-  vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
+  // vec3 alphaNeighbor = normalize(modelPositionAlpha - modelPosition.xyz);
+  // vec3 betaNeighbor = normalize(modelPositionBeta - modelPosition.xyz);
   // 
   // 
-  vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
+  // vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
   // 
+
+  // modelPosition.z = sin(uTime) * 0.3;
 
   // Glitching effect
   float glitchTime = uTime - modelPosition.y;
@@ -52,7 +54,7 @@ void main() {
   // Varyings
   // vRandom = aRandom;
   // vElevation = elevation;
-  vNormal = computeNormal;
-  vPosition = modelPosition.xyz;
+  // vNormal = computeNormal;
+  // vPosition = modelPosition.xyz;
   vUv = uv;
 }

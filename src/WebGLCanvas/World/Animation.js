@@ -18,7 +18,7 @@ export default class Animation {
 
     // console.log('this is for the animation')
 
-    this.geometry = new THREE.CircleGeometry(3, 89)
+    this.geometry = new THREE.CircleGeometry(3, 55)
     // this.geometry.setIndex(null)
     // this.geometry.deleteAttribute('uv')
     // this.geometry.deleteAttribute('normal')
@@ -63,10 +63,11 @@ export default class Animation {
 
   update() {
 
-    // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5) * 0.0001
-    // this.mesh.rotation.y = Math.sin(this.time.delta - 0.5) * 0.00002
-    // this.mesh.rotation.z = Math.cos(this.time.elapsed * 0.0001)
-
+    // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5)
+    // this.mesh.rotation.y = Math.sin(this.time.elapsed - 0.5) * 0.005
+    // this.mesh.rotation.z = Math.cos(this.time.delta * 0.0003)
+    this.pulse = 1.0 + Math.sin(this.time.elapsed * 2.0) * 0.05;
+    // this.mesh.rotation.set(this.pulse, 0, 0);
     // this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
     this.material.uniforms.uTime.value = this.time.elapsed * 0.0008
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
@@ -78,6 +79,6 @@ export default class Animation {
     // }
 
     // Reset any potential rotation (commented out to ensure no rotation)
-    this.mesh.rotation.set(0, 0, 0);
+    // this.mesh.rotation.set(0, 0, 0);
   }
 }

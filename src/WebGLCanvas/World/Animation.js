@@ -66,10 +66,12 @@ export default class Animation {
     // this.mesh.rotation.x = Math.sin(this.time.elapsed - 0.5)
     // this.mesh.rotation.y = Math.sin(this.time.elapsed - 0.5) * 0.005
     // this.mesh.rotation.z = Math.cos(this.time.delta * 0.0003)
-    this.pulse = 1.0 + Math.sin(this.time.elapsed * 2.0) * 0.05;
+
+    // this.pulse = 1.0 + Math.sin(this.time.elapsed * 2.0) * 0.05;
     // this.mesh.rotation.set(this.pulse, 0, 0);
+
     // this.material.uniforms.uTimeAnimation.value = this.time.elapsed * 0.00001
-    this.material.uniforms.uTime.value = this.time.elapsed * 0.0008
+    this.material.uniforms.uTime.value = this.time.elapsed * 0.0005
     this.material.uniforms.uAudioFrequency.value = this.audio.analyser.getAverageFrequency()
     this.material.uniforms.uFrequencyData.value = this.audio.analyser.getFrequencyData()
 

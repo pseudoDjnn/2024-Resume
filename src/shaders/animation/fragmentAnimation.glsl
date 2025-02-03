@@ -264,7 +264,7 @@ void main() {
   }
 
     // Final color output
-  gl_FragColor = vec4(color, 0.5);
+  gl_FragColor = vec4(color, 0.3);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
 }

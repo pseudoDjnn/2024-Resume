@@ -35,7 +35,7 @@ void main() {
   // vec3 computeNormal = cross(alphaNeighbor, betaNeighbor);
   // 
 
-  // modelPosition.z = sin(uTime) * 0.3;
+  modelPosition.z = sin(uTime) * 0.03;
 
   // Glitching effect
   float glitchTime = uTime - modelPosition.y;

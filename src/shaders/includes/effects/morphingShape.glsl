@@ -47,13 +47,13 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 segmentation = 1.0 - vec3(uTime - PI - ceil(position.x), uTime - PI - ceil(position.y), ceil(position.z)) * 0.08;
+  vec3 segmentation = 1.0 - vec3(uTime - PI - ceil(position.x), uTime - PI - ceil(position.y), ceil(position.z)) * 0.3;
 
   // segmentation.y *= sin(uTime / cos(segmentation.x));
   // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
   // segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
 
-  vec3 objectRotation = rotateZ(frequencyScale * 0.0003) * sin(rampedTime - segmentation);
+  vec3 objectRotation = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
   // objectRotation.x -= round(position.y);
   // objectRotation.y += 
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
@@ -74,7 +74,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   float octahedronSDF = (abs(2.0 * position.x / float(objectRotation)) + abs(2.0 * position.y / float(objectRotation)) + abs(position.z * smoothstep(0.0, 2.0, squareWave.z))) * 0.8; // Octahedron shape
 
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
-  float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.1; // Time-driven smooth morph
+  float timeMorph2 = smoothstep(0.0, 1.0, 0.1 - sin(uTime)) * 0.1; // Time-driven smooth morph
 
   float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph); // Sphere <-> Cube
   float finalShape = mix(blendedShape, octahedronSDF, timeMorph2); // Blending Octahedron

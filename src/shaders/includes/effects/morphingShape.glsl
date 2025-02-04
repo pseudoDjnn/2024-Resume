@@ -47,7 +47,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
-  vec3 segmentation = vec3(uTime - PI - ceil(position.x), uTime - PI - ceil(position.y), ceil(position.z));
+  vec3 segmentation = vec3(ceil(position.x), ceil(position.y), ceil(position.z));
 
   // segmentation.y *= sin(uTime / cos(segmentation.x));
   vec3 newPosition = rotateZ(rotationAngle + cos(uTime) * 0.5) *
@@ -56,9 +56,9 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
   // segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
 
-  vec3 objectRotationX = rotateX(uTime - frequencyScale * 0.0001) * sin(rampedTime - segmentation);
-  vec3 objectRotationY = rotateY(uTime - frequencyScale * 0.0001) * cos(rampedTime - segmentation + 1.0);
-  vec3 objectRotationZ = rotateZ(uTime - frequencyScale * 0.0001) * sin(rampedTime - segmentation + 2.0);
+  vec3 objectRotationX = rotateX(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
+  vec3 objectRotationY = rotateY(frequencyScale * 0.0001) * cos(rampedTime - segmentation);
+  vec3 objectRotationZ = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
 
   // objectRotation.y += 
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
@@ -72,17 +72,17 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float gyroidScale = clamp(uTime, 0.0, 21.0);
 
-  float gyroidSDF = abs(sin(uTime * TAU - objectRotationX.x * gyroidScale) * cos(squareWave.y * gyroidScale) + sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) + sin(uTime * TAU - objectRotationZ.z * gyroidScale) * cos(position.x * gyroidScale));
+  float gyroidSDF = abs(sin(uTime * TAU - objectRotationX.x * gyroidScale) * cos(objectRotationY.y * gyroidScale) + sin(position.y * gyroidScale) * cos(uTime * TAU - position.z * gyroidScale) + sin(uTime * TAU - objectRotationZ.z * gyroidScale) * cos(position.x * gyroidScale));
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
-  float octahedronSDF = (abs(objectRotationX.x) + abs(objectRotationY.y) + abs(objectRotationZ.z)) * 0.8; // Octahedron shape
+  float octahedronSDF = (abs(objectRotationX.x) + abs(objectRotationY.y) + abs(newPosition.z)); // Octahedron shape
 
   float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
-  float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - cos(uTime)) * 0.1; // Time-driven smooth morph
+  float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.1; // Time-driven smooth morph
 
   float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph); // Sphere <-> Cube
-  float finalShape = mix(blendedShape, 13.0 * octahedronSDF, timeMorph2); // Blending Octahedron
+  float finalShape = mix(blendedShape, octahedronSDF * 3.0, timeMorph2); // Blending Octahedron
 
   return rotatedPosition * finalShape;
 }

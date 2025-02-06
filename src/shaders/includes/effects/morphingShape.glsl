@@ -56,17 +56,17 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   // segmentation.x *= sin(frequencyScale * 0.001 * segmentation.y);
   // segmentation.y *= cos(frequencyScale * 0.001 * segmentation.x);
 
-  vec3 objectRotationX = rotateX(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
-  vec3 objectRotationY = rotateY(frequencyScale * 0.0001) * cos(rampedTime - segmentation);
+  vec3 objectRotationX = rotateX(frequencyScale * 0.0005) * sin(rampedTime - segmentation);
+  vec3 objectRotationY = rotateY(frequencyScale * 0.0003) * cos(rampedTime - segmentation);
   vec3 objectRotationZ = rotateZ(frequencyScale * 0.0001) * sin(rampedTime - segmentation);
 
   // objectRotation.y += 
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
-  vec3 squareWave = vec3(step(0.3, fract(sin(uTime * 3.0 + position.x) * organicNoise)), step(0.3, fract(sin(uTime * 2.5 + position.y) * organicNoise)), step(0.3, fract(sin(uTime * 2.8 + position.z) * organicNoise)));
+  vec3 squareWave = vec3(step(0.3, fract(sin(uFrequencyData[144] - uTime * 3.0 + position.x) * organicNoise)), step(0.3, fract(sin(uFrequencyData[144] - uTime * 2.5 + position.y) * organicNoise)), step(0.3, fract(sin(uFrequencyData[144] - uTime * 2.8 + position.z) * organicNoise)));
 
   float octahedronSDF = (abs(objectRotationZ.x) + abs(objectRotationZ.y) + abs(objectRotationZ.z) * 0.8); // Octahedron shape
 
-  float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
+  float starScale = sin(uAudioFrequency * cos(uTime - 0.8) / float(squareWave * 0.001));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy);
 
   float clampedSin = clamp(sin(uTime - 0.8), 0.5, 0.8);

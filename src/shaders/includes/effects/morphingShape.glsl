@@ -66,10 +66,10 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float octahedronSDF = (abs(objectRotationZ.x) + abs(objectRotationZ.y) + abs(objectRotationZ.z) * 0.8); // Octahedron shape
 
-  float starScale = sin(uAudioFrequency * cos(uTime - 0.8) / float(squareWave * 0.001));
+  float starScale = sin(uAudioFrequency * cos(uTime - 0.8));
   float starSDF = abs(sin(uTime * position.x * starScale) + cos(uTime / position.y * starScale) * 0.5) * length(position.xy);
 
-  float clampedSin = clamp(sin(uTime - 0.8), 0.5, 0.8);
+  float clampedSin = clamp(sin(uTime - 0.8), 0.5, 0.8 / float(squareWave));
   float sphereSDF = length(position) * clampedSin;
 
   float gyroidScale = clamp(uTime, 0.0, 21.0);

@@ -24,12 +24,6 @@ varying vec3 vPosition;
 
 float sdf(vec3 position) {
 
-  // float distorted = fractalBrownianMotion(position * 2.0, 1.0) / 5.0;
-
-  // float intensity = uFrequencyData[int(distorted * 255.0)]
-
-  // float intensity = uFrequencyData[int(mod(fract(distorted * cos(uTime + gl_FragCoord.z) * sin(uTime + gl_FragCoord.y)), 256.0))];
-
   // Various rotational speeds
   vec3 position1 = rotate(position, vec3(1.0), sin(-uTime * 0.1) * 0.3);
 
@@ -45,27 +39,10 @@ float sdf(vec3 position) {
   // position1 += polynomialSMin(uAudioFrequency * 0.003, dot(sqrt(uAudioFrequency * 0.02), 0.3), 0.3);
 
   float octaGrowth = sin(uAudioFrequency * 0.005 + 0.5) / 1.0 + 0.1;
-  // position1.y += sin(uTime) * (0.1 * octaGrowth);
 
-  // vec3 position2 = rotate(position1 - shapesPosition * -0.5, vec3(1.0), uAudioFrequency * 0.001);
-
-  // vec3 position3 = -rotate(position1, vec3(1.0), sin(uTime));
-  // position3.xz *= rot2d(position.y * uTime);
-  // position3.xz *= rot2d(position.y * uTime);
-
-  // Copied position used to make the actual copyPosition 
-  // vec3 position4 = rotate(position, sin(position1 + uTime * 0.3), 3.0);
-
-// Copy of the vec3 position
-  // vec3 copyPosition = position4;
-  // vec3 copyPositionRotation = abs(sin(uAudioFrequency * PI * 2.0 * rotate(position, vec3(0.5), fract(uTime / 8.0) * cos(uAudioFrequency * 0.02))));
-  // copyPosition.z += uTime * 0.5;
-  // copyPosition.xy = sin(fract(copyPositionRotation.xy * uAudioFrequency) - 0.5);
-  // copyPosition.z = mod(position.z, 0.21) - 0.144;
-
-  // float squareWave = sin(abs(ceil(smoothstep(-0.3, 0.5, -uAudioFrequency * 0.3) + PI * (sin(uAudioFrequency + position.z) + (sin(uAudioFrequency * 0.1) - uTime * 0.2))) + floor(2.144 * 1.08) * 0.2));
-
-// Shapes used
+  /*
+    Shapes used
+  */
 
   float octahedron = sdOctahedron(position, octaGrowth);
 
@@ -114,7 +91,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
     // Apply a shape-changing transformation to camPos for the glow effect
   float timeFactor = uTime * 0.5;
-  float audioFactor = uAudioFrequency * 0.2;
+  // float audioFactor = uAudioFrequency * 0.2;
 
     // Introduce noise for more organic distortion
   float noiseFactor = smoothNoise(position * 0.5 + uTime * 0.3);
@@ -122,8 +99,8 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
   // Distort camPos to create a dynamic, shape-changing effect and 
   // smoothly distort camPos for more natural, evolving glow
-  vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 - fbmNoise) * 0.13, cos(timeFactor + camPos.y * 1.8 - noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
-  // vec3 distortedCamPos = camPos + vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.2, smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.13, smoothstep(0.3, 0.8, fbmNoise) * sin(uTime) * 0.21);
+  // vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 - fbmNoise) * 0.13, cos(timeFactor + camPos.y * 1.8 - noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
+  vec3 distortedCamPos = camPos + vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.2, smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.13, smoothstep(0.3, 0.8, fbmNoise) * sin(uTime) * 0.21);
 
     // Calculate glow using the distorted camPos
   float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 0.2;
@@ -155,12 +132,9 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   float vignette = smoothstep(0.5, 1.0, distFromOrigin * 0.5 + position.y * 0.1);
 
 // Modify color based on distance, with black near the edges and brighter toward the center
-// #ifdef ENABLE_FISHEYE
   // color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
-  color += vignette - smoothstep(-0.13, 0.05, glow) * lightColor - fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight * fbmNoise * 0.1) - position.z * 0.2) * 1.5;
 
-  // #endif
-  // color += vignette * smoothstep(-0.1, 0.05, glow) * lightColor - (0.8 + sin(position.y * 1.2 + fbmNoise) * 0.3);
+  color += vignette - smoothstep(-0.13, 0.05, glow) * lightColor - fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight * fbmNoise * 0.1) - position.z * 0.2) * 1.5;
 
   // Additional subtle frequency-based modulation for organic blending
   color -= 0.5 * sin(uFrequencyData[255] + fbmNoise * 0.3) + 0.5;
@@ -196,7 +170,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
     // float charlie = sin(uTime * 2.0 + 1.0 - fract(position.x) * 8.0 + 1.0 - fract(position.y) * 2.0) * 0.5 + 0.5;
     // float delta = uTime + (fractalBrownianMotion(position, alpha - (beta / 3.0) - charlie * 0.3) * 0.2) * 0.3;
 
-    // float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
+    float harmonic = sin(uTime * 0.5 + TAU * 3.0) * uFrequencyData[128];
     // color *= harmonic - palette(cos(uTime * 3.0 + sin(startDist + harmonic) + 0.5) * uFrequencyData[255]) + 1.0 / 3.0;
 
     // color *= sin(uTime + TAU * 1.5) - palette(delta - sin(uTime * round(endDist) + abs(ceil(uAudioFrequency * 0.008 * PI * tan(startDist))) * floor(2.0 + 1.0)) * uFrequencyData[255]) + 1.0 / 2.0;
@@ -246,14 +220,6 @@ void main() {
     // float centralLight = dot(vUv - 1.0, vUv) * (camPos.z - 1.0);
     float centralLight = sdf(camPos);
     // centerDist = uTime * centralLight;
-
-    // Interaction with uFrequencyData
-  //   float frequencyIndex = mod(centerDist * 50.0 + uTime * 10.0, 256.0); // Adjust the scaling and offset for the effect
-  //   float frequencyValue = uFrequencyData[int(frequencyIndex)];
-
-  // // Apply the frequency data to modify the color
-  //   vec3 frequencyColor = vec3(frequencyValue / 256.0) * vec3(0.5, 0.8, 1.0); // Base color influenced by frequency
-  //   color = mix(color, frequencyColor, smoothstep(0.0, 1.0, frequencyValue * centralLight));
 
     // Compute lighting and shadow effects
     color = computeLighting(position, normal, camPos, lightDir);

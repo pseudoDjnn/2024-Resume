@@ -38,7 +38,7 @@ void main() {
   modelPosition.z = sin(uTime) * 0.03;
 
   // Glitching effect
-  float glitchTime = uTime - modelPosition.y;
+  float glitchTime = uTime * PI - modelPosition.y;
   float stuttering = sin(glitchTime) + sin(glitchTime * 3.55) + sin(glitchTime * 8.89);
   stuttering /= 3.0;
   stuttering = smoothstep(0.3, 1.0, stuttering);

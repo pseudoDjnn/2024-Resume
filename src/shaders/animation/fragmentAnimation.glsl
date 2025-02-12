@@ -188,7 +188,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     float freqInfluence = uFrequencyData[int(mod(uTime * 5.0, 256.0))] * 0.1;
 
-    color -= mix(color, fract(uTime - vec3(1.0, 0.3, 0.5)), gradient - smoothstep(0.0, 1.0, ceil(sin(uFrequencyData[144] - PI * -position.z)))); // Smooth gradient coloring
+    color -= mix(color, fract(uTime - vec3(1.0, 0.3, 0.5)), gradient - smoothstep(0.0, 1.0, ceil(sin(uFrequencyData[233] - PI * -position.z)))); // Smooth gradient coloring
     color -= vec3(turb) * 0.05;                         // Turbulence-based variations
     color = mix(color, vec3(0.5), alpha);        // Fade with distance
 

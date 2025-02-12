@@ -75,7 +75,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   float cubeSDF = max(abs(position.x), max(abs(position.y), abs(position.z) * 0.3 - smoothstep(0.0, 1.0, gyroidSDF) * 0.8)); // Cube shape
 
-  float timeMorph = smoothstep(0.0, 1.0, sin(uTime)); // Time-driven smooth morph
+  float timeMorph = rampedTime + (smoothstep(0.0, 1.0, sin(uTime)) - rampedTime) * organicNoise; // Time-driven smooth morph
   float timeMorph2 = smoothstep(0.0, 1.0, 0.3 - sin(uTime)) * 0.1; // Time-driven smooth morph
 
   float blendedShape = polynomialSMin(sphereSDF + (starSDF * 0.05), cubeSDF, timeMorph); // Sphere <-> Cube

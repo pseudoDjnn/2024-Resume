@@ -39,19 +39,17 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
 
   mat3 rotationMatrix = mat3(cos(rotationAngle), 0.0, -sin(rotationAngle), 0.0, 1.0, 0.0, sin(rotationAngle), 0.0, cos(rotationAngle));
 
-  // float squareWave = abs(fract(sin(uTime - position.z * PI) + 1.0 * 2.0) + organicNoise);
+  vec3 newPosition = rotateZ(rotationAngle + cos(uTime) * 0.5) *
+    rotateX(rotationAngle + sin(uTime) * 0.3) *
+    rotateY(rotationAngle + cos(uTime * 0.8) * 0.5) * position;
 
-  vec3 rotatedPosition = rotationMatrix * (position - morphedPosition);
+  vec3 rotatedPosition = (position - morphedPosition) * rotationMatrix;
 
   float frequencyScale = uFrequencyData[0] * 256.0;
 
   float rampedTime = pow(uTime * 0.2, 1.0);
 
   vec3 segmentation = vec3(ceil(position.x), ceil(position.y), ceil(position.z));
-
-  vec3 newPosition = rotateZ(rotationAngle + cos(uTime) * 0.5) *
-    rotateX(rotationAngle + sin(uTime) * 0.3) *
-    rotateY(rotationAngle + cos(uTime * 0.8) * 0.5) * position;
 
   vec3 objectRotationX = rotateX(frequencyScale * 0.0005) * sin(rampedTime - segmentation);
   vec3 objectRotationY = rotateY(frequencyScale * 0.0003) * cos(rampedTime - segmentation);

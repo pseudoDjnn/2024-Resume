@@ -182,7 +182,7 @@ vec3 raymarch(vec3 raypos, vec3 ray, float endDist, out float startDist) {
 
     float alpha = 1.0 - exp(-0.05 * startDist);
 
-    float gradient = harmonic + (smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal) - harmonic) * float(color);
+    float gradient = smoothstep(0.0, 1.0, position.y * 0.1 + fbmVal);
 
     float turb = (1.0 + uFrequencyData[34] * 0.1) * fbmVal;
 

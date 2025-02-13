@@ -66,6 +66,7 @@ float sdf(vec3 position) {
 // }
 
 vec3 calculateSurfaceNormal(vec3 surfacePosition) {
+
   const float epsilon = 0.001;
   const vec3 offsetX = vec3(epsilon, 0.0, 0.0);
   const vec3 offsetY = vec3(0.0, epsilon, 0.0);
@@ -80,14 +81,24 @@ vec3 calculateSurfaceNormal(vec3 surfacePosition) {
 
 // Helper function to calculate the ray direction
 vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
+
   return -normalize(vec3(uv - vec2(0.5), 1.0));
 }
 
 // Function to compute the light and shadow effects
 vec3 computeLighting(vec3 position, vec3 normal, vec3 camPos, vec3 lightDir) {
+    // Compute view direction once for efficiency.
+  vec3 viewDir = normalize(position - camPos);
+
+    // Calculate diffuse term: remap dot product from [-1,1] to [0,1]
   float diff = dot(normal, lightDir) * 0.5 + 0.5;
-  float fresnel = pow(0.3 - dot(normalize(position - camPos), normal), 3.0);
-  return vec3(diff) * fresnel;
+
+    // Compute fresnel effect using the view direction.
+    // Use max to ensure we don't get negative values before raising to a power.
+  float fresnel = pow(max(0.0, 0.3 - dot(viewDir, normal)), 3.0);
+
+    // Return the lighting as a grayscale intensity applied to all channels.
+  return vec3(diff * fresnel);
 }
 
 // Function to apply shadow and glow effects
@@ -105,28 +116,31 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
 
   // Distort camPos to create a dynamic, shape-changing effect and 
   // smoothly distort camPos for more natural, evolving glow
-  // vec3 distortedCamPos = camPos + vec3(sin(timeFactor - camPos.x * 2.5 - fbmNoise) * 0.13, cos(timeFactor + camPos.y * 1.8 - noiseFactor) * 0.21, sin(uAudioFrequency * camPos.z * 5.0 * noiseFactor) * 0.8);
-  // vec3 distortedCamPos = camPos + vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.2, smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.13, smoothstep(0.3, 0.8, fbmNoise) * sin(uTime) * 0.21);
   vec3 distortedCamPos = camPos + vec3(smoothstep(0.1, 0.8, fbmNoise) * sin(timeFactor) * 0.1,  // Subtle X distortion
   smoothstep(0.2, 0.8, noiseFactor) * cos(timeFactor * 1.5) * 0.08,  // Subtle Y distortion
   (0.5 + smoothstep(0.3, 0.8, fbmNoise)) * sin(uAudioFrequency * camPos.z * 6.0 + timeFactor) * 1.1  // Stronger Z distortion
   );
 
     // Calculate glow using the distorted camPos
-  float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 0.2;
+  // float glow = organicGyroid(sin(uTime * 0.2 - distortedCamPos), sin(uTime - 0.2), 0.1, 0.8) * 0.2;
+  float timeA = sin(uTime * 0.2);
+  float timeB = cos(uTime - 0.2);
+  vec3 distortion = tan(timeA - distortedCamPos);
+
+  float glow = organicGyroid(distortion, timeB, 0.1, 0.8) * 0.2;
+
   // float glow = sdf(distortedCamPos);
   // float glow = sdOctahedron(distortedCamPos, 0.1);
 
     // Adjust light calculations to soften and tone down the brightness
   float light = 0.03 / (centralLight + 0.13 - fbmNoise);
   // vec3 lightColor = vec3(0.8, 0.8, 0.5) / palette(light - fbmNoise); // Softer, more muted colors
-  vec3 lightColor = mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow * uFrequencyData[64]); // Muted yet dynamic light colors
+  // vec3 lightColor = mix(fract(uTime * 0.3 * vec3(0.8, 0.01, 0.5)), fract(uTime * 0.3 * vec3(0.2, 0.2, 0.2)), glow) - palette(light * glow * uFrequencyData[64]); // Muted yet dynamic light colors
 
 // Enhanced dynamic light color using palette and audio-driven variations
-  // vec3 lightColor = mix(palette(light * glow + uFrequencyData[64] * 0.5),        // Audio-influenced palette colors
-  // palette(glow * fbmNoise + uFrequencyData[192] * 0.3),   // Palette blended with FBM and higher frequency
-  // sin(uTime * 0.3) * 0.5 + 0.5                            // Time-driven oscillation for dynamic blending
-  // );
+  vec3 lightColor = mix(palette(light * glow + uFrequencyData[64] * 0.5),        // Audio-influenced palette colors
+  palette(glow * fbmNoise + uFrequencyData[192] * 0.3),   // Palette blended with FBM and higher frequency
+  sin(uTime * 0.3) * 0.5 + 0.5);                            // Time-driven oscillation for dynamic blending
 
     // Apply glow effect to the color, modulating by audio frequency
   // color += sin(uAudioFrequency * 0.3 * cos(0.5 - centralLight)) * smoothstep(-0.3, 0.03, glow) * lightColor - 1.0 - sin(uAudioFrequency) + 0.5 * 0.5;
@@ -145,6 +159,7 @@ vec3 applyShadowAndGlow(vec3 color, vec3 position, float centralLight, vec3 camP
   // color += vignette * smoothstep(-0.13, 0.05, glow) * lightColor * 0.5 * fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight + fbmNoise)) * 1.5;
 
   color += vignette - smoothstep(-0.13, 0.05, glow) * lightColor - fract(uAudioFrequency * 0.34 * floor(1.0 - centralLight * fbmNoise * 0.1) - position.z * 0.2) * 1.5;
+  // color += vignette - smoothstep(-0.1, 0.1, glow) * palette(float(lightColor) * glow) * 0.8;
 
   // Additional subtle frequency-based modulation for organic blending
   color -= 0.5 * sin(uFrequencyData[255] + fbmNoise * 0.3) + 0.5;

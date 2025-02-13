@@ -59,7 +59,7 @@ vec3 morphingShape(vec3 position, float stutter, float time) {
   // float squareWaveOrganic = abs(fract(sin(uTime * frequencyScale * position.y * PI * 0.8) * 1.8));
   vec3 squareWave = vec3(step(0.3, fract(sin(uFrequencyData[233] - uTime * 3.0 + position.x) * organicNoise)), step(0.3, fract(sin(uFrequencyData[233] - uTime * 2.5 + position.y) * organicNoise)), step(0.3, fract(sin(uFrequencyData[233] - uTime * 2.8 + position.z) * organicNoise)));
 
-  vec3 ps1Jitter = floor(sin(uTime * 5.0 + position * 10.0)) / 10.0;
+  vec3 ps1Jitter = floor(sin(uTime * 5.0 + position * 13.0)) / 13.0;
   // position += ps1Jitter * 0.01;
 
   float octahedronSDF = (abs(objectRotationZ.x) + abs(objectRotationZ.y) + abs(objectRotationZ.z) * 0.8); // Octahedron shape

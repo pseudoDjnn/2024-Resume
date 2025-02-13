@@ -80,8 +80,7 @@ vec3 calculateSurfaceNormal(vec3 surfacePosition) {
 
 // Helper function to calculate the ray direction
 vec3 calculateRayDirection(vec2 uv, vec3 camPos) {
-  vec2 centeredUV = (uv - vec2(0.5)) + vec2(0.5);
-  return -normalize(vec3(centeredUV - vec2(0.5), 1.0));
+  return -normalize(vec3(uv - vec2(0.5), 1.0));
 }
 
 // Function to compute the light and shadow effects

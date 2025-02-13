@@ -65,10 +65,17 @@ float sdf(vec3 position) {
 //   return ground += groundWave;
 // }
 
-vec3 calcNormal(in vec3 position) {
+vec3 calculateSurfaceNormal(vec3 surfacePosition) {
   const float epsilon = 0.001;
-  const vec2 normalPosition = vec2(epsilon, 0);
-  return normalize(vec3(sdf(position + normalPosition.xyy) - sdf(position - normalPosition.xyy), sdf(position + normalPosition.yxy) - sdf(position - normalPosition.yxy), sdf(position + normalPosition.yyx) - sdf(position - normalPosition.yyx)));
+  const vec3 offsetX = vec3(epsilon, 0.0, 0.0);
+  const vec3 offsetY = vec3(0.0, epsilon, 0.0);
+  const vec3 offsetZ = vec3(0.0, 0.0, epsilon);
+
+  float gradientX = sdf(surfacePosition + offsetX) - sdf(surfacePosition - offsetX);
+  float gradientY = sdf(surfacePosition + offsetY) - sdf(surfacePosition - offsetY);
+  float gradientZ = sdf(surfacePosition + offsetZ) - sdf(surfacePosition - offsetZ);
+
+  return normalize(vec3(gradientX, gradientY, gradientZ));
 }
 
 // Helper function to calculate the ray direction
@@ -216,7 +223,7 @@ void main() {
     // Lighting and shading
   if (startDist < endDist) {
     vec3 position = camPos + startDist * ray;
-    vec3 normal = calcNormal(position);
+    vec3 normal = calculateSurfaceNormal(position);
     vec3 lightDir = -normalize(position);
 
       // Calculate center distance for lighting
